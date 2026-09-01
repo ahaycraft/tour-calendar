@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #09090b;
+  --foreground: #fafafa;
 }
 
 @theme inline {
@@ -12,15 +12,60 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+/* FullCalendar dark overrides */
+.fc {
+  font-family: inherit;
+  --fc-border-color: #27272a;
+  --fc-button-bg-color: #27272a;
+  --fc-button-border-color: #3f3f46;
+  --fc-button-hover-bg-color: #3f3f46;
+  --fc-button-hover-border-color: #52525b;
+  --fc-button-active-bg-color: #3b82f6;
+  --fc-button-active-border-color: #3b82f6;
+  --fc-button-text-color: #e4e4e7;
+  --fc-today-bg-color: rgba(59, 130, 246, 0.08);
+  --fc-neutral-bg-color: #18181b;
+  --fc-list-event-hover-bg-color: #27272a;
+  --fc-page-bg-color: #18181b;
+  --fc-neutral-text-color: #a1a1aa;
+  --fc-event-text-color: #fff;
+}
+.fc .fc-col-header-cell-cushion,
+.fc .fc-daygrid-day-number,
+.fc .fc-toolbar-title {
+  color: #e4e4e7;
+}
+.fc .fc-toolbar-title {
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+}
+.fc .fc-daygrid-day-number {
+  font-size: 0.8rem;
+}
+.fc .fc-col-header-cell-cushion {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.fc-event {
+  cursor: pointer;
+}
+.fc-daygrid-event {
+  border-radius: 4px !important;
+}
+.fc .fc-button {
+  font-size: 0.8rem !important;
+  padding: 0.3rem 0.7rem !important;
+  border-radius: 6px !important;
+  font-weight: 500 !important;
+}
+.fc .fc-button:focus {
+  box-shadow: none !important;
 }
