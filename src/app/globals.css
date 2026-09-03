@@ -3,6 +3,16 @@
 :root {
   --background: #09090b;
   --foreground: #fafafa;
+  /* The UI is dark-only; tell the browser so native controls
+     (date pickers, selects, scrollbars) render dark too. */
+  color-scheme: dark;
+}
+
+/* Make the date/time field's picker icon visible on dark inputs. */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.7);
+  cursor: pointer;
 }
 
 @theme inline {
