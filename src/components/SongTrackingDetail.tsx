@@ -209,6 +209,23 @@ export default function SongTrackingDetail({
       )}
 
       {parts.length > 0 && (
+        <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4">
+          <div className="flex items-center justify-between gap-3 mb-2">
+            <span className="text-sm font-medium text-zinc-300">Progress</span>
+            <span className="text-xs text-zinc-500">
+              {done} / {parts.length} tracked
+            </span>
+          </div>
+          <div className="h-2 rounded-full bg-zinc-800 overflow-hidden">
+            <div
+              className="h-full bg-green-500 transition-all"
+              style={{ width: `${(done / parts.length) * 100}%` }}
+            />
+          </div>
+        </div>
+      )}
+
+      {parts.length > 0 && (
         <div className="space-y-2">
           {parts.map((p) => (
             <TrackingPartRow
