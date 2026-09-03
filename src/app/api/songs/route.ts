@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { getActiveBandId } from "@/lib/band";
 import { isSongStatus } from "@/lib/songs";
 
 export async function POST(request: NextRequest) {
@@ -17,8 +18,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid status" }, { status: 400 });
     }
 
+    const bandId = await getActiveBandId(session);
+    if (!bandId) {
+      return NextResponse.json({ error: "No band selected" }, { status: 400 });
+    }
+
     const song = await prisma.song.create({
       data: {
+        bandId,
         title: title.trim(),
         status: status ?? "IDEA",
         createdById: session.user.id,

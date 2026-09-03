@@ -11,6 +11,7 @@ import ShowStatusControls from "@/components/ShowStatusControls";
 import VenueMap from "@/components/VenueMap";
 import { geocodeVenue } from "@/lib/venues";
 import { eventHref } from "@/lib/events";
+import { canManage, isBandMember } from "@/lib/band";
 import NeedsDetailsBadge, { needsDetails } from "@/components/NeedsDetailsBadge";
 import { ChevronLeft, MapPin, Clock, DollarSign, FileText, Pencil } from "lucide-react";
 
@@ -34,10 +35,12 @@ export default async function EventDetail({ id, expected }: Props) {
     },
   });
 
-  if (!show) notFound();
+  if (!show || !isBandMember(session!, show.bandId)) notFound();
   if (show.type !== expected) redirect(eventHref(show.type, show.id));
 
-  const memberCount = await prisma.user.count();
+  const memberCount = await prisma.bandMembership.count({
+    where: { bandId: show.bandId },
+  });
 
   const myAvailability = show.availability.find(
     (a) => a.userId === session!.user.id
@@ -47,8 +50,7 @@ export default async function EventDetail({ id, expected }: Props) {
   const unavailableMembers = show.availability.filter((a) => a.status === "UNAVAILABLE");
   const pendingMembers = show.availability.filter((a) => a.status === "PENDING");
 
-  const isAdminOrCreator =
-    session!.user.role === "ADMIN" || show.createdById === session!.user.id;
+  const isAdminOrCreator = canManage(session!, show.bandId, show.createdById);
 
   const isRecording = show.type === "RECORDING";
 

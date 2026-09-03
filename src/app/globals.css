@@ -86,6 +86,39 @@ body {
   min-height: 9rem;
 }
 
+/* Mobile: the calendar goes edge-to-edge, so trim internal padding and keep
+   the toolbar buttons off the screen edge. */
+@media (max-width: 640px) {
+  .fc .fc-toolbar.fc-header-toolbar {
+    padding: 0 0.5rem;
+    gap: 0.5rem 0.75rem;
+  }
+  /* Page months by swiping instead. */
+  .fc .fc-prev-button,
+  .fc .fc-next-button {
+    display: none;
+  }
+  .fc .fc-today-button {
+    border-radius: 6px !important;
+  }
+  .fc .fc-toolbar-title {
+    font-size: 1.05rem !important;
+  }
+  .fc .fc-daygrid-day-number {
+    padding: 2px 4px;
+  }
+  .fc .fc-daygrid-day-bottom {
+    padding: 0 2px;
+  }
+  .fc-daygrid-event {
+    font-size: 0.7rem;
+    padding: 1px 3px !important;
+  }
+  .fc .fc-col-header-cell-cushion {
+    padding: 6px 2px;
+  }
+}
+
 /* Leaflet dark theming */
 .leaflet-container {
   background: #18181b;

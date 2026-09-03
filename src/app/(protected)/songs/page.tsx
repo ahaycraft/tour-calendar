@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { requireActiveBandId } from "@/lib/band";
 import Link from "next/link";
 import { format } from "date-fns";
 import { Disc3, MessageSquare, Music } from "lucide-react";
@@ -7,9 +8,11 @@ import SongStatusBadge from "@/components/SongStatusBadge";
 import { SONG_STATUSES, songStatusLabel, type SongStatus } from "@/lib/songs";
 
 export default async function SongsPage() {
-  await auth();
+  const session = await auth();
+  const bandId = await requireActiveBandId(session!);
 
   const songs = await prisma.song.findMany({
+    where: { bandId },
     orderBy: { updatedAt: "desc" },
     include: {
       createdBy: { select: { name: true } },

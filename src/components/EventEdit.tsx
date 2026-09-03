@@ -6,6 +6,7 @@ import { format } from "date-fns";
 import { ChevronLeft } from "lucide-react";
 import EventForm, { type EventFormValues } from "@/components/EventForm";
 import { eventHref } from "@/lib/events";
+import { canManage, isBandMember } from "@/lib/band";
 
 interface Props {
   id: string;
@@ -16,12 +17,12 @@ export default async function EventEdit({ id, expected }: Props) {
   const session = await auth();
 
   const show = await prisma.show.findUnique({ where: { id } });
-  if (!show) notFound();
+  if (!show || !isBandMember(session!, show.bandId)) notFound();
   if (show.type !== expected) redirect(`${eventHref(show.type, show.id)}/edit`);
 
-  const canEdit =
-    session!.user.role === "ADMIN" || show.createdById === session!.user.id;
-  if (!canEdit) redirect(eventHref(show.type, show.id));
+  if (!canManage(session!, show.bandId, show.createdById)) {
+    redirect(eventHref(show.type, show.id));
+  }
 
   const values: EventFormValues = {
     id: show.id,

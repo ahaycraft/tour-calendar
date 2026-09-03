@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { isBandMember } from "@/lib/band";
 
 export async function PUT(
   request: NextRequest,
@@ -16,6 +17,14 @@ export async function PUT(
 
     if (!["AVAILABLE", "UNAVAILABLE", "PENDING"].includes(status)) {
       return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+    }
+
+    const show = await prisma.show.findUnique({
+      where: { id: showId },
+      select: { bandId: true },
+    });
+    if (!show || !isBandMember(session, show.bandId)) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
     const availability = await prisma.showAvailability.upsert({

@@ -1,17 +1,20 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { requireActiveBandId } from "@/lib/band";
 import MyAvailabilityManager from "@/components/MyAvailabilityManager";
 
 export default async function MyAvailabilityPage() {
   const session = await auth();
+  const bandId = await requireActiveBandId(session!);
 
+  // Unavailability is global to the user — the same across every band.
   const unavailableDates = await prisma.memberUnavailability.findMany({
     where: { userId: session!.user.id },
     orderBy: { date: "asc" },
   });
 
   const allShows = await prisma.show.findMany({
-    where: { status: { not: "CANCELLED" } },
+    where: { bandId, status: { not: "CANCELLED" } },
     orderBy: { date: "asc" },
     include: {
       availability: {

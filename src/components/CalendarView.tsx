@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
@@ -95,6 +95,31 @@ export default function CalendarView({ userId }: { userId: string }) {
     setModalDate(arg.dateStr);
   }
 
+  // Swipe left / right to page the calendar (mobile — the prev/next buttons
+  // are hidden there).
+  const calRef = useRef<FullCalendar>(null);
+  const swipeStart = useRef<{ x: number; y: number; t: number } | null>(null);
+
+  function onTouchStart(e: React.TouchEvent) {
+    const t = e.touches[0];
+    swipeStart.current = { x: t.clientX, y: t.clientY, t: Date.now() };
+  }
+
+  function onTouchEnd(e: React.TouchEvent) {
+    const start = swipeStart.current;
+    swipeStart.current = null;
+    if (!start) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - start.x;
+    const dy = t.clientY - start.y;
+    if (Date.now() - start.t > 600) return;
+    if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+    const api = calRef.current?.getApi();
+    if (!api) return;
+    if (dx < 0) api.next();
+    else api.prev();
+  }
+
   const modalUnavailability =
     modalDate != null
       ? unavailableDates.find((u) => u.date.split("T")[0] === modalDate) ?? null
@@ -110,7 +135,7 @@ export default function CalendarView({ userId }: { userId: string }) {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-zinc-50">Calendar</h1>
           <p className="text-sm text-zinc-500 mt-1">
@@ -119,14 +144,14 @@ export default function CalendarView({ userId }: { userId: string }) {
         </div>
         <button
           onClick={() => router.push("/shows/new")}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-500 transition-colors text-sm"
+          className="shrink-0 self-start whitespace-nowrap px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-500 transition-colors text-sm"
         >
           + Add Show
         </button>
       </div>
 
-      <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-4">
-        <div className="flex gap-4 mb-4 text-xs text-zinc-500 flex-wrap">
+      <div className="bg-zinc-900 border-y border-zinc-800 py-4 px-0 -mx-4 sm:mx-0 sm:rounded-2xl sm:border-x sm:p-4">
+        <div className="flex gap-x-4 gap-y-1.5 mb-4 px-4 sm:px-0 text-xs text-zinc-500 flex-wrap">
           <span className="flex items-center gap-1.5">
             <span className="inline-block w-3 h-3 rounded-full bg-blue-500" /> Pending
           </span>
@@ -144,25 +169,28 @@ export default function CalendarView({ userId }: { userId: string }) {
           </span>
         </div>
 
-        <FullCalendar
-          plugins={[dayGridPlugin, interactionPlugin]}
-          initialView="dayGridMonth"
-          events={[...showEvents, ...unavailableEvents]}
-          dateClick={handleDateClick}
-          eventClick={(info) => {
-            const { type, show } = info.event.extendedProps;
-            if (type === "show") {
-              router.push(eventHref(show.type, show.id));
-            }
-          }}
-          headerToolbar={{
-            left: "prev,next today",
-            center: "title",
-            right: "dayGridMonth,dayGridWeek",
-          }}
-          height="auto"
-          eventTimeFormat={{ hour: "numeric", meridiem: "short" }}
-        />
+        <div onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+          <FullCalendar
+            ref={calRef}
+            plugins={[dayGridPlugin, interactionPlugin]}
+            initialView="dayGridMonth"
+            events={[...showEvents, ...unavailableEvents]}
+            dateClick={handleDateClick}
+            eventClick={(info) => {
+              const { type, show } = info.event.extendedProps;
+              if (type === "show") {
+                router.push(eventHref(show.type, show.id));
+              }
+            }}
+            headerToolbar={{
+              left: "prev,next today",
+              center: "title",
+              right: "dayGridMonth,dayGridWeek",
+            }}
+            height="auto"
+            eventTimeFormat={{ hour: "numeric", meridiem: "short" }}
+          />
+        </div>
       </div>
 
       {modalDate && (

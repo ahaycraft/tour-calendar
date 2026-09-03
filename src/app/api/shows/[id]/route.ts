@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { canManage, isBandMember } from "@/lib/band";
 
 export async function GET(
   _request: NextRequest,
@@ -21,7 +22,9 @@ export async function GET(
     },
   });
 
-  if (!show) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!show || !isBandMember(session, show.bandId)) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
 
   return NextResponse.json(show);
 }
@@ -36,9 +39,11 @@ export async function PATCH(
   const { id } = await params;
 
   const existing = await prisma.show.findUnique({ where: { id } });
-  if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!existing || !isBandMember(session, existing.bandId)) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
 
-  if (session.user.role !== "ADMIN" && existing.createdById !== session.user.id) {
+  if (!canManage(session, existing.bandId, existing.createdById)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -119,11 +124,11 @@ export async function DELETE(
 
   const { id } = await params;
 
-  // Only admin or show creator can delete
   const show = await prisma.show.findUnique({ where: { id } });
-  if (!show) return NextResponse.json({ error: "Not found" }, { status: 404 });
-
-  if (session.user.role !== "ADMIN" && show.createdById !== session.user.id) {
+  if (!show || !isBandMember(session, show.bandId)) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+  if (!canManage(session, show.bandId, show.createdById)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { canManage, isBandMember } from "@/lib/band";
 import { isReleaseKind, isReleaseStatus } from "@/lib/releases";
 
 export async function PATCH(
@@ -11,6 +12,14 @@ export async function PATCH(
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
+
+  const existing = await prisma.release.findUnique({
+    where: { id },
+    select: { bandId: true },
+  });
+  if (!existing || !isBandMember(session, existing.bandId)) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
 
   try {
     const body = await request.json();
@@ -55,8 +64,10 @@ export async function DELETE(
 
   const { id } = await params;
   const release = await prisma.release.findUnique({ where: { id } });
-  if (!release) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  if (session.user.role !== "ADMIN" && release.createdById !== session.user.id) {
+  if (!release || !isBandMember(session, release.bandId)) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+  if (!canManage(session, release.bandId, release.createdById)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

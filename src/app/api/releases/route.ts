@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { getActiveBandId } from "@/lib/band";
 import { isReleaseKind } from "@/lib/releases";
 
 export async function POST(request: NextRequest) {
@@ -16,8 +17,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid kind" }, { status: 400 });
     }
 
+    const bandId = await getActiveBandId(session);
+    if (!bandId) {
+      return NextResponse.json({ error: "No band selected" }, { status: 400 });
+    }
+
     const release = await prisma.release.create({
       data: {
+        bandId,
         title: title.trim(),
         kind: kind ?? "ALBUM",
         createdById: session.user.id,

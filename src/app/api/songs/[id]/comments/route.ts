@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { canManage, isBandMember } from "@/lib/band";
 
 const MAX_LEN = 4000;
 
@@ -23,8 +24,13 @@ export async function POST(
       return NextResponse.json({ error: "Comment is too long" }, { status: 400 });
     }
 
-    const song = await prisma.song.findUnique({ where: { id: songId }, select: { id: true } });
-    if (!song) return NextResponse.json({ error: "Song not found" }, { status: 404 });
+    const song = await prisma.song.findUnique({
+      where: { id: songId },
+      select: { bandId: true },
+    });
+    if (!song || !isBandMember(session, song.bandId)) {
+      return NextResponse.json({ error: "Song not found" }, { status: 404 });
+    }
 
     const comment = await prisma.songComment.create({
       data: { songId, userId: session.user.id, body: text },
@@ -48,12 +54,15 @@ export async function DELETE(
 
   try {
     const { commentId } = await request.json();
-    const comment = await prisma.songComment.findUnique({ where: { id: commentId } });
+    const comment = await prisma.songComment.findUnique({
+      where: { id: commentId },
+      include: { song: { select: { bandId: true } } },
+    });
 
-    if (!comment || comment.songId !== songId) {
+    if (!comment || comment.songId !== songId || !isBandMember(session, comment.song.bandId)) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
-    if (session.user.role !== "ADMIN" && comment.userId !== session.user.id) {
+    if (comment.userId !== session.user.id && !canManage(session, comment.song.bandId)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

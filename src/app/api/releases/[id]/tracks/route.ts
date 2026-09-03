@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { isBandMember } from "@/lib/band";
 
 // Replace a release's tracklist with the given ordered list of song ids.
 // The drag-and-drop editor sends the whole array on every change.
@@ -21,16 +22,18 @@ export async function PUT(
 
     const release = await prisma.release.findUnique({
       where: { id: releaseId },
-      select: { id: true },
+      select: { bandId: true },
     });
-    if (!release) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    if (!release || !isBandMember(session, release.bandId)) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
 
     // Drop dupes, keep order.
     const ordered = [...new Set(songIds)];
 
-    // Only keep ids that are real songs.
+    // Only keep ids that are real songs in this release's band.
     const valid = await prisma.song.findMany({
-      where: { id: { in: ordered } },
+      where: { id: { in: ordered }, bandId: release.bandId },
       select: { id: true },
     });
     const validSet = new Set(valid.map((s) => s.id));

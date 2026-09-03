@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { getActiveBandId } from "@/lib/band";
 
 export async function GET() {
   const session = await auth();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const bandId = await getActiveBandId(session);
+  if (!bandId) return NextResponse.json([]);
+
   const shows = await prisma.show.findMany({
+    where: { bandId },
     orderBy: { date: "asc" },
     include: {
       createdBy: { select: { id: true, name: true } },
@@ -37,8 +42,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid event type" }, { status: 400 });
     }
 
+    const bandId = await getActiveBandId(session);
+    if (!bandId) {
+      return NextResponse.json({ error: "No band selected" }, { status: 400 });
+    }
+
     const show = await prisma.show.create({
       data: {
+        bandId,
         type: type ?? "SHOW",
         title,
         venue: venue || null,

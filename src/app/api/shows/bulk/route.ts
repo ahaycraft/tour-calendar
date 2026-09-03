@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { getActiveBandId } from "@/lib/band";
 
 const MAX_EVENTS = 90;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -31,11 +32,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid date in range" }, { status: 400 });
     }
 
+    const bandId = await getActiveBandId(session);
+    if (!bandId) {
+      return NextResponse.json({ error: "No band selected" }, { status: 400 });
+    }
+
     const sorted = [...new Set(dates as string[])].sort();
     const label = name.trim();
 
     const created = await prisma.show.createManyAndReturn({
       data: sorted.map((d, i) => ({
+        bandId,
         type: type ?? "SHOW",
         title: `${label} — Day ${i + 1}`,
         venue: null,

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { startOfDay } from "date-fns";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { getActiveBand, userBands } from "@/lib/band";
 import Nav from "@/components/Nav";
 
 export default async function ProtectedLayout({
@@ -12,10 +13,14 @@ export default async function ProtectedLayout({
   const session = await auth();
   if (!session) redirect("/login");
 
-  // Upcoming, non-cancelled events that still need attention: either not yet
-  // confirmed, or the current user hasn't recorded their own availability.
+  const activeBand = await getActiveBand(session);
+  if (!activeBand) redirect("/bands/new");
+
+  // Upcoming, non-cancelled events in the active band that still need
+  // attention: not yet confirmed, or the current user hasn't responded.
   const needsResponseCount = await prisma.show.count({
     where: {
+      bandId: activeBand.id,
       status: { not: "CANCELLED" },
       date: { gte: startOfDay(new Date()) },
       OR: [
@@ -36,10 +41,13 @@ export default async function ProtectedLayout({
 
   return (
     <div className="min-h-screen bg-zinc-950">
-      <Nav user={session.user} needsResponseCount={needsResponseCount} />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {children}
-      </main>
+      <Nav
+        user={session.user}
+        bands={userBands(session)}
+        activeBandId={activeBand.id}
+        needsResponseCount={needsResponseCount}
+      />
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">{children}</main>
     </div>
   );
 }

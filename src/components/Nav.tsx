@@ -16,9 +16,12 @@ import {
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import BandSwitcher, { type NavBand } from "./BandSwitcher";
 
 interface NavProps {
   user: { name: string; email: string; role: string };
+  bands: NavBand[];
+  activeBandId: string;
   needsResponseCount?: number;
 }
 
@@ -31,10 +34,19 @@ const links = [
   { href: "/my-availability", label: "My Availability", icon: UserX },
 ];
 
-export default function Nav({ user, needsResponseCount = 0 }: NavProps) {
+export default function Nav({
+  user,
+  bands,
+  activeBandId,
+  needsResponseCount = 0,
+}: NavProps) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
+
+  const activeRole = bands.find((b) => b.id === activeBandId)?.role;
+  const roleChip =
+    activeRole === "OWNER" ? "Owner" : activeRole === "ADMIN" ? "Admin" : null;
 
   const badgeFor = (href: string) =>
     href === "/my-availability" && needsResponseCount > 0 ? needsResponseCount : 0;
@@ -88,13 +100,17 @@ export default function Nav({ user, needsResponseCount = 0 }: NavProps) {
     <header className="bg-zinc-900 border-b border-zinc-800 sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 gap-4">
-          <div className="flex items-center gap-6 min-w-0">
+          <div className="flex items-center gap-3 lg:gap-5 min-w-0">
             <Link
               href="/calendar"
               className="font-bold text-zinc-50 text-lg whitespace-nowrap shrink-0"
             >
               🎸 Tour Cal
             </Link>
+
+            <div className="hidden lg:block">
+              <BandSwitcher bands={bands} activeBandId={activeBandId} />
+            </div>
 
             {/* Desktop nav */}
             <nav className="hidden lg:flex gap-1">
@@ -129,9 +145,9 @@ export default function Nav({ user, needsResponseCount = 0 }: NavProps) {
           <div className="hidden lg:flex items-center gap-3 shrink-0">
             <span className="text-sm text-zinc-400">
               {user.name}
-              {user.role === "ADMIN" && (
+              {roleChip && (
                 <span className="ml-1.5 text-xs bg-blue-600/20 text-blue-400 px-1.5 py-0.5 rounded font-medium">
-                  Admin
+                  {roleChip}
                 </span>
               )}
             </span>
@@ -180,9 +196,9 @@ export default function Nav({ user, needsResponseCount = 0 }: NavProps) {
             <div className="flex items-center justify-between h-16 px-4 border-b border-zinc-800">
               <span className="text-sm text-zinc-300">
                 {user.name}
-                {user.role === "ADMIN" && (
+                {roleChip && (
                   <span className="ml-1.5 text-xs bg-blue-600/20 text-blue-400 px-1.5 py-0.5 rounded font-medium">
-                    Admin
+                    {roleChip}
                   </span>
                 )}
               </span>
@@ -194,6 +210,10 @@ export default function Nav({ user, needsResponseCount = 0 }: NavProps) {
               >
                 <X size={20} />
               </button>
+            </div>
+
+            <div className="p-3 border-b border-zinc-800">
+              <BandSwitcher bands={bands} activeBandId={activeBandId} variant="drawer" />
             </div>
 
             <nav className="flex-1 overflow-y-auto p-3 space-y-1">

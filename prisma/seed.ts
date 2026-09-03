@@ -42,12 +42,31 @@ async function main() {
     },
   });
 
+  // Band + memberships
+  const band = await prisma.band.upsert({
+    where: { slug: "default" },
+    update: {},
+    create: { name: "My Band", slug: "default" },
+  });
+  for (const [user, role] of [
+    [admin, "OWNER"],
+    [member1, "MEMBER"],
+    [member2, "MEMBER"],
+  ] as const) {
+    await prisma.bandMembership.upsert({
+      where: { bandId_userId: { bandId: band.id, userId: user.id } },
+      update: {},
+      create: { bandId: band.id, userId: user.id, role },
+    });
+  }
+
   // Create some shows
   const show1 = await prisma.show.upsert({
     where: { id: "seed-show-1" },
     update: {},
     create: {
       id: "seed-show-1",
+      bandId: band.id,
       title: "The Roxy",
       venue: "The Roxy Theatre",
       city: "Los Angeles",
@@ -67,6 +86,7 @@ async function main() {
     update: {},
     create: {
       id: "seed-show-2",
+      bandId: band.id,
       title: "Bottom of the Hill",
       venue: "Bottom of the Hill",
       city: "San Francisco",

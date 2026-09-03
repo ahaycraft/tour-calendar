@@ -1,13 +1,15 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { requireActiveBandId } from "@/lib/band";
 import Link from "next/link";
 import EventList from "@/components/EventList";
 
 export default async function RecordingsPage() {
   const session = await auth();
+  const bandId = await requireActiveBandId(session!);
 
   const recordings = await prisma.show.findMany({
-    where: { type: "RECORDING" },
+    where: { type: "RECORDING", bandId },
     orderBy: { date: "asc" },
     include: {
       createdBy: { select: { id: true, name: true } },

@@ -29,11 +29,66 @@ model User {
   createdSongs     Song[]                 @relation("SongCreator")
   createdReleases  Release[]              @relation("ReleaseCreator")
   songComments     SongComment[]
+  bandMemberships  BandMembership[]
+  sentInvites      BandInvite[]           @relation("InviteSender")
   accounts         Account[]
   sessions         Session[]
 }
 
 enum Role {
+  ADMIN
+  MEMBER
+}
+
+// A band or solo artist. Every show, song, and release belongs to exactly one.
+model Band {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  memberships BandMembership[]
+  invites     BandInvite[]
+  shows       Show[]
+  songs       Song[]
+  releases    Release[]
+}
+
+model BandInvite {
+  id          String    @id @default(cuid())
+  bandId      String
+  email       String
+  role        BandRole  @default(MEMBER)
+  token       String    @unique
+  invitedById String
+  createdAt   DateTime  @default(now())
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+
+  band      Band @relation(fields: [bandId], references: [id], onDelete: Cascade)
+  invitedBy User @relation("InviteSender", fields: [invitedById], references: [id])
+
+  @@unique([bandId, email])
+  @@index([email])
+}
+
+model BandMembership {
+  id        String   @id @default(cuid())
+  bandId    String
+  userId    String
+  role      BandRole @default(MEMBER)
+  createdAt DateTime @default(now())
+
+  band Band @relation(fields: [bandId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([bandId, userId])
+  @@index([userId])
+}
+
+enum BandRole {
+  OWNER
   ADMIN
   MEMBER
 }
@@ -62,6 +117,10 @@ model Show {
 
   createdBy    User               @relation("ShowCreator", fields: [createdById], references: [id])
   availability ShowAvailability[]
+  band         Band               @relation(fields: [bandId], references: [id], onDelete: Cascade)
+  bandId       String
+
+  @@index([bandId])
 }
 
 enum EventType {
@@ -162,8 +221,11 @@ model Song {
   createdBy User          @relation("SongCreator", fields: [createdById], references: [id])
   comments  SongComment[]
   tracks    ReleaseTrack[]
+  band      Band          @relation(fields: [bandId], references: [id], onDelete: Cascade)
+  bandId    String
 
   @@index([status])
+  @@index([bandId])
 }
 
 enum SongStatus {
@@ -201,6 +263,10 @@ model Release {
 
   createdBy User           @relation("ReleaseCreator", fields: [createdById], references: [id])
   tracks    ReleaseTrack[]
+  band      Band           @relation(fields: [bandId], references: [id], onDelete: Cascade)
+  bandId    String
+
+  @@index([bandId])
 }
 
 enum ReleaseKind {

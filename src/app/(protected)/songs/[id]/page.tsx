@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import SongWorkspace from "@/components/SongWorkspace";
 import SongComments from "@/components/SongComments";
+import { canManage, isBandMember } from "@/lib/band";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -28,10 +29,9 @@ export default async function SongPage({ params }: PageProps) {
     },
   });
 
-  if (!song) notFound();
+  if (!song || !isBandMember(session!, song.bandId)) notFound();
 
-  const canDelete =
-    session!.user.role === "ADMIN" || song.createdById === session!.user.id;
+  const canDelete = canManage(session!, song.bandId, song.createdById);
 
   return (
     <div className="max-w-5xl">
@@ -81,7 +81,7 @@ export default async function SongPage({ params }: PageProps) {
       <SongComments
         songId={song.id}
         currentUserId={session!.user.id}
-        isAdmin={session!.user.role === "ADMIN"}
+        isAdmin={canManage(session!, song.bandId)}
         initialComments={song.comments.map((c) => ({
           id: c.id,
           body: c.body,

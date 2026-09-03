@@ -5,6 +5,7 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { ChevronLeft } from "lucide-react";
 import ReleaseEditor from "@/components/ReleaseEditor";
+import { canManage, isBandMember } from "@/lib/band";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -14,23 +15,22 @@ export default async function ReleasePage({ params }: PageProps) {
   const { id } = await params;
   const session = await auth();
 
-  const [release, songs] = await Promise.all([
-    prisma.release.findUnique({
-      where: { id },
-      include: {
-        tracks: { orderBy: { position: "asc" }, select: { songId: true } },
-      },
-    }),
-    prisma.song.findMany({
-      orderBy: { updatedAt: "desc" },
-      select: { id: true, title: true, status: true },
-    }),
-  ]);
+  const release = await prisma.release.findUnique({
+    where: { id },
+    include: {
+      tracks: { orderBy: { position: "asc" }, select: { songId: true } },
+    },
+  });
 
-  if (!release) notFound();
+  if (!release || !isBandMember(session!, release.bandId)) notFound();
 
-  const canDelete =
-    session!.user.role === "ADMIN" || release.createdById === session!.user.id;
+  const songs = await prisma.song.findMany({
+    where: { bandId: release.bandId },
+    orderBy: { updatedAt: "desc" },
+    select: { id: true, title: true, status: true },
+  });
+
+  const canDelete = canManage(session!, release.bandId, release.createdById);
 
   return (
     <div className="max-w-4xl">

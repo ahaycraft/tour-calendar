@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { requireActiveBandId } from "@/lib/band";
 import Link from "next/link";
 import { format } from "date-fns";
 import { Disc3 } from "lucide-react";
@@ -13,9 +14,11 @@ import {
 } from "@/lib/releases";
 
 export default async function ReleasesPage() {
-  await auth();
+  const session = await auth();
+  const bandId = await requireActiveBandId(session!);
 
   const releases = await prisma.release.findMany({
+    where: { bandId },
     orderBy: { updatedAt: "desc" },
     include: { _count: { select: { tracks: true } } },
   });
