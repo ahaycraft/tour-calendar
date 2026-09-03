@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { format } from "date-fns";
+import { format, startOfDay } from "date-fns";
 import AvailabilityBadge from "./AvailabilityBadge";
 import Link from "next/link";
 import { Trash2 } from "lucide-react";
+import { eventHref } from "@/lib/events";
+import { locationLine } from "./NeedsDetailsBadge";
 
 interface UnavailableDate {
   id: string;
@@ -14,9 +16,11 @@ interface UnavailableDate {
 
 interface UpcomingShow {
   id: string;
+  type: string;
   title: string;
-  venue: string;
-  city: string;
+  venue: string | null;
+  city: string | null;
+  state: string | null;
   date: string;
   myStatus: string;
 }
@@ -68,8 +72,9 @@ export default function MyAvailabilityManager({
     }
   }
 
+  const today = startOfDay(new Date());
   const upcomingFiltered = upcomingShows.filter(
-    (s) => new Date(s.date) >= new Date()
+    (s) => startOfDay(new Date(s.date)) >= today
   );
 
   return (
@@ -142,13 +147,13 @@ export default function MyAvailabilityManager({
             {upcomingFiltered.map((show) => (
               <li key={show.id}>
                 <Link
-                  href={`/shows/${show.id}`}
+                  href={eventHref(show.type, show.id)}
                   className="flex items-center justify-between p-3 rounded-xl border border-zinc-800 hover:border-zinc-700 hover:bg-zinc-800/60 transition-all"
                 >
                   <div>
                     <p className="text-sm font-medium text-zinc-200">{show.title}</p>
                     <p className="text-xs text-zinc-500">
-                      {show.venue}, {show.city} ·{" "}
+                      {locationLine(show)} ·{" "}
                       {format(new Date(show.date), "MMM d, yyyy")}
                     </p>
                   </div>

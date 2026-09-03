@@ -3,21 +3,25 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { Calendar, List, UserX, LogOut } from "lucide-react";
+import { Calendar, List, Mic, UserX, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface NavProps {
   user: { name: string; email: string; role: string };
+  needsResponseCount?: number;
 }
 
 const links = [
   { href: "/calendar", label: "Calendar", icon: Calendar },
   { href: "/shows", label: "Shows", icon: List },
+  { href: "/recordings", label: "Recordings", icon: Mic },
   { href: "/my-availability", label: "My Availability", icon: UserX },
 ];
 
-export default function Nav({ user }: NavProps) {
+export default function Nav({ user, needsResponseCount = 0 }: NavProps) {
   const pathname = usePathname();
+  const badgeFor = (href: string) =>
+    href === "/my-availability" && needsResponseCount > 0 ? needsResponseCount : 0;
 
   return (
     <header className="bg-zinc-900 border-b border-zinc-800 sticky top-0 z-40">
@@ -29,21 +33,29 @@ export default function Nav({ user }: NavProps) {
             </Link>
 
             <nav className="hidden sm:flex gap-1">
-              {links.map(({ href, label, icon: Icon }) => (
-                <Link
-                  key={href}
-                  href={href}
-                  className={cn(
-                    "flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                    pathname.startsWith(href)
-                      ? "bg-blue-600/20 text-blue-400"
-                      : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
-                  )}
-                >
-                  <Icon size={16} />
-                  {label}
-                </Link>
-              ))}
+              {links.map(({ href, label, icon: Icon }) => {
+                const badge = badgeFor(href);
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    className={cn(
+                      "flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                      pathname.startsWith(href)
+                        ? "bg-blue-600/20 text-blue-400"
+                        : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
+                    )}
+                  >
+                    <Icon size={16} />
+                    {label}
+                    {badge > 0 && (
+                      <span className="ml-0.5 min-w-4 px-1 h-4 inline-flex items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-zinc-950">
+                        {badge}
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
             </nav>
           </div>
 
@@ -68,21 +80,29 @@ export default function Nav({ user }: NavProps) {
 
         {/* Mobile nav */}
         <nav className="flex sm:hidden gap-1 pb-2">
-          {links.map(({ href, label, icon: Icon }) => (
-            <Link
-              key={href}
-              href={href}
-              className={cn(
-                "flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors",
-                pathname.startsWith(href)
-                  ? "bg-blue-600/20 text-blue-400"
-                  : "text-zinc-400 hover:bg-zinc-800"
-              )}
-            >
-              <Icon size={14} />
-              {label}
-            </Link>
-          ))}
+          {links.map(({ href, label, icon: Icon }) => {
+            const badge = badgeFor(href);
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={cn(
+                  "flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors",
+                  pathname.startsWith(href)
+                    ? "bg-blue-600/20 text-blue-400"
+                    : "text-zinc-400 hover:bg-zinc-800"
+                )}
+              >
+                <Icon size={14} />
+                {label}
+                {badge > 0 && (
+                  <span className="min-w-3.5 px-1 h-3.5 inline-flex items-center justify-center rounded-full bg-amber-500 text-[9px] font-bold text-zinc-950">
+                    {badge}
+                  </span>
+                )}
+              </Link>
+            );
+          })}
         </nav>
       </div>
     </header>

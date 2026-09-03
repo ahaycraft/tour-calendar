@@ -7,12 +7,15 @@ import interactionPlugin from "@fullcalendar/interaction";
 import { useRouter } from "next/navigation";
 import type { EventInput } from "@fullcalendar/core";
 import type { DateClickArg } from "@fullcalendar/interaction";
+import DayActionModal from "./DayActionModal";
+import { eventHref } from "@/lib/events";
 
 interface Show {
   id: string;
+  type: "SHOW" | "RECORDING";
   title: string;
-  venue: string;
-  city: string;
+  venue: string | null;
+  city: string | null;
   state?: string;
   date: string;
   status: "PENDING" | "CONFIRMED" | "CANCELLED";
@@ -35,11 +38,19 @@ const statusColors: Record<string, string> = {
   CANCELLED: "#dc2626",
 };
 
+// Recording sessions render violet, except cancelled ones stay red.
+const recordingColors: Record<string, string> = {
+  CONFIRMED: "#7c3aed",
+  PENDING: "#8b5cf6",
+  CANCELLED: "#dc2626",
+};
+
 export default function CalendarView({ userId }: { userId: string }) {
   const router = useRouter();
   const [shows, setShows] = useState<Show[]>([]);
   const [unavailableDates, setUnavailableDates] = useState<UnavailableDate[]>([]);
   const [loading, setLoading] = useState(true);
+  const [modalDate, setModalDate] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -57,13 +68,16 @@ export default function CalendarView({ userId }: { userId: string }) {
   const showEvents: EventInput[] = shows.map((show) => {
     const myAvailability = show.availability.find((a) => a.userId === userId);
     const availableCount = show.availability.filter((a) => a.status === "AVAILABLE").length;
+    const palette = show.type === "RECORDING" ? recordingColors : statusColors;
 
     return {
       id: show.id,
-      title: `${show.title} — ${show.venue}, ${show.city}`,
+      title: [show.title, [show.venue, show.city].filter(Boolean).join(", ")]
+        .filter(Boolean)
+        .join(" — "),
       date: show.date.split("T")[0],
-      backgroundColor: statusColors[show.status],
-      borderColor: statusColors[show.status],
+      backgroundColor: palette[show.status],
+      borderColor: palette[show.status],
       extendedProps: { type: "show", show, myAvailability, availableCount },
     };
   });
@@ -77,39 +91,14 @@ export default function CalendarView({ userId }: { userId: string }) {
     extendedProps: { type: "unavailable" },
   }));
 
-  async function handleDateClick(arg: DateClickArg) {
-    const clickedDate = arg.dateStr;
-    const isUnavailable = unavailableDates.some(
-      (u) => u.date.split("T")[0] === clickedDate
-    );
-
-    if (isUnavailable) {
-      if (!confirm(`Remove unavailability for ${clickedDate}?`)) return;
-      const res = await fetch("/api/unavailability", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ date: clickedDate }),
-      });
-      if (res.ok) {
-        setUnavailableDates((prev) =>
-          prev.filter((u) => u.date.split("T")[0] !== clickedDate)
-        );
-      }
-    } else {
-      const note = prompt(`Mark ${clickedDate} as unavailable? Add a note (optional):`);
-      if (note === null) return; // cancelled
-
-      const res = await fetch("/api/unavailability", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ date: clickedDate, note }),
-      });
-      if (res.ok) {
-        const newRecord = await res.json();
-        setUnavailableDates((prev) => [...prev, newRecord]);
-      }
-    }
+  function handleDateClick(arg: DateClickArg) {
+    setModalDate(arg.dateStr);
   }
+
+  const modalUnavailability =
+    modalDate != null
+      ? unavailableDates.find((u) => u.date.split("T")[0] === modalDate) ?? null
+      : null;
 
   if (loading) {
     return (
@@ -125,7 +114,7 @@ export default function CalendarView({ userId }: { userId: string }) {
         <div>
           <h1 className="text-2xl font-bold text-zinc-50">Calendar</h1>
           <p className="text-sm text-zinc-500 mt-1">
-            Click a date to toggle your unavailability. Click a show to view details.
+            Click a date to add a show or block it. Click a show to view details.
           </p>
         </div>
         <button
@@ -148,6 +137,9 @@ export default function CalendarView({ userId }: { userId: string }) {
             <span className="inline-block w-3 h-3 rounded-full bg-red-500" /> Cancelled
           </span>
           <span className="flex items-center gap-1.5">
+            <span className="inline-block w-3 h-3 rounded-full bg-violet-500" /> Recording session
+          </span>
+          <span className="flex items-center gap-1.5">
             <span className="inline-block w-3 h-3 rounded-full bg-orange-500" /> You&apos;re unavailable
           </span>
         </div>
@@ -160,7 +152,7 @@ export default function CalendarView({ userId }: { userId: string }) {
           eventClick={(info) => {
             const { type, show } = info.event.extendedProps;
             if (type === "show") {
-              router.push(`/shows/${show.id}`);
+              router.push(eventHref(show.type, show.id));
             }
           }}
           headerToolbar={{
@@ -172,6 +164,23 @@ export default function CalendarView({ userId }: { userId: string }) {
           eventTimeFormat={{ hour: "numeric", meridiem: "short" }}
         />
       </div>
+
+      {modalDate && (
+        <DayActionModal
+          date={modalDate}
+          existingUnavailability={modalUnavailability}
+          onClose={() => setModalDate(null)}
+          onUnavailabilityAdded={(record) =>
+            setUnavailableDates((prev) => [...prev, record])
+          }
+          onUnavailabilityRemoved={(date) =>
+            setUnavailableDates((prev) =>
+              prev.filter((u) => u.date.split("T")[0] !== date)
+            )
+          }
+          onShowAdded={(show) => setShows((prev) => [...prev, show])}
+        />
+      )}
     </div>
   );
 }

@@ -69,3 +69,37 @@ body {
 .fc .fc-button:focus {
   box-shadow: none !important;
 }
+
+/* The week view is a single day-grid row, so with height:auto it collapses
+   to almost nothing. Give its day cells real vertical space. */
+.fc-dayGridWeek-view .fc-daygrid-day-frame {
+  min-height: 9rem;
+}
+
+/* Leaflet dark theming */
+.leaflet-container {
+  background: #18181b;
+  font-family: inherit;
+}
+.leaflet-bar a,
+.leaflet-bar a:hover {
+  background: #27272a;
+  color: #e4e4e7;
+  border-bottom-color: #3f3f46;
+}
+.leaflet-bar a:hover {
+  background: #3f3f46;
+}
+.leaflet-control-attribution {
+  background: rgba(24, 24, 27, 0.8) !important;
+  color: #71717a !important;
+}
+.leaflet-control-attribution a {
+  color: #a1a1aa;
+}
+.fc-dayGridWeek-view .fc-daygrid-day-events {
+  margin-bottom: 0.25rem;
+}
+.fc-dayGridWeek-view .fc-daygrid-event {
+  white-space: normal;
+}

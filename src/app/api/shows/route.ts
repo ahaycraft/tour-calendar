@@ -25,17 +25,24 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { title, venue, city, state, country, date, doorsTime, setTime, loadInTime, guarantee, notes } = body;
+    const { type, title, venue, city, state, country, date, doorsTime, setTime, loadInTime, guarantee, notes, venueAddress, venueLat, venueLng } = body;
 
-    if (!title || !venue || !city || !date) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    // Venue and city are optional so skeleton events (e.g. a bulk-created tour
+    // run) can be saved before the routing is booked.
+    if (!title || !date) {
+      return NextResponse.json({ error: "Title and date are required" }, { status: 400 });
+    }
+
+    if (type !== undefined && type !== "SHOW" && type !== "RECORDING") {
+      return NextResponse.json({ error: "Invalid event type" }, { status: 400 });
     }
 
     const show = await prisma.show.create({
       data: {
+        type: type ?? "SHOW",
         title,
-        venue,
-        city,
+        venue: venue || null,
+        city: city || null,
         state: state || null,
         country: country || "US",
         date: new Date(date),
@@ -44,6 +51,9 @@ export async function POST(request: NextRequest) {
         loadInTime: loadInTime ? new Date(loadInTime) : null,
         guarantee: guarantee ? parseFloat(guarantee) : null,
         notes: notes || null,
+        venueAddress: venueAddress || null,
+        venueLat: typeof venueLat === "number" ? venueLat : null,
+        venueLng: typeof venueLng === "number" ? venueLng : null,
         createdById: session.user.id,
       },
       include: {

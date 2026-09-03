@@ -37,9 +37,10 @@ enum Role {
 
 model Show {
   id          String     @id @default(cuid())
+  type        EventType  @default(SHOW)
   title       String
-  venue       String
-  city        String
+  venue       String?
+  city        String?
   state       String?
   country     String     @default("US")
   date        DateTime
@@ -48,6 +49,9 @@ model Show {
   loadInTime  DateTime?
   guarantee   Float?
   notes       String?
+  venueAddress String?
+  venueLat     Float?
+  venueLng     Float?
   status      ShowStatus @default(PENDING)
   createdById String
   createdAt   DateTime   @default(now())
@@ -55,6 +59,11 @@ model Show {
 
   createdBy    User               @relation("ShowCreator", fields: [createdById], references: [id])
   availability ShowAvailability[]
+}
+
+enum EventType {
+  SHOW
+  RECORDING
 }
 
 enum ShowStatus {

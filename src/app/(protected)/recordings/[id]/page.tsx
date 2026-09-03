@@ -4,7 +4,7 @@ interface PageProps {
   params: Promise<{ id: string }>;
 }
 
-export default async function ShowDetailPage({ params }: PageProps) {
+export default async function RecordingDetailPage({ params }: PageProps) {
   const { id } = await params;
-  return <EventDetail id={id} expected="SHOW" />;
+  return <EventDetail id={id} expected="RECORDING" />;
 }

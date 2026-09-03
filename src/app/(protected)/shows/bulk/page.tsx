@@ -1,8 +1,8 @@
-import EventForm from "@/components/EventForm";
+import BulkEventForm from "@/components/BulkEventForm";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 
-export default function NewShowPage() {
+export default function BulkShowsPage() {
   return (
     <div className="max-w-xl">
       <Link
@@ -13,17 +13,13 @@ export default function NewShowPage() {
         Back to Shows
       </Link>
 
-      <h1 className="text-2xl font-bold text-zinc-50 mb-6">Add Show</h1>
-
-      <p className="text-sm text-zinc-500 -mt-4 mb-6">
-        Booking a whole tour? 
-        <Link href="/shows/bulk" className="text-blue-400 hover:text-blue-300">
-          Add a date range instead →
-        </Link>
+      <h1 className="text-2xl font-bold text-zinc-50 mb-1">Add a date range</h1>
+      <p className="text-sm text-zinc-500 mb-6">
+        Block out a run of dates now, then fill in venues on each event.
       </p>
 
       <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-6">
-        <EventForm />
+        <BulkEventForm />
       </div>
     </div>
   );

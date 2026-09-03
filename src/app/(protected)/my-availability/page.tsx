@@ -35,9 +35,11 @@ export default async function MyAvailabilityPage() {
         }))}
         upcomingShows={allShows.map((s) => ({
           id: s.id,
+          type: s.type,
           title: s.title,
           venue: s.venue,
           city: s.city,
+          state: s.state,
           date: s.date.toISOString(),
           myStatus: s.availability[0]?.status ?? "PENDING",
         }))}
