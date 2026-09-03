@@ -67,6 +67,7 @@ export default async function ReleasesPage() {
                 </div>
                 <p className="text-xs text-zinc-500 mt-0.5">
                   {r._count.tracks} {r._count.tracks === 1 ? "track" : "tracks"}
+                  {` · added ${format(r.createdAt, "MMM d, yyyy")}`}
                   {r.targetDate ? ` · target ${format(r.targetDate, "MMM yyyy")}` : ""}
                 </p>
               </div>

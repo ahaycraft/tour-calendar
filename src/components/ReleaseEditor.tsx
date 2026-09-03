@@ -24,7 +24,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Check, GripVertical, Loader2, Plus, Trash2, X } from "lucide-react";
+import { Check, GripVertical, ListChecks, Loader2, Plus, Trash2, X } from "lucide-react";
 import ConfirmDialog from "./ConfirmDialog";
 import SongStatusBadge from "./SongStatusBadge";
 import {
@@ -280,6 +280,13 @@ export default function ReleaseEditor({
           placeholder="Release title"
           className="flex-1 bg-transparent text-2xl font-bold text-zinc-50 placeholder:text-zinc-600 focus:outline-none"
         />
+        <Link
+          href={`/releases/${release.id}/recording`}
+          className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border border-zinc-700 text-zinc-300 hover:bg-zinc-800 font-medium transition-colors"
+        >
+          <ListChecks size={14} />
+          Tracking plan
+        </Link>
         {canDelete && (
           <button
             type="button"

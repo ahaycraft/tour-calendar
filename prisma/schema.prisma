@@ -27,8 +27,12 @@ model User {
   unavailableDates MemberUnavailability[]
   createdShows     Show[]                 @relation("ShowCreator")
   createdSongs     Song[]                 @relation("SongCreator")
+  editedSongs      Song[]                 @relation("SongEditor")
   createdReleases  Release[]              @relation("ReleaseCreator")
+  createdPlans     RecordingPlan[]        @relation("RecordingPlanCreator")
+  recordingParts   RecordingPart[]        @relation("RecordingPartAssignee")
   songComments     SongComment[]
+  songDemos        SongDemo[]             @relation("SongDemoCreator")
   bandMemberships  BandMembership[]
   sentInvites      BandInvite[]           @relation("InviteSender")
   accounts         Account[]
@@ -53,6 +57,7 @@ model Band {
   shows       Show[]
   songs       Song[]
   releases    Release[]
+  instruments Instrument[]
 }
 
 model BandInvite {
@@ -94,26 +99,26 @@ enum BandRole {
 }
 
 model Show {
-  id          String     @id @default(cuid())
-  type        EventType  @default(SHOW)
-  title       String
-  venue       String?
-  city        String?
-  state       String?
-  country     String     @default("US")
-  date        DateTime
-  doorsTime   DateTime?
-  setTime     DateTime?
-  loadInTime  DateTime?
-  guarantee   Float?
-  notes       String?
+  id           String     @id @default(cuid())
+  type         EventType  @default(SHOW)
+  title        String
+  venue        String?
+  city         String?
+  state        String?
+  country      String     @default("US")
+  date         DateTime
+  doorsTime    DateTime?
+  setTime      DateTime?
+  loadInTime   DateTime?
+  guarantee    Float?
+  notes        String?
   venueAddress String?
   venueLat     Float?
   venueLng     Float?
-  status      ShowStatus @default(PENDING)
-  createdById String
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  status       ShowStatus @default(PENDING)
+  createdById  String
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 
   createdBy    User               @relation("ShowCreator", fields: [createdById], references: [id])
   availability ShowAvailability[]
@@ -212,20 +217,39 @@ model Song {
   timeSig     String?
   lyrics      String?    @db.Text
   notes       String?    @db.Text
+  /// Deprecated: superseded by the SongDemo list. Kept so existing links
+  /// survive a `prisma db push`; remove once every band has been backfilled.
   samplyUrl   String?
   createdById String
   updatedById String?
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
-  createdBy User          @relation("SongCreator", fields: [createdById], references: [id])
-  comments  SongComment[]
-  tracks    ReleaseTrack[]
-  band      Band          @relation(fields: [bandId], references: [id], onDelete: Cascade)
-  bandId    String
+  createdBy      User            @relation("SongCreator", fields: [createdById], references: [id])
+  updatedBy      User?           @relation("SongEditor", fields: [updatedById], references: [id])
+  comments       SongComment[]
+  demos          SongDemo[]
+  tracks         ReleaseTrack[]
+  recordingParts RecordingPart[]
+  band           Band            @relation(fields: [bandId], references: [id], onDelete: Cascade)
+  bandId         String
 
   @@index([status])
   @@index([bandId])
+}
+
+model SongDemo {
+  id          String   @id @default(cuid())
+  songId      String
+  label       String?
+  url         String
+  createdById String
+  createdAt   DateTime @default(now())
+
+  song      Song @relation(fields: [songId], references: [id], onDelete: Cascade)
+  createdBy User @relation("SongDemoCreator", fields: [createdById], references: [id])
+
+  @@index([songId])
 }
 
 enum SongStatus {
@@ -261,10 +285,11 @@ model Release {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
-  createdBy User           @relation("ReleaseCreator", fields: [createdById], references: [id])
-  tracks    ReleaseTrack[]
-  band      Band           @relation(fields: [bandId], references: [id], onDelete: Cascade)
-  bandId    String
+  createdBy    User           @relation("ReleaseCreator", fields: [createdById], references: [id])
+  tracks       ReleaseTrack[]
+  trackingPlan RecordingPlan?
+  band         Band           @relation(fields: [bandId], references: [id], onDelete: Cascade)
+  bandId       String
 
   @@index([bandId])
 }
@@ -295,4 +320,67 @@ model ReleaseTrack {
 
   @@unique([releaseId, songId])
   @@index([releaseId])
+}
+
+// A band's reusable library of instruments / parts that can be tracked.
+// Seeded with a default set the first time a tracking plan is opened; bands
+// add their own from there.
+model Instrument {
+  id        String   @id @default(cuid())
+  bandId    String
+  name      String
+  sortOrder Int      @default(0)
+  archived  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  band  Band            @relation(fields: [bandId], references: [id], onDelete: Cascade)
+  parts RecordingPart[]
+
+  @@unique([bandId, name])
+  @@index([bandId])
+}
+
+// The tracking plan for one release. One per release, created on demand.
+model RecordingPlan {
+  id          String   @id @default(cuid())
+  releaseId   String   @unique
+  notes       String?  @db.Text
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  release   Release         @relation(fields: [releaseId], references: [id], onDelete: Cascade)
+  createdBy User            @relation("RecordingPlanCreator", fields: [createdById], references: [id])
+  parts     RecordingPart[]
+}
+
+// One instrument to be tracked for one song within a plan.
+model RecordingPart {
+  id           String              @id @default(cuid())
+  planId       String
+  songId       String
+  instrumentId String
+  label        String?
+  description  String?             @db.Text
+  status       RecordingPartStatus @default(TODO)
+  assigneeId   String?
+  sortOrder    Int                 @default(0)
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  plan       RecordingPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  song       Song          @relation(fields: [songId], references: [id], onDelete: Cascade)
+  instrument Instrument    @relation(fields: [instrumentId], references: [id])
+  assignee   User?         @relation("RecordingPartAssignee", fields: [assigneeId], references: [id])
+
+  @@index([planId])
+  @@index([songId])
+  @@index([instrumentId])
+}
+
+enum RecordingPartStatus {
+  TODO
+  TRACKING
+  TRACKED
+  NEEDS_REDO
 }

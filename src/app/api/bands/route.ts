@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { ACTIVE_BAND_COOKIE, uniqueBandSlug } from "@/lib/band";
+import { ensureBandInstruments } from "@/lib/instruments";
 
 export async function POST(request: NextRequest) {
   const session = await auth();
@@ -21,6 +22,8 @@ export async function POST(request: NextRequest) {
       },
       select: { id: true },
     });
+
+    await ensureBandInstruments(band.id);
 
     const res = NextResponse.json({ id: band.id }, { status: 201 });
     res.cookies.set(ACTIVE_BAND_COOKIE, band.id, {

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 import SongWorkspace from "@/components/SongWorkspace";
 import SongComments from "@/components/SongComments";
 import { canManage, isBandMember } from "@/lib/band";
@@ -19,6 +20,11 @@ export default async function SongPage({ params }: PageProps) {
     where: { id },
     include: {
       createdBy: { select: { name: true } },
+      updatedBy: { select: { name: true } },
+      demos: {
+        orderBy: { createdAt: "desc" },
+        include: { createdBy: { select: { name: true } } },
+      },
       tracks: {
         include: { release: { select: { id: true, title: true } } },
       },
@@ -45,6 +51,44 @@ export default async function SongPage({ params }: PageProps) {
 
       <SongWorkspace
         canDelete={canDelete}
+        currentUserId={session!.user.id}
+        demosAdmin={canManage(session!, song.bandId)}
+        demos={song.demos.map((d) => ({
+          id: d.id,
+          label: d.label,
+          url: d.url,
+          createdAt: d.createdAt.toISOString(),
+          createdById: d.createdById,
+          createdBy: d.createdBy,
+        }))}
+        meta={
+          <>
+            Added by {song.createdBy.name}
+            {song.updatedById && song.updatedBy && (
+              <>
+                {" · Last edited by "}
+                {song.updatedBy.name}{" "}
+                {formatDistanceToNow(song.updatedAt, { addSuffix: true })}
+              </>
+            )}
+            {song.tracks.length > 0 && (
+              <>
+                {" · On "}
+                {song.tracks.map((t, i) => (
+                  <span key={t.release.id}>
+                    {i > 0 && ", "}
+                    <Link
+                      href={`/releases/${t.release.id}`}
+                      className="text-zinc-500 hover:text-zinc-300 underline underline-offset-2"
+                    >
+                      {t.release.title}
+                    </Link>
+                  </span>
+                ))}
+              </>
+            )}
+          </>
+        }
         song={{
           id: song.id,
           title: song.title,
@@ -54,41 +98,22 @@ export default async function SongPage({ params }: PageProps) {
           timeSig: song.timeSig ?? "",
           lyrics: song.lyrics ?? "",
           notes: song.notes ?? "",
-          samplyUrl: song.samplyUrl ?? "",
         }}
       />
 
-      <p className="text-xs text-zinc-600 mt-6 mb-4">
-        Added by {song.createdBy.name}
-        {song.tracks.length > 0 && (
-          <>
-            {" · On "}
-            {song.tracks.map((t, i) => (
-              <span key={t.release.id}>
-                {i > 0 && ", "}
-                <Link
-                  href={`/releases/${t.release.id}`}
-                  className="text-zinc-500 hover:text-zinc-300 underline underline-offset-2"
-                >
-                  {t.release.title}
-                </Link>
-              </span>
-            ))}
-          </>
-        )}
-      </p>
-
-      <SongComments
-        songId={song.id}
-        currentUserId={session!.user.id}
-        isAdmin={canManage(session!, song.bandId)}
-        initialComments={song.comments.map((c) => ({
-          id: c.id,
-          body: c.body,
-          createdAt: c.createdAt.toISOString(),
-          user: c.user,
-        }))}
-      />
+      <div className="mt-8">
+        <SongComments
+          songId={song.id}
+          currentUserId={session!.user.id}
+          isAdmin={canManage(session!, song.bandId)}
+          initialComments={song.comments.map((c) => ({
+            id: c.id,
+            body: c.body,
+            createdAt: c.createdAt.toISOString(),
+            user: c.user,
+          }))}
+        />
+      </div>
     </div>
   );
 }

@@ -3,7 +3,18 @@ import { ExternalLink } from "lucide-react";
 
 export default function TrackPlayer({ url }: { url: string | null }) {
   const embed = resolveTrackEmbed(url);
-  if (!embed) return null;
+
+  if (!embed) {
+    const raw = (url ?? "").trim();
+    if (!raw) return null;
+    return (
+      <p className="text-[11px] text-zinc-500 leading-snug">
+        Can&apos;t embed this link. In Samply, use{" "}
+        <span className="text-zinc-300">Share → Embed</span> and paste the URL that
+        looks like <code className="text-zinc-400">samply.app/embed/…</code>
+      </p>
+    );
+  }
 
   if (embed.kind === "samply") {
     return (
