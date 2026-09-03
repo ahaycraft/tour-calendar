@@ -4,7 +4,8 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  session: { strategy: "jwt" },
+  // Band-only app: keep people signed in for a year (default is 30 days).
+  session: { strategy: "jwt", maxAge: 60 * 60 * 24 * 365 },
   pages: {
     signIn: "/login",
   },
