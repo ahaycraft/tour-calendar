@@ -9,6 +9,14 @@ interface UnavailableDate {
   id: string;
   date: string;
   note?: string;
+  userId: string;
+  user: { name: string };
+}
+
+interface RosterEntry {
+  name: string;
+  note?: string;
+  isSelf: boolean;
 }
 
 interface Show {
@@ -26,6 +34,7 @@ interface Show {
 interface Props {
   date: string; // YYYY-MM-DD
   existingUnavailability: UnavailableDate | null;
+  dayRoster: RosterEntry[];
   onClose: () => void;
   onUnavailabilityAdded: (record: UnavailableDate) => void;
   onUnavailabilityRemoved: (date: string) => void;
@@ -40,6 +49,7 @@ const emptyMeta = { address: "", lat: null as number | null, lng: null as number
 export default function DayActionModal({
   date,
   existingUnavailability,
+  dayRoster,
   onClose,
   onUnavailabilityAdded,
   onUnavailabilityRemoved,
@@ -213,7 +223,28 @@ export default function DayActionModal({
 
         <div className="p-4">
           {tab === "unavailability" ? (
-            existingUnavailability ? (
+            <div className="space-y-4">
+              {dayRoster.length > 0 && (
+                <div className="rounded-lg border border-zinc-800 bg-zinc-800/40 p-3">
+                  <p className="text-xs font-medium uppercase tracking-wide text-zinc-500 mb-1.5">
+                    Unavailable this day
+                  </p>
+                  <ul className="space-y-1">
+                    {dayRoster.map((r, i) => (
+                      <li key={i} className="text-sm text-zinc-300 flex gap-1.5">
+                        <Ban size={14} className="mt-0.5 shrink-0 text-orange-500" />
+                        <span>
+                          <span className={r.isSelf ? "text-zinc-100 font-medium" : ""}>
+                            {r.name}
+                          </span>
+                          {r.note && <span className="text-zinc-500"> — {r.note}</span>}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {existingUnavailability ? (
               <div className="space-y-4">
                 <p className="text-sm text-zinc-400">
                   You&apos;re marked unavailable on this date
@@ -255,7 +286,8 @@ export default function DayActionModal({
                   {busy ? "Blocking..." : "Block this date"}
                 </button>
               </form>
-            )
+              )}
+            </div>
           ) : (
             <form onSubmit={addShow} className="space-y-3">
               <div className="flex gap-1 p-1 bg-zinc-800/60 rounded-lg">

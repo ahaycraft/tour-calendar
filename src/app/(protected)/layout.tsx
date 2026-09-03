@@ -16,26 +16,22 @@ export default async function ProtectedLayout({
   const activeBand = await getActiveBand(session);
   if (!activeBand) redirect("/bands/new");
 
-  // Upcoming, non-cancelled events in the active band that still need
-  // attention: not yet confirmed, or the current user hasn't responded.
+  // Upcoming, non-cancelled events in the active band that the current user
+  // still owes a response on. (Whether an admin has confirmed the show is a
+  // separate concern and deliberately not counted here.)
   const needsResponseCount = await prisma.show.count({
     where: {
       bandId: activeBand.id,
       status: { not: "CANCELLED" },
       date: { gte: startOfDay(new Date()) },
-      OR: [
-        { status: "PENDING" },
-        {
-          NOT: {
-            availability: {
-              some: {
-                userId: session.user.id,
-                status: { in: ["AVAILABLE", "UNAVAILABLE"] },
-              },
-            },
+      NOT: {
+        availability: {
+          some: {
+            userId: session.user.id,
+            status: { in: ["AVAILABLE", "UNAVAILABLE"] },
           },
         },
-      ],
+      },
     },
   });
 

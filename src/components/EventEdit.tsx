@@ -24,6 +24,12 @@ export default async function EventEdit({ id, expected }: Props) {
     redirect(eventHref(show.type, show.id));
   }
 
+  const releases = await prisma.release.findMany({
+    where: { bandId: show.bandId },
+    orderBy: { updatedAt: "desc" },
+    select: { id: true, title: true },
+  });
+
   const values: EventFormValues = {
     id: show.id,
     type: show.type,
@@ -41,6 +47,7 @@ export default async function EventEdit({ id, expected }: Props) {
     venueAddress: show.venueAddress ?? "",
     venueLat: show.venueLat,
     venueLng: show.venueLng,
+    releaseId: show.releaseId ?? "",
   };
 
   const isRecording = show.type === "RECORDING";
@@ -60,7 +67,7 @@ export default async function EventEdit({ id, expected }: Props) {
       </h1>
 
       <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-6">
-        <EventForm event={values} />
+        <EventForm event={values} releases={releases} />
       </div>
     </div>
   );

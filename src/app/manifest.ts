@@ -2,9 +2,9 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Tour Calendar",
-    short_name: "Tour Calendar",
-    description: "Band tour calendar and availability manager",
+    name: "Woodshed",
+    short_name: "Woodshed",
+    description: "Band calendar, availability, songwriting, and release planning",
     start_url: "/",
     display: "standalone",
     background_color: "#09090b",

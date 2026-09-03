@@ -30,6 +30,8 @@ interface UnavailableDate {
   id: string;
   date: string;
   note?: string;
+  userId: string;
+  user: { name: string };
 }
 
 const statusColors: Record<string, string> = {
@@ -82,14 +84,28 @@ export default function CalendarView({ userId }: { userId: string }) {
     };
   });
 
-  const unavailableEvents: EventInput[] = unavailableDates.map((u) => ({
-    id: `unavail-${u.id}`,
-    title: u.note ? `Unavailable: ${u.note}` : "Unavailable",
-    date: u.date.split("T")[0],
-    backgroundColor: "#f97316",
-    borderColor: "#f97316",
-    extendedProps: { type: "unavailable" },
-  }));
+  // Unavailable days are drawn as a striped day-cell background (see
+  // dayCellClassNames + globals.css), not a pill. Each record also gets a
+  // lightweight dot+text annotation naming who is out (and any note).
+  const unavailableEvents: EventInput[] = unavailableDates.map((u) => {
+    const who = u.userId === userId ? "You" : u.user.name.split(" ")[0];
+    return {
+      id: `unavail-${u.id}`,
+      title: u.note ? `${who} — ${u.note}` : `${who} unavailable`,
+      date: u.date.split("T")[0],
+      display: "list-item",
+      color: "#f97316",
+      classNames: ["fc-unavailable-note"],
+      extendedProps: { type: "unavailable" },
+    };
+  });
+
+  // FullCalendar day-cell markers are UTC-based (midnight UTC on the cell's
+  // date), so read the date off the UTC fields, not the local ones.
+  const fmtCellDate = (d: Date) => d.toISOString().slice(0, 10);
+  const unavailableDateSet = new Set(
+    unavailableDates.map((u) => u.date.split("T")[0])
+  );
 
   function handleDateClick(arg: DateClickArg) {
     setModalDate(arg.dateStr);
@@ -120,10 +136,24 @@ export default function CalendarView({ userId }: { userId: string }) {
     else api.prev();
   }
 
+  // The block/unblock control acts on the current user, so the modal only cares
+  // about *their* record; the full roster for the day is passed separately.
   const modalUnavailability =
     modalDate != null
-      ? unavailableDates.find((u) => u.date.split("T")[0] === modalDate) ?? null
+      ? unavailableDates.find(
+          (u) => u.date.split("T")[0] === modalDate && u.userId === userId
+        ) ?? null
       : null;
+  const modalDayRoster =
+    modalDate != null
+      ? unavailableDates
+          .filter((u) => u.date.split("T")[0] === modalDate)
+          .map((u) => ({
+            name: u.userId === userId ? "You" : u.user.name,
+            note: u.note,
+            isSelf: u.userId === userId,
+          }))
+      : [];
 
   if (loading) {
     return (
@@ -165,7 +195,7 @@ export default function CalendarView({ userId }: { userId: string }) {
             <span className="inline-block w-3 h-3 rounded-full bg-violet-500" /> Recording session
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="inline-block w-3 h-3 rounded-full bg-orange-500" /> You&apos;re unavailable
+            <span className="inline-block w-3 h-3 rounded-full bg-orange-500" /> Member unavailable
           </span>
         </div>
 
@@ -175,11 +205,18 @@ export default function CalendarView({ userId }: { userId: string }) {
             plugins={[dayGridPlugin, interactionPlugin]}
             initialView="dayGridMonth"
             events={[...showEvents, ...unavailableEvents]}
+            dayCellClassNames={(arg) =>
+              unavailableDateSet.has(fmtCellDate(arg.date))
+                ? "fc-day-unavailable"
+                : ""
+            }
             dateClick={handleDateClick}
             eventClick={(info) => {
               const { type, show } = info.event.extendedProps;
               if (type === "show") {
                 router.push(eventHref(show.type, show.id));
+              } else if (type === "unavailable" && info.event.startStr) {
+                setModalDate(info.event.startStr.slice(0, 10));
               }
             }}
             headerToolbar={{
@@ -197,13 +234,16 @@ export default function CalendarView({ userId }: { userId: string }) {
         <DayActionModal
           date={modalDate}
           existingUnavailability={modalUnavailability}
+          dayRoster={modalDayRoster}
           onClose={() => setModalDate(null)}
           onUnavailabilityAdded={(record) =>
             setUnavailableDates((prev) => [...prev, record])
           }
           onUnavailabilityRemoved={(date) =>
             setUnavailableDates((prev) =>
-              prev.filter((u) => u.date.split("T")[0] !== date)
+              prev.filter(
+                (u) => !(u.date.split("T")[0] === date && u.userId === userId)
+              )
             )
           }
           onShowAdded={(show) => setShows((prev) => [...prev, show])}

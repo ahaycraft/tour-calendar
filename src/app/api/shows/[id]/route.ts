@@ -16,6 +16,7 @@ export async function GET(
     where: { id },
     include: {
       createdBy: { select: { id: true, name: true } },
+      release: { select: { id: true, title: true } },
       availability: {
         include: { user: { select: { id: true, name: true } } },
       },
@@ -49,10 +50,30 @@ export async function PATCH(
 
   try {
     const body = await request.json();
-    const { type, title, venue, city, state, country, date, doorsTime, setTime, loadInTime, guarantee, notes, status, venueAddress, venueLat, venueLng } = body;
+    const { type, title, venue, city, state, country, date, doorsTime, setTime, loadInTime, guarantee, notes, status, venueAddress, venueLat, venueLng, releaseId } = body;
 
     if (type !== undefined && type !== "SHOW" && type !== "RECORDING") {
       return NextResponse.json({ error: "Invalid event type" }, { status: 400 });
+    }
+
+    // Resolve the release link. It only applies to recording sessions, so an
+    // event that is (or becomes) a SHOW always has it cleared. A provided
+    // release must belong to this event's band.
+    const effectiveType = type ?? existing.type;
+    let releaseUpdate: { releaseId: string | null } | undefined;
+    if (releaseId !== undefined || (type && effectiveType === "SHOW")) {
+      if (effectiveType !== "RECORDING" || !releaseId) {
+        releaseUpdate = { releaseId: null };
+      } else {
+        const release = await prisma.release.findFirst({
+          where: { id: releaseId, bandId: existing.bandId },
+          select: { id: true },
+        });
+        if (!release) {
+          return NextResponse.json({ error: "Release not found" }, { status: 400 });
+        }
+        releaseUpdate = { releaseId: release.id };
+      }
     }
 
     // Moving the event to a different day invalidates everyone's answer, so
@@ -84,6 +105,7 @@ export async function PATCH(
           ...(loadInTime !== undefined && { loadInTime: loadInTime ? new Date(loadInTime) : null }),
           ...(guarantee !== undefined && { guarantee: guarantee ? parseFloat(guarantee) : null }),
           ...(notes !== undefined && { notes }),
+          ...(releaseUpdate ?? {}),
           ...(status && { status }),
           // Wins over any status in the request body — a moved date always
           // un-confirms the event.
@@ -98,6 +120,7 @@ export async function PATCH(
         },
         include: {
           createdBy: { select: { id: true, name: true } },
+          release: { select: { id: true, title: true } },
           availability: {
             include: { user: { select: { id: true, name: true } } },
           },

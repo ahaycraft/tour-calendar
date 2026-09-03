@@ -91,7 +91,7 @@ interface PhotonFeature {
 async function searchPhoton(q: string): Promise<VenueResult[]> {
   const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=8&lang=en`;
   const res = await fetch(url, {
-    headers: { "User-Agent": "tour-calendar (venue lookup)" },
+    headers: { "User-Agent": "woodshed (venue lookup)" },
   });
   if (!res.ok) throw new Error(`Photon returned ${res.status}`);
   const data = (await res.json()) as { features?: PhotonFeature[] };

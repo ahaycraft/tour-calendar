@@ -32,15 +32,19 @@ export interface EventFormValues {
   venueAddress: string;
   venueLat: number | null;
   venueLng: number | null;
+  /** Release this session is tracking for; "" when none. Recordings only. */
+  releaseId: string;
 }
 
 interface Props {
   defaultType?: "SHOW" | "RECORDING";
   /** Present when editing an existing event. */
   event?: EventFormValues;
+  /** The band's releases, offered as a link target for recording sessions. */
+  releases?: { id: string; title: string }[];
 }
 
-export default function EventForm({ defaultType = "SHOW", event }: Props) {
+export default function EventForm({ defaultType = "SHOW", event, releases = [] }: Props) {
   const router = useRouter();
   const isEdit = event != null;
 
@@ -56,6 +60,7 @@ export default function EventForm({ defaultType = "SHOW", event }: Props) {
   const [city, setCity] = useState(event?.city ?? "");
   const [stateField, setStateField] = useState(event?.state ?? "");
   const [country, setCountry] = useState(event?.country ?? "US");
+  const [releaseId, setReleaseId] = useState(event?.releaseId ?? "");
   const [venueMeta, setVenueMeta] = useState(
     event
       ? { address: event.venueAddress, lat: event.venueLat, lng: event.venueLng }
@@ -98,6 +103,7 @@ export default function EventForm({ defaultType = "SHOW", event }: Props) {
       venueAddress: venueMeta.address || null,
       venueLat: venueMeta.lat,
       venueLng: venueMeta.lng,
+      releaseId: isRecording ? releaseId || null : null,
     };
 
     const res = await fetch(isEdit ? `/api/shows/${event.id}` : "/api/shows", {
@@ -166,6 +172,26 @@ export default function EventForm({ defaultType = "SHOW", event }: Props) {
           }
         />
       </div>
+
+      {isRecording && releases.length > 0 && (
+        <div>
+          <label className="block text-sm font-medium text-zinc-300 mb-1">
+            Release <span className="text-zinc-600">(optional)</span>
+          </label>
+          <select
+            value={releaseId}
+            onChange={(e) => setReleaseId(e.target.value)}
+            className={inputClass}
+          >
+            <option value="">Not tied to a release</option>
+            {releases.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.title}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       <div>
         <label className="block text-sm font-medium text-zinc-300 mb-1">

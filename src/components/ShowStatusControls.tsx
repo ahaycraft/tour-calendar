@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import ConfirmDialog from "./ConfirmDialog";
+import { revalidateShell } from "@/app/(protected)/actions";
 
 interface Props {
   showId: string;
@@ -33,6 +34,7 @@ export default function ShowStatusControls({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status }),
     });
+    await revalidateShell();
     setLoading(false);
     setPending(null);
     router.refresh();
@@ -49,6 +51,7 @@ export default function ShowStatusControls({
   async function doDelete() {
     setLoading(true);
     await fetch(`/api/shows/${showId}`, { method: "DELETE" });
+    await revalidateShell();
     router.push(noun === "session" ? "/recordings" : "/shows");
     router.refresh();
   }

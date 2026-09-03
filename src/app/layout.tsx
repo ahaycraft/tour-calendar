@@ -13,11 +13,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Tour Calendar",
-  description: "Band tour calendar and availability manager",
+  title: "Woodshed",
+  description: "Band calendar, availability, songwriting, and release planning",
   appleWebApp: {
     capable: true,
-    title: "Tour Calendar",
+    title: "Woodshed",
     statusBarStyle: "black-translucent",
   },
 };

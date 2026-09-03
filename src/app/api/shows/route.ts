@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { type, title, venue, city, state, country, date, doorsTime, setTime, loadInTime, guarantee, notes, venueAddress, venueLat, venueLng } = body;
+    const { type, title, venue, city, state, country, date, doorsTime, setTime, loadInTime, guarantee, notes, venueAddress, venueLat, venueLng, releaseId } = body;
 
     // Venue and city are optional so skeleton events (e.g. a bulk-created tour
     // run) can be saved before the routing is booked.
@@ -47,10 +47,26 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No band selected" }, { status: 400 });
     }
 
+    // A release link only applies to recording sessions, and the release must
+    // belong to the same band.
+    const effectiveType = type ?? "SHOW";
+    let resolvedReleaseId: string | null = null;
+    if (releaseId && effectiveType === "RECORDING") {
+      const release = await prisma.release.findFirst({
+        where: { id: releaseId, bandId },
+        select: { id: true },
+      });
+      if (!release) {
+        return NextResponse.json({ error: "Release not found" }, { status: 400 });
+      }
+      resolvedReleaseId = release.id;
+    }
+
     const show = await prisma.show.create({
       data: {
         bandId,
-        type: type ?? "SHOW",
+        type: effectiveType,
+        releaseId: resolvedReleaseId,
         title,
         venue: venue || null,
         city: city || null,

@@ -52,6 +52,10 @@ interface ReleaseData {
 const fieldClass =
   "w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent";
 
+// Compact controls in the release meta row (kind / status / target date).
+const metaFieldClass =
+  "px-2.5 py-1.5 bg-zinc-800 border border-zinc-700 rounded-md text-xs text-zinc-200 focus:outline-none focus:ring-2 focus:ring-blue-500";
+
 type SaveState = "idle" | "saving" | "saved" | "error";
 
 function SortableRow({
@@ -273,37 +277,39 @@ export default function ReleaseEditor({
 
   return (
     <div>
-      <div className="flex items-start justify-between gap-4 mb-1">
+      <div className="mb-5">
         <input
           value={meta.title}
           onChange={(e) => setMetaField("title", e.target.value)}
           placeholder="Release title"
-          className="flex-1 bg-transparent text-2xl font-bold text-zinc-50 placeholder:text-zinc-600 focus:outline-none"
+          className="w-full bg-transparent text-2xl font-bold text-zinc-50 placeholder:text-zinc-600 focus:outline-none"
         />
-        <Link
-          href={`/releases/${release.id}/recording`}
-          className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border border-zinc-700 text-zinc-300 hover:bg-zinc-800 font-medium transition-colors"
-        >
-          <ListChecks size={14} />
-          Tracking plan
-        </Link>
-        {canDelete && (
-          <button
-            type="button"
-            onClick={() => setConfirmingDelete(true)}
-            className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border border-zinc-700 text-zinc-400 hover:bg-zinc-800 hover:text-red-400 font-medium transition-colors"
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Link
+            href={`/releases/${release.id}/recording`}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border border-zinc-700 text-zinc-300 hover:bg-zinc-800 font-medium transition-colors"
           >
-            <Trash2 size={14} />
-            Delete
-          </button>
-        )}
+            <ListChecks size={14} />
+            Tracking plan
+          </Link>
+          {canDelete && (
+            <button
+              type="button"
+              onClick={() => setConfirmingDelete(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border border-zinc-700 text-zinc-400 hover:bg-zinc-800 hover:text-red-400 font-medium transition-colors"
+            >
+              <Trash2 size={14} />
+              Delete
+            </button>
+          )}
+        </div>
       </div>
 
-      <div className="flex items-center flex-wrap gap-2 mb-6 text-xs">
+      <div className="flex items-center flex-wrap gap-2.5 mb-6 text-xs">
         <select
           value={meta.kind}
           onChange={(e) => setMetaField("kind", e.target.value)}
-          className="px-2 py-1 bg-zinc-800 border border-zinc-700 rounded-md text-zinc-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className={metaFieldClass}
         >
           {RELEASE_KINDS.map((k) => (
             <option key={k} value={k}>
@@ -314,7 +320,7 @@ export default function ReleaseEditor({
         <select
           value={meta.status}
           onChange={(e) => setMetaField("status", e.target.value)}
-          className="px-2 py-1 bg-zinc-800 border border-zinc-700 rounded-md text-zinc-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className={metaFieldClass}
         >
           {RELEASE_STATUSES.map((s) => (
             <option key={s} value={s}>
@@ -328,7 +334,7 @@ export default function ReleaseEditor({
             type="date"
             value={meta.targetDate}
             onChange={(e) => setMetaField("targetDate", e.target.value)}
-            className="px-2 py-1 bg-zinc-800 border border-zinc-700 rounded-md text-zinc-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className={metaFieldClass}
           />
         </label>
         <span className="text-zinc-600">

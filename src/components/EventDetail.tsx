@@ -13,7 +13,7 @@ import { geocodeVenue } from "@/lib/venues";
 import { eventHref } from "@/lib/events";
 import { canManage, isBandMember } from "@/lib/band";
 import NeedsDetailsBadge, { needsDetails } from "@/components/NeedsDetailsBadge";
-import { ChevronLeft, MapPin, Clock, DollarSign, FileText, Pencil } from "lucide-react";
+import { ChevronLeft, MapPin, Clock, DollarSign, FileText, Pencil, Disc3 } from "lucide-react";
 
 interface Props {
   id: string;
@@ -28,6 +28,7 @@ export default async function EventDetail({ id, expected }: Props) {
     where: { id },
     include: {
       createdBy: { select: { id: true, name: true } },
+      release: { select: { id: true, title: true } },
       availability: {
         include: { user: { select: { id: true, name: true } } },
         orderBy: { user: { name: "asc" } },
@@ -87,6 +88,15 @@ export default async function EventDetail({ id, expected }: Props) {
                   {needsDetails(show) && <NeedsDetailsBadge />}
                 </div>
                 <p className="text-zinc-500 text-sm">Added by {show.createdBy.name}</p>
+                {show.release && (
+                  <Link
+                    href={`/releases/${show.release.id}`}
+                    className="mt-1 inline-flex items-center gap-1.5 text-sm text-zinc-400 hover:text-blue-400 transition-colors"
+                  >
+                    <Disc3 size={14} className="shrink-0" />
+                    Tracking for {show.release.title}
+                  </Link>
+                )}
               </div>
               {isAdminOrCreator && (
                 <Link

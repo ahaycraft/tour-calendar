@@ -125,7 +125,13 @@ model Show {
   band         Band               @relation(fields: [bandId], references: [id], onDelete: Cascade)
   bandId       String
 
+  // Optional link from a RECORDING session to the release it's tracking for.
+  // SetNull so deleting a release leaves its sessions on the calendar.
+  release   Release? @relation(fields: [releaseId], references: [id], onDelete: SetNull)
+  releaseId String?
+
   @@index([bandId])
+  @@index([releaseId])
 }
 
 enum EventType {
@@ -288,6 +294,7 @@ model Release {
   createdBy    User           @relation("ReleaseCreator", fields: [createdById], references: [id])
   tracks       ReleaseTrack[]
   trackingPlan RecordingPlan?
+  sessions     Show[]
   band         Band           @relation(fields: [bandId], references: [id], onDelete: Cascade)
   bandId       String
 

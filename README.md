@@ -1,6 +1,7 @@
-# Tour Calendar
+# Woodshed
 
-A calendar app for touring bands to manage shows and member availability.
+An operations hub for bands: shared calendar and member availability, songwriting,
+demos, releases, and recording plans.
 
 ## Features
 

@@ -146,3 +146,25 @@ body {
 .fc-dayGridWeek-view .fc-daygrid-event {
   white-space: normal;
 }
+
+/* Days the current user has blocked off. Striped (not blacked out) so any
+   show on that day stays visible — the conflict is the point. */
+.fc-day-unavailable .fc-daygrid-day-frame {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(249, 115, 22, 0.14) 0 6px,
+    transparent 6px 12px
+  );
+}
+.fc-day-unavailable .fc-daygrid-day-number {
+  color: #f97316;
+  font-weight: 700;
+}
+/* The unavailability note renders as a dot + text annotation, not a pill. */
+.fc-unavailable-note .fc-daygrid-event-dot {
+  border-color: #f97316;
+}
+.fc-unavailable-note .fc-event-title {
+  color: #f97316;
+  font-weight: 600;
+}

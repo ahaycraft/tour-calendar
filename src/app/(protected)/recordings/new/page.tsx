@@ -1,8 +1,21 @@
 import EventForm from "@/components/EventForm";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
+import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
+import { getActiveBandId } from "@/lib/band";
 
-export default function NewRecordingPage() {
+export default async function NewRecordingPage() {
+  const session = await auth();
+  const bandId = await getActiveBandId(session!);
+  const releases = bandId
+    ? await prisma.release.findMany({
+        where: { bandId },
+        orderBy: { updatedAt: "desc" },
+        select: { id: true, title: true },
+      })
+    : [];
+
   return (
     <div className="max-w-xl">
       <Link
@@ -16,14 +29,14 @@ export default function NewRecordingPage() {
       <h1 className="text-2xl font-bold text-zinc-50 mb-6">Add Recording Session</h1>
 
       <p className="text-sm text-zinc-500 -mt-4 mb-6">
-        Booking a block of sessions? 
+        Booking a block of sessions?{" "}
         <Link href="/recordings/bulk" className="text-blue-400 hover:text-blue-300">
           Add a date range instead →
         </Link>
       </p>
 
       <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-6">
-        <EventForm defaultType="RECORDING" />
+        <EventForm defaultType="RECORDING" releases={releases} />
       </div>
     </div>
   );

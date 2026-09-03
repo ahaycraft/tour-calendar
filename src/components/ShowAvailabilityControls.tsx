@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { revalidateShell } from "@/app/(protected)/actions";
 
 interface Props {
   showId: string;
@@ -21,6 +22,7 @@ export default function ShowAvailabilityControls({ showId, currentStatus, curren
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status, note }),
     });
+    await revalidateShell();
     setLoading(false);
     router.refresh();
   }
