@@ -26,6 +26,9 @@ model User {
   showAvailability ShowAvailability[]
   unavailableDates MemberUnavailability[]
   createdShows     Show[]                 @relation("ShowCreator")
+  createdSongs     Song[]                 @relation("SongCreator")
+  createdReleases  Release[]              @relation("ReleaseCreator")
+  songComments     SongComment[]
   accounts         Account[]
   sessions         Session[]
 }
@@ -139,4 +142,91 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model Song {
+  id          String     @id @default(cuid())
+  title       String
+  status      SongStatus @default(IDEA)
+  key         String?
+  tempo       Int?
+  timeSig     String?
+  lyrics      String?    @db.Text
+  notes       String?    @db.Text
+  samplyUrl   String?
+  createdById String
+  updatedById String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  createdBy User          @relation("SongCreator", fields: [createdById], references: [id])
+  comments  SongComment[]
+  tracks    ReleaseTrack[]
+
+  @@index([status])
+}
+
+enum SongStatus {
+  IDEA
+  WRITING
+  DEMO
+  READY_TO_TRACK
+  TRACKED
+  RELEASED
+}
+
+model SongComment {
+  id        String   @id @default(cuid())
+  songId    String
+  userId    String
+  body      String   @db.Text
+  createdAt DateTime @default(now())
+
+  song Song @relation(fields: [songId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([songId])
+}
+
+model Release {
+  id          String        @id @default(cuid())
+  title       String
+  kind        ReleaseKind   @default(ALBUM)
+  status      ReleaseStatus @default(PLANNING)
+  targetDate  DateTime?     @db.Date
+  notes       String?       @db.Text
+  createdById String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  createdBy User           @relation("ReleaseCreator", fields: [createdById], references: [id])
+  tracks    ReleaseTrack[]
+}
+
+enum ReleaseKind {
+  ALBUM
+  EP
+  SINGLE
+  GROUP
+}
+
+enum ReleaseStatus {
+  PLANNING
+  WRITING
+  TRACKING
+  MIXING
+  RELEASED
+}
+
+model ReleaseTrack {
+  id        String @id @default(cuid())
+  releaseId String
+  songId    String
+  position  Int
+
+  release Release @relation(fields: [releaseId], references: [id], onDelete: Cascade)
+  song    Song    @relation(fields: [songId], references: [id], onDelete: Cascade)
+
+  @@unique([releaseId, songId])
+  @@index([releaseId])
 }

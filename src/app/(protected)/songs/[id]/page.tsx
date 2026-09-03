@@ -1,0 +1,94 @@
+import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
+import { notFound } from "next/navigation";
+import Link from "next/link";
+import { ChevronLeft } from "lucide-react";
+import SongWorkspace from "@/components/SongWorkspace";
+import SongComments from "@/components/SongComments";
+
+interface PageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default async function SongPage({ params }: PageProps) {
+  const { id } = await params;
+  const session = await auth();
+
+  const song = await prisma.song.findUnique({
+    where: { id },
+    include: {
+      createdBy: { select: { name: true } },
+      tracks: {
+        include: { release: { select: { id: true, title: true } } },
+      },
+      comments: {
+        orderBy: { createdAt: "asc" },
+        include: { user: { select: { id: true, name: true } } },
+      },
+    },
+  });
+
+  if (!song) notFound();
+
+  const canDelete =
+    session!.user.role === "ADMIN" || song.createdById === session!.user.id;
+
+  return (
+    <div className="max-w-5xl">
+      <Link
+        href="/songs"
+        className="inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-200 mb-6 transition-colors"
+      >
+        <ChevronLeft size={16} />
+        Back to Songs
+      </Link>
+
+      <SongWorkspace
+        canDelete={canDelete}
+        song={{
+          id: song.id,
+          title: song.title,
+          status: song.status,
+          key: song.key ?? "",
+          tempo: song.tempo != null ? String(song.tempo) : "",
+          timeSig: song.timeSig ?? "",
+          lyrics: song.lyrics ?? "",
+          notes: song.notes ?? "",
+          samplyUrl: song.samplyUrl ?? "",
+        }}
+      />
+
+      <p className="text-xs text-zinc-600 mt-6 mb-4">
+        Added by {song.createdBy.name}
+        {song.tracks.length > 0 && (
+          <>
+            {" · On "}
+            {song.tracks.map((t, i) => (
+              <span key={t.release.id}>
+                {i > 0 && ", "}
+                <Link
+                  href={`/releases/${t.release.id}`}
+                  className="text-zinc-500 hover:text-zinc-300 underline underline-offset-2"
+                >
+                  {t.release.title}
+                </Link>
+              </span>
+            ))}
+          </>
+        )}
+      </p>
+
+      <SongComments
+        songId={song.id}
+        currentUserId={session!.user.id}
+        isAdmin={session!.user.role === "ADMIN"}
+        initialComments={song.comments.map((c) => ({
+          id: c.id,
+          body: c.body,
+          createdAt: c.createdAt.toISOString(),
+          user: c.user,
+        }))}
+      />
+    </div>
+  );
+}
