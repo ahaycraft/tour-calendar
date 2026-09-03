@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import SongWorkspace from "@/components/SongWorkspace";
+import SongArrangement from "@/components/SongArrangement";
 import SongComments from "@/components/SongComments";
 import { canManage, isBandMember } from "@/lib/band";
 
@@ -32,6 +33,7 @@ export default async function SongPage({ params }: PageProps) {
         orderBy: { createdAt: "asc" },
         include: { user: { select: { id: true, name: true } } },
       },
+      sections: { orderBy: { position: "asc" } },
     },
   });
 
@@ -40,7 +42,7 @@ export default async function SongPage({ params }: PageProps) {
   const canDelete = canManage(session!, song.bandId, song.createdById);
 
   return (
-    <div className="max-w-5xl">
+    <div className="max-w-6xl">
       <Link
         href="/songs"
         className="inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-200 mb-6 transition-colors"
@@ -89,6 +91,17 @@ export default async function SongPage({ params }: PageProps) {
             )}
           </>
         }
+        sidebar={
+          <SongArrangement
+            songId={song.id}
+            initialSections={song.sections.map((s) => ({
+              id: s.id,
+              name: s.name,
+              notes: s.notes ?? "",
+              lyrics: s.lyrics ?? "",
+            }))}
+          />
+        }
         song={{
           id: song.id,
           title: song.title,
@@ -101,7 +114,9 @@ export default async function SongPage({ params }: PageProps) {
         }}
       />
 
-      <div className="mt-8">
+      {/* Match the fields column above: comments sit in the left grid track,
+          not under the arrangement sidebar. */}
+      <div className="mt-8 lg:grid lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-8">
         <SongComments
           songId={song.id}
           currentUserId={session!.user.id}

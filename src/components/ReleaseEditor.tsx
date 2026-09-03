@@ -355,6 +355,7 @@ export default function ReleaseEditor({
       </div>
 
       <DndContext
+        id={`tracklist-${release.id}`}
         sensors={sensors}
         collisionDetection={closestCorners}
         onDragStart={onDragStart}

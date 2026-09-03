@@ -31,6 +31,7 @@ export default function SongWorkspace({
   currentUserId,
   demosAdmin,
   meta,
+  sidebar,
 }: {
   song: SongData;
   canDelete: boolean;
@@ -38,6 +39,9 @@ export default function SongWorkspace({
   currentUserId: string;
   demosAdmin: boolean;
   meta?: React.ReactNode;
+  // Rendered beside the fields on desktop (top-aligned with the first card),
+  // and directly below them on mobile.
+  sidebar?: React.ReactNode;
 }) {
   const router = useRouter();
   const [fields, setFields] = useState<SongData>(song);
@@ -180,69 +184,75 @@ export default function SongWorkspace({
         </span>
       </div>
 
-      <div className="space-y-6">
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4">
-          <div className="grid grid-cols-3 gap-2 max-w-xs">
-            <div>
-              <label className="block text-xs font-medium text-zinc-400 mb-1">Key</label>
-              <input
-                value={fields.key}
-                onChange={(e) => set("key", e.target.value)}
-                className={fieldClass}
-                placeholder="C#m"
-              />
+      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-8 lg:items-start">
+        <div className="space-y-6 lg:col-start-1">
+          <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4">
+            <div className="grid grid-cols-3 gap-2 max-w-xs">
+              <div>
+                <label className="block text-xs font-medium text-zinc-400 mb-1">Key</label>
+                <input
+                  value={fields.key}
+                  onChange={(e) => set("key", e.target.value)}
+                  className={fieldClass}
+                  placeholder="C#m"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-zinc-400 mb-1">BPM</label>
+                <input
+                  value={fields.tempo}
+                  onChange={(e) => set("tempo", e.target.value.replace(/[^\d]/g, ""))}
+                  inputMode="numeric"
+                  className={fieldClass}
+                  placeholder="120"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-zinc-400 mb-1">Time</label>
+                <input
+                  value={fields.timeSig}
+                  onChange={(e) => set("timeSig", e.target.value)}
+                  className={fieldClass}
+                  placeholder="4/4"
+                />
+              </div>
             </div>
-            <div>
-              <label className="block text-xs font-medium text-zinc-400 mb-1">BPM</label>
-              <input
-                value={fields.tempo}
-                onChange={(e) => set("tempo", e.target.value.replace(/[^\d]/g, ""))}
-                inputMode="numeric"
-                className={fieldClass}
-                placeholder="120"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-zinc-400 mb-1">Time</label>
-              <input
-                value={fields.timeSig}
-                onChange={(e) => set("timeSig", e.target.value)}
-                className={fieldClass}
-                placeholder="4/4"
-              />
-            </div>
+          </div>
+
+          <SongDemos
+            songId={song.id}
+            currentUserId={currentUserId}
+            isAdmin={demosAdmin}
+            initialDemos={demos}
+          />
+
+          <div>
+            <label className="block text-sm font-medium text-zinc-300 mb-1">Lyrics</label>
+            <textarea
+              value={fields.lyrics}
+              onChange={(e) => set("lyrics", e.target.value)}
+              rows={10}
+              spellCheck
+              className={`${fieldClass} font-mono leading-relaxed resize-y`}
+              placeholder={"[Verse 1]\n…"}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-zinc-300 mb-1">Notes</label>
+            <textarea
+              value={fields.notes}
+              onChange={(e) => set("notes", e.target.value)}
+              rows={5}
+              className={`${fieldClass} resize-y`}
+              placeholder="Arrangement ideas, references, who's playing what…"
+            />
           </div>
         </div>
 
-        <SongDemos
-          songId={song.id}
-          currentUserId={currentUserId}
-          isAdmin={demosAdmin}
-          initialDemos={demos}
-        />
-
-        <div>
-          <label className="block text-sm font-medium text-zinc-300 mb-1">Lyrics</label>
-          <textarea
-            value={fields.lyrics}
-            onChange={(e) => set("lyrics", e.target.value)}
-            rows={10}
-            spellCheck
-            className={`${fieldClass} font-mono leading-relaxed resize-y`}
-            placeholder={"[Verse 1]\n…"}
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-zinc-300 mb-1">Notes</label>
-          <textarea
-            value={fields.notes}
-            onChange={(e) => set("notes", e.target.value)}
-            rows={5}
-            className={`${fieldClass} resize-y`}
-            placeholder="Arrangement ideas, references, who's playing what…"
-          />
-        </div>
+        {sidebar && (
+          <div className="mt-8 lg:mt-0 lg:col-start-2">{sidebar}</div>
+        )}
       </div>
 
       <ConfirmDialog

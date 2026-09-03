@@ -38,7 +38,7 @@ export default async function SongTrackingPage({ params }: PageProps) {
 
   await ensureBandInstruments(release.bandId);
 
-  const [parts, instruments, memberships] = await Promise.all([
+  const [parts, instruments, memberships, sections] = await Promise.all([
     prisma.recordingPart.findMany({
       where: { planId: release.trackingPlan.id, songId },
       orderBy: { sortOrder: "asc" },
@@ -62,6 +62,11 @@ export default async function SongTrackingPage({ params }: PageProps) {
       orderBy: { user: { name: "asc" } },
       select: { user: { select: { id: true, name: true } } },
     }),
+    prisma.songSection.findMany({
+      where: { songId },
+      orderBy: { position: "asc" },
+      select: { id: true, name: true, notes: true, lyrics: true },
+    }),
   ]);
 
   const song = songs[index];
@@ -69,12 +74,18 @@ export default async function SongTrackingPage({ params }: PageProps) {
   const nextSong = index < songs.length - 1 ? songs[index + 1] : null;
 
   return (
-    <div className="max-w-3xl">
+    <div className="max-w-5xl">
       <SongTrackingDetail
         releaseId={release.id}
         song={song}
         instruments={instruments}
         members={memberships.map((m) => m.user)}
+        initialSections={sections.map((s) => ({
+          id: s.id,
+          name: s.name,
+          notes: s.notes ?? "",
+          lyrics: s.lyrics ?? "",
+        }))}
         prevSong={prevSong ? { id: prevSong.id, title: prevSong.title } : null}
         nextSong={nextSong ? { id: nextSong.id, title: nextSong.title } : null}
         initialParts={parts.map((p) => ({

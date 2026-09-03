@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight, Loader2, Plus } from "lucide-react";
 import SongStatusBadge from "./SongStatusBadge";
 import TrackingPartRow, { type TrackingPart } from "./TrackingPartRow";
+import SongArrangement, { type ArrangementSection } from "./SongArrangement";
 import { isPartDone } from "@/lib/instruments";
 
 interface Instrument {
@@ -35,6 +36,7 @@ export default function SongTrackingDetail({
   initialParts,
   instruments: initialInstruments,
   members,
+  initialSections,
   prevSong,
   nextSong,
 }: {
@@ -43,6 +45,7 @@ export default function SongTrackingDetail({
   initialParts: TrackingPart[];
   instruments: Instrument[];
   members: Member[];
+  initialSections: ArrangementSection[];
   prevSong: SongLink | null;
   nextSong: SongLink | null;
 }) {
@@ -208,113 +211,121 @@ export default function SongTrackingDetail({
         </p>
       )}
 
-      {parts.length > 0 && (
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4">
-          <div className="flex items-center justify-between gap-3 mb-2">
-            <span className="text-sm font-medium text-zinc-300">Progress</span>
-            <span className="text-xs text-zinc-500">
-              {done} / {parts.length} tracked
-            </span>
-          </div>
-          <div className="h-2 rounded-full bg-zinc-800 overflow-hidden">
-            <div
-              className="h-full bg-green-500 transition-all"
-              style={{ width: `${(done / parts.length) * 100}%` }}
-            />
-          </div>
-        </div>
-      )}
+      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-8 lg:items-start">
+        <div className="space-y-4 lg:col-start-1 lg:row-start-1">
+          {parts.length > 0 && (
+            <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4">
+              <div className="flex items-center justify-between gap-3 mb-2">
+                <span className="text-sm font-medium text-zinc-300">Progress</span>
+                <span className="text-xs text-zinc-500">
+                  {done} / {parts.length} tracked
+                </span>
+              </div>
+              <div className="h-2 rounded-full bg-zinc-800 overflow-hidden">
+                <div
+                  className="h-full bg-green-500 transition-all"
+                  style={{ width: `${(done / parts.length) * 100}%` }}
+                />
+              </div>
+            </div>
+          )}
 
-      {parts.length > 0 && (
-        <div className="space-y-2">
-          {parts.map((p) => (
-            <TrackingPartRow
-              key={p.id}
-              part={p}
-              members={members}
-              onPatch={patchPart}
-              onDelete={deletePart}
-            />
-          ))}
-        </div>
-      )}
+          {parts.length > 0 && (
+            <div className="space-y-2">
+              {parts.map((p) => (
+                <TrackingPartRow
+                  key={p.id}
+                  part={p}
+                  members={members}
+                  onPatch={patchPart}
+                  onDelete={deletePart}
+                />
+              ))}
+            </div>
+          )}
 
-      <form
-        onSubmit={submitPart}
-        className="flex flex-wrap items-center gap-2 rounded-2xl border border-zinc-800 bg-zinc-900 p-4"
-      >
-        <select
-          value={instrumentId}
-          onChange={(e) => setInstrumentId(e.target.value)}
-          className="px-2 py-1.5 bg-zinc-800 border border-zinc-700 rounded-md text-xs text-zinc-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="">Add a part…</option>
-          {instruments.map((i) => (
-            <option key={i.id} value={i.id}>
-              {i.name}
-            </option>
-          ))}
-          <option value={NEW_INSTRUMENT}>+ New instrument…</option>
-        </select>
-
-        {instrumentId === NEW_INSTRUMENT && (
-          <input
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            placeholder="Instrument name"
-            autoFocus
-            className="px-2 py-1.5 bg-zinc-800 border border-zinc-700 rounded-md text-xs text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        )}
-
-        {instrumentId && (
-          <input
-            value={label}
-            onChange={(e) => setLabel(e.target.value)}
-            placeholder="label (optional)"
-            className="w-32 px-2 py-1.5 bg-zinc-800 border border-zinc-700 rounded-md text-xs text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        )}
-
-        {instrumentId && (
-          <button
-            type="submit"
-            disabled={adding || (instrumentId === NEW_INSTRUMENT && !newName.trim())}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md bg-blue-600 text-white font-medium hover:bg-blue-500 disabled:opacity-50 transition-colors"
+          <form
+            onSubmit={submitPart}
+            className="flex flex-wrap items-center gap-2 rounded-2xl border border-zinc-800 bg-zinc-900 p-4"
           >
-            {adding ? (
-              <Loader2 size={12} className="animate-spin" />
-            ) : (
-              <Plus size={12} />
+            <select
+              value={instrumentId}
+              onChange={(e) => setInstrumentId(e.target.value)}
+              className="px-2 py-1.5 bg-zinc-800 border border-zinc-700 rounded-md text-xs text-zinc-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Add a part…</option>
+              {instruments.map((i) => (
+                <option key={i.id} value={i.id}>
+                  {i.name}
+                </option>
+              ))}
+              <option value={NEW_INSTRUMENT}>+ New instrument…</option>
+            </select>
+
+            {instrumentId === NEW_INSTRUMENT && (
+              <input
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                placeholder="Instrument name"
+                autoFocus
+                className="px-2 py-1.5 bg-zinc-800 border border-zinc-700 rounded-md text-xs text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
             )}
-            Add
-          </button>
-        )}
-      </form>
 
-      <div className="flex items-center justify-between gap-2 pt-2">
-        {prevSong ? (
-          <Link
-            href={`/releases/${releaseId}/recording/${prevSong.id}`}
-            className="inline-flex items-center gap-1 text-sm text-zinc-400 hover:text-zinc-100 transition-colors min-w-0"
-          >
-            <ChevronLeft size={16} className="shrink-0" />
-            <span className="truncate">{prevSong.title}</span>
-          </Link>
-        ) : (
-          <span />
-        )}
-        {nextSong ? (
-          <Link
-            href={`/releases/${releaseId}/recording/${nextSong.id}`}
-            className="inline-flex items-center gap-1 text-sm text-zinc-400 hover:text-zinc-100 transition-colors min-w-0"
-          >
-            <span className="truncate">{nextSong.title}</span>
-            <ChevronRight size={16} className="shrink-0" />
-          </Link>
-        ) : (
-          <span />
-        )}
+            {instrumentId && (
+              <input
+                value={label}
+                onChange={(e) => setLabel(e.target.value)}
+                placeholder="label (optional)"
+                className="w-32 px-2 py-1.5 bg-zinc-800 border border-zinc-700 rounded-md text-xs text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            )}
+
+            {instrumentId && (
+              <button
+                type="submit"
+                disabled={adding || (instrumentId === NEW_INSTRUMENT && !newName.trim())}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md bg-blue-600 text-white font-medium hover:bg-blue-500 disabled:opacity-50 transition-colors"
+              >
+                {adding ? (
+                  <Loader2 size={12} className="animate-spin" />
+                ) : (
+                  <Plus size={12} />
+                )}
+                Add
+              </button>
+            )}
+          </form>
+        </div>
+
+        <div className="mt-6 lg:mt-0 lg:col-start-2 lg:row-start-1 lg:row-span-2">
+          <SongArrangement songId={song.id} initialSections={initialSections} />
+        </div>
+
+        <div className="mt-4 lg:mt-0 lg:col-start-1 lg:row-start-2 flex items-center justify-between gap-2 pt-2">
+          {prevSong ? (
+            <Link
+              href={`/releases/${releaseId}/recording/${prevSong.id}`}
+              className="inline-flex items-center gap-1 text-sm text-zinc-400 hover:text-zinc-100 transition-colors min-w-0"
+            >
+              <ChevronLeft size={16} className="shrink-0" />
+              <span className="truncate">{prevSong.title}</span>
+            </Link>
+          ) : (
+            <span />
+          )}
+          {nextSong ? (
+            <Link
+              href={`/releases/${releaseId}/recording/${nextSong.id}`}
+              className="inline-flex items-center gap-1 text-sm text-zinc-400 hover:text-zinc-100 transition-colors min-w-0"
+            >
+              <span className="truncate">{nextSong.title}</span>
+              <ChevronRight size={16} className="shrink-0" />
+            </Link>
+          ) : (
+            <span />
+          )}
+        </div>
       </div>
     </div>
   );

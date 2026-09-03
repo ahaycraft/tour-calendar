@@ -235,6 +235,7 @@ model Song {
   updatedBy      User?           @relation("SongEditor", fields: [updatedById], references: [id])
   comments       SongComment[]
   demos          SongDemo[]
+  sections       SongSection[]
   tracks         ReleaseTrack[]
   recordingParts RecordingPart[]
   band           Band            @relation(fields: [bandId], references: [id], onDelete: Cascade)
@@ -254,6 +255,24 @@ model SongDemo {
 
   song      Song @relation(fields: [songId], references: [id], onDelete: Cascade)
   createdBy User @relation("SongDemoCreator", fields: [createdById], references: [id])
+
+  @@index([songId])
+}
+
+// One block of a song's arrangement (Intro, Verse 1, Chorus…). Ordered by
+// `position`; belongs to the song itself, so it's the same list whether you
+// open it from the song page or the release tracking plan.
+model SongSection {
+  id        String   @id @default(cuid())
+  songId    String
+  name      String
+  notes     String?  @db.Text
+  lyrics    String?  @db.Text
+  position  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  song Song @relation(fields: [songId], references: [id], onDelete: Cascade)
 
   @@index([songId])
 }
