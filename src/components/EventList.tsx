@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { format, startOfDay } from "date-fns";
+import { format } from "date-fns";
 import ShowStatusBadge from "./ShowStatusBadge";
 import AvailabilityBadge from "./AvailabilityBadge";
-import { eventHref } from "@/lib/events";
+import { eventHref, isUpcomingEvent } from "@/lib/events";
 import NeedsDetailsBadge, { needsDetails, locationLine } from "./NeedsDetailsBadge";
 
 interface EventListItem {
@@ -49,12 +49,8 @@ function DateBlock({ date, dim }: { date: Date | string; dim?: boolean }) {
 export default function EventList({ events, userId, emptyText = "Nothing here yet." }: Props) {
   // Compare by calendar day, not instant, so an event happening today counts
   // as upcoming for the whole day.
-  const today = startOfDay(new Date());
-  const isPastDay = (d: Date | string) => startOfDay(new Date(d)) < today;
-  const upcoming = events.filter(
-    (e) => !isPastDay(e.date) && e.status !== "CANCELLED"
-  );
-  const past = events.filter((e) => isPastDay(e.date) || e.status === "CANCELLED");
+  const upcoming = events.filter(isUpcomingEvent);
+  const past = events.filter((e) => !isUpcomingEvent(e));
 
   return (
     <>

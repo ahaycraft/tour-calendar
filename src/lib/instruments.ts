@@ -39,11 +39,13 @@ export const recordingPartStatusLabel: Record<RecordingPartStatus, string> = {
   NEEDS_REDO: "Needs redo",
 };
 
+// Muted status palette shared with the calendar and show badges (see the
+// --badge-* tokens / .badge-* classes in globals.css).
 export const recordingPartStatusClass: Record<RecordingPartStatus, string> = {
   TODO: "bg-zinc-700 text-zinc-300",
-  TRACKING: "bg-amber-500/15 text-amber-400",
-  TRACKED: "bg-green-500/15 text-green-400",
-  NEEDS_REDO: "bg-red-500/15 text-red-400",
+  TRACKING: "badge-ochre",
+  TRACKED: "badge-moss",
+  NEEDS_REDO: "badge-brick",
 };
 
 export function isRecordingPartStatus(v: unknown): v is RecordingPartStatus {

@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import BandSwitcher, { type NavBand } from "./BandSwitcher";
+import { ThemeMenu, ThemeToggle } from "./ThemeMenu";
 
 interface NavProps {
   user: { name: string; email: string; role: string };
@@ -105,7 +106,7 @@ export default function Nav({
               href="/calendar"
               className="font-bold text-zinc-50 text-lg whitespace-nowrap shrink-0"
             >
-              🎸 Woodshed
+              Woodshed
             </Link>
 
             <div className="hidden lg:block">
@@ -131,7 +132,7 @@ export default function Nav({
                     <Icon size={16} />
                     {label}
                     {badge > 0 && (
-                      <span className="ml-0.5 min-w-4 px-1 h-4 inline-flex items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-zinc-950">
+                      <span className="ml-0.5 min-w-4 px-1 h-4 inline-flex items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-amber-950">
                         {badge}
                       </span>
                     )}
@@ -141,23 +142,9 @@ export default function Nav({
             </nav>
           </div>
 
-          {/* Desktop user + sign out */}
-          <div className="hidden lg:flex items-center gap-3 shrink-0">
-            <span className="text-sm text-zinc-400">
-              {user.name}
-              {roleChip && (
-                <span className="ml-1.5 text-xs bg-blue-600/20 text-blue-400 px-1.5 py-0.5 rounded font-medium">
-                  {roleChip}
-                </span>
-              )}
-            </span>
-            <button
-              onClick={() => signOut({ callbackUrl: "/login" })}
-              className="flex items-center gap-1.5 text-sm text-zinc-500 hover:text-zinc-200 transition-colors"
-            >
-              <LogOut size={16} />
-              Sign out
-            </button>
+          {/* Desktop account menu (appearance + sign out) */}
+          <div className="hidden lg:flex items-center shrink-0">
+            <ThemeMenu user={user} roleChip={roleChip} />
           </div>
 
           {/* Mobile menu trigger */}
@@ -235,7 +222,7 @@ export default function Nav({
                     <Icon size={18} />
                     <span className="flex-1">{label}</span>
                     {badge > 0 && (
-                      <span className="min-w-5 px-1.5 h-5 inline-flex items-center justify-center rounded-full bg-amber-500 text-[11px] font-bold text-zinc-950">
+                      <span className="min-w-5 px-1.5 h-5 inline-flex items-center justify-center rounded-full bg-amber-500 text-[11px] font-bold text-amber-950">
                         {badge}
                       </span>
                     )}
@@ -244,7 +231,13 @@ export default function Nav({
               })}
             </nav>
 
-            <div className="p-3 border-t border-zinc-800">
+            <div className="p-3 border-t border-zinc-800 space-y-3">
+              <div className="px-1">
+                <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
+                  Appearance
+                </div>
+                <ThemeToggle className="w-full" />
+              </div>
               <button
                 onClick={() => signOut({ callbackUrl: "/login" })}
                 className="flex items-center gap-3 w-full px-3 py-3 rounded-lg text-sm font-medium text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors"

@@ -2,8 +2,10 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { eachDayOfInterval, format, isValid, parseISO } from "date-fns";
 import { eventBasePath } from "@/lib/events";
+import CalendarExportLink from "@/components/CalendarExportLink";
 
 const inputClass =
   "w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent";
@@ -26,6 +28,9 @@ export default function BulkEventForm({
   const [country, setCountry] = useState("US");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [created, setCreated] = useState<{ count: number; ids: string[] } | null>(
+    null
+  );
 
   const isRecording = eventType === "RECORDING";
 
@@ -80,14 +85,68 @@ export default function BulkEventForm({
 
     setLoading(false);
 
+    const json = await res.json().catch(() => ({}));
+
     if (!res.ok) {
-      const json = await res.json().catch(() => ({}));
       setError(json.error || "Failed to create events");
       return;
     }
 
-    router.push(eventBasePath(eventType));
+    // Refresh the list route's data in the background, then show the recap
+    // (with a one-tap "add every date to your calendar" link).
     router.refresh();
+    setCreated({ count: json.count ?? selected.length, ids: json.ids ?? [] });
+  }
+
+  if (created) {
+    const noun = isRecording ? "session" : "show";
+    const listPath = eventBasePath(eventType);
+    return (
+      <div className="space-y-4">
+        <div className="rounded-lg bg-zinc-800/50 border border-zinc-800 px-4 py-3 text-sm text-zinc-300">
+          Created{" "}
+          <span className="font-medium text-zinc-100">{created.count}</span> {noun}
+          {created.count === 1 ? "" : "s"}. Venues are blank — fill them in on each
+          event.
+        </div>
+
+        {created.ids.length > 0 && (
+          <div>
+            <CalendarExportLink
+              variant="primary"
+              label={`Add all ${created.count} to calendar`}
+              href={`/api/shows/calendar.ics?ids=${created.ids.join(",")}`}
+            />
+            <p className="mt-1.5 text-xs text-zinc-600">
+              Downloads one .ics — adds every date at once in Apple Calendar, or
+              import it into Google Calendar.
+            </p>
+          </div>
+        )}
+
+        <div className="flex gap-3 pt-1">
+          <Link
+            href={listPath}
+            className="text-sm font-medium text-blue-400 hover:text-blue-300"
+          >
+            View {isRecording ? "recordings" : "shows"} →
+          </Link>
+          <button
+            type="button"
+            onClick={() => {
+              setCreated(null);
+              setName("");
+              setStart("");
+              setEnd("");
+              setSkipped(new Set());
+            }}
+            className="text-sm font-medium text-zinc-400 hover:text-zinc-200"
+          >
+            Add another batch
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (

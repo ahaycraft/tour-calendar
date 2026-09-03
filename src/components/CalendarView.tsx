@@ -34,18 +34,34 @@ interface UnavailableDate {
   user: { name: string };
 }
 
+// Muted, coordinated palette so the month view reads calm rather than neon.
+// Every fill is dark enough for white event text (all ≥ 4.5:1). Hue still
+// carries meaning: cool blue = pending, green = confirmed, clay = cancelled,
+// plum = recording, ochre = member unavailable.
 const statusColors: Record<string, string> = {
-  CONFIRMED: "#16a34a",
-  PENDING: "#2563eb",
-  CANCELLED: "#dc2626",
+  CONFIRMED: "#4d7c63", // muted moss
+  PENDING: "#5b6f99", // dusty denim
+  CANCELLED: "#a05a52", // faded brick
 };
 
-// Recording sessions render violet, except cancelled ones stay red.
+// Recording sessions render plum, except cancelled ones share the brick tone.
 const recordingColors: Record<string, string> = {
-  CONFIRMED: "#7c3aed",
-  PENDING: "#8b5cf6",
-  CANCELLED: "#dc2626",
+  CONFIRMED: "#63548a", // deep plum
+  PENDING: "#836c92", // dusty mauve
+  CANCELLED: "#a05a52",
 };
+
+// Member-unavailable marker (dot + note text, and the day-cell stripe defined
+// in globals.css — keep the two in sync).
+const UNAVAILABLE_COLOR = "#c2894a"; // warm ochre
+
+const legend = [
+  { label: "Pending", color: statusColors.PENDING },
+  { label: "Confirmed", color: statusColors.CONFIRMED },
+  { label: "Cancelled", color: statusColors.CANCELLED },
+  { label: "Recording session", color: recordingColors.PENDING },
+  { label: "Member unavailable", color: UNAVAILABLE_COLOR },
+];
 
 export default function CalendarView({ userId }: { userId: string }) {
   const router = useRouter();
@@ -94,7 +110,7 @@ export default function CalendarView({ userId }: { userId: string }) {
       title: u.note ? `${who} — ${u.note}` : `${who} unavailable`,
       date: u.date.split("T")[0],
       display: "list-item",
-      color: "#f97316",
+      color: UNAVAILABLE_COLOR,
       classNames: ["fc-unavailable-note"],
       extendedProps: { type: "unavailable" },
     };
@@ -182,21 +198,15 @@ export default function CalendarView({ userId }: { userId: string }) {
 
       <div className="bg-zinc-900 border-y border-zinc-800 py-4 px-0 -mx-4 sm:mx-0 sm:rounded-2xl sm:border-x sm:p-4">
         <div className="flex gap-x-4 gap-y-1.5 mb-4 px-4 sm:px-0 text-xs text-zinc-500 flex-wrap">
-          <span className="flex items-center gap-1.5">
-            <span className="inline-block w-3 h-3 rounded-full bg-blue-500" /> Pending
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="inline-block w-3 h-3 rounded-full bg-green-500" /> Confirmed
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="inline-block w-3 h-3 rounded-full bg-red-500" /> Cancelled
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="inline-block w-3 h-3 rounded-full bg-violet-500" /> Recording session
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="inline-block w-3 h-3 rounded-full bg-orange-500" /> Member unavailable
-          </span>
+          {legend.map(({ label, color }) => (
+            <span key={label} className="flex items-center gap-1.5">
+              <span
+                className="inline-block w-3 h-3 rounded-full"
+                style={{ backgroundColor: color }}
+              />
+              {label}
+            </span>
+          ))}
         </div>
 
         <div onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>

@@ -33,7 +33,7 @@ export default async function InvitePage({
   return (
     <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-zinc-900 rounded-2xl border border-zinc-800 p-8">
-        <h1 className="text-2xl font-bold text-zinc-50">🎸 Woodshed</h1>
+        <h1 className="text-2xl font-bold text-zinc-50">Woodshed</h1>
 
         {problem ? (
           <>

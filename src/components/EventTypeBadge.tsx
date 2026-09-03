@@ -1,8 +1,8 @@
 import { cn } from "@/lib/utils";
 
 const variants: Record<string, string> = {
-  SHOW: "bg-blue-500/15 text-blue-400",
-  RECORDING: "bg-violet-500/15 text-violet-400",
+  SHOW: "badge-denim",
+  RECORDING: "badge-mauve",
 };
 
 const labels: Record<string, string> = {

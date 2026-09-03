@@ -1,17 +1,143 @@
 @import "tailwindcss";
 
+/*
+ * Theming strategy
+ * ----------------
+ * The whole app is built with Tailwind's `zinc` scale used strictly as a
+ * dark-first ramp: high numbers (900/950) are surfaces, low numbers (50/100)
+ * are text. Rather than add `dark:` variants to ~650 utilities, we redefine
+ * the palette CSS variables per theme. In light mode the ramp is inverted to
+ * an Apple-style neutral grey set, and a few accent text shades are deepened
+ * so they keep contrast on white. Components need no changes.
+ *
+ * `data-theme` is set on <html> by the inline script in app/layout.tsx before
+ * first paint (default: dark).
+ */
+
 :root {
   --background: #09090b;
   --foreground: #fafafa;
-  /* The UI is dark-only; tell the browser so native controls
-     (date pickers, selects, scrollbars) render dark too. */
   color-scheme: dark;
+
+  /* Neutral ramp — dark (Tailwind's stock zinc values). */
+  --color-zinc-50: #fafafa;
+  --color-zinc-100: #f4f4f5;
+  --color-zinc-200: #e4e4e7;
+  --color-zinc-300: #d4d4d8;
+  --color-zinc-400: #a1a1aa;
+  --color-zinc-500: #71717a;
+  --color-zinc-600: #52525b;
+  --color-zinc-700: #3f3f46;
+  --color-zinc-800: #27272a;
+  --color-zinc-900: #18181b;
+  --color-zinc-950: #09090b;
+
+  /* Muted status-pill palette, matching the calendar event colors. The var is
+     used as both the text color and (at low alpha) the fill, so it's a light
+     tint here for dark cards and a deep tint under [data-theme="light"]. */
+  --badge-denim: #8ba2c9;
+  --badge-moss: #7bab8f;
+  --badge-brick: #cb9089;
+  --badge-mauve: #ac97be;
+  --badge-ochre: #cfa471;
+  --badge-teal: #79aead;
 }
 
-/* Make the date/time field's picker icon visible on dark inputs. */
+:root[data-theme="light"] {
+  --background: #f5f5f7;
+  --foreground: #1d1d1f;
+  color-scheme: light;
+
+  /* Neutral ramp — light. Inverted so existing utilities keep their meaning:
+     bg-zinc-900/950 -> near-white surfaces, text-zinc-100/50 -> near-black. */
+  --color-zinc-50: #1d1d1f;
+  --color-zinc-100: #1d1d1f;
+  --color-zinc-200: #2c2c2e;
+  --color-zinc-300: #3a3a3c;
+  --color-zinc-400: #6e6e73;
+  --color-zinc-500: #6e6e73;
+  --color-zinc-600: #86868b;
+  --color-zinc-700: #d2d2d7;
+  --color-zinc-800: #e2e2e7;
+  --color-zinc-900: #ffffff;
+  --color-zinc-950: #f5f5f7;
+
+  /* Accent text/icon shades are tuned for dark surfaces; deepen the light
+     ones (300/400, plus the few 500 text uses) to stay AA on white. Solid
+     -600 fills and -500 badge fills are intentionally left alone. */
+  --color-blue-300: #1d4ed8;
+  --color-blue-400: #1d4ed8;
+  --color-red-300: #b91c1c;
+  --color-red-400: #b91c1c;
+  --color-red-500: #b91c1c;
+  --color-green-400: #15803d;
+  --color-amber-400: #b45309;
+  --color-orange-500: #c2410c;
+
+  /* Deep tints for status pills on light cards. */
+  --badge-denim: #45587e;
+  --badge-moss: #3a6853;
+  --badge-brick: #8a4841;
+  --badge-mauve: #665780;
+  --badge-ochre: #8a6329;
+  --badge-teal: #37706c;
+}
+
+/* Status pills — see the badge components. `color-mix` gives a 16% wash of the
+   same colour for the fill. */
+.badge-denim {
+  color: var(--badge-denim);
+  background-color: color-mix(in srgb, var(--badge-denim) 16%, transparent);
+}
+.badge-moss {
+  color: var(--badge-moss);
+  background-color: color-mix(in srgb, var(--badge-moss) 16%, transparent);
+}
+.badge-brick {
+  color: var(--badge-brick);
+  background-color: color-mix(in srgb, var(--badge-brick) 16%, transparent);
+}
+.badge-mauve {
+  color: var(--badge-mauve);
+  background-color: color-mix(in srgb, var(--badge-mauve) 16%, transparent);
+}
+.badge-ochre {
+  color: var(--badge-ochre);
+  background-color: color-mix(in srgb, var(--badge-ochre) 16%, transparent);
+}
+.badge-teal {
+  color: var(--badge-teal);
+  background-color: color-mix(in srgb, var(--badge-teal) 16%, transparent);
+}
+
+/* Text-only variants, for inline status text (no pill). */
+.tone-denim {
+  color: var(--badge-denim);
+}
+.tone-moss {
+  color: var(--badge-moss);
+}
+.tone-brick {
+  color: var(--badge-brick);
+}
+.tone-mauve {
+  color: var(--badge-mauve);
+}
+.tone-ochre {
+  color: var(--badge-ochre);
+}
+.tone-teal {
+  color: var(--badge-teal);
+}
+
+/* Make the date/time picker icon visible on dark inputs only; light mode
+   gets the browser default dark glyph. */
+:root:not([data-theme="light"]) input[type="date"]::-webkit-calendar-picker-indicator,
+:root:not([data-theme="light"]) input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.7);
+}
 input[type="date"]::-webkit-calendar-picker-indicator,
 input[type="time"]::-webkit-calendar-picker-indicator {
-  filter: invert(0.7);
   cursor: pointer;
 }
 
@@ -28,28 +154,28 @@ body {
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
 
-/* FullCalendar dark overrides */
+/* FullCalendar — driven by the neutral ramp so it follows the theme. */
 .fc {
   font-family: inherit;
-  --fc-border-color: #27272a;
-  --fc-button-bg-color: #27272a;
-  --fc-button-border-color: #3f3f46;
-  --fc-button-hover-bg-color: #3f3f46;
-  --fc-button-hover-border-color: #52525b;
+  --fc-border-color: var(--color-zinc-800);
+  --fc-button-bg-color: var(--color-zinc-800);
+  --fc-button-border-color: var(--color-zinc-700);
+  --fc-button-hover-bg-color: var(--color-zinc-700);
+  --fc-button-hover-border-color: var(--color-zinc-600);
   --fc-button-active-bg-color: #3b82f6;
   --fc-button-active-border-color: #3b82f6;
-  --fc-button-text-color: #e4e4e7;
-  --fc-today-bg-color: rgba(59, 130, 246, 0.08);
-  --fc-neutral-bg-color: #18181b;
-  --fc-list-event-hover-bg-color: #27272a;
-  --fc-page-bg-color: #18181b;
-  --fc-neutral-text-color: #a1a1aa;
+  --fc-button-text-color: var(--color-zinc-200);
+  --fc-today-bg-color: color-mix(in srgb, #3b82f6 8%, transparent);
+  --fc-neutral-bg-color: var(--color-zinc-900);
+  --fc-list-event-hover-bg-color: var(--color-zinc-800);
+  --fc-page-bg-color: var(--color-zinc-900);
+  --fc-neutral-text-color: var(--color-zinc-400);
   --fc-event-text-color: #fff;
 }
 .fc .fc-col-header-cell-cushion,
 .fc .fc-daygrid-day-number,
 .fc .fc-toolbar-title {
-  color: #e4e4e7;
+  color: var(--color-zinc-200);
 }
 .fc .fc-toolbar-title {
   font-size: 1.25rem !important;
@@ -119,26 +245,26 @@ body {
   }
 }
 
-/* Leaflet dark theming */
+/* Leaflet — driven by the neutral ramp so it follows the theme. */
 .leaflet-container {
-  background: #18181b;
+  background: var(--color-zinc-900);
   font-family: inherit;
 }
 .leaflet-bar a,
 .leaflet-bar a:hover {
-  background: #27272a;
-  color: #e4e4e7;
-  border-bottom-color: #3f3f46;
+  background: var(--color-zinc-800);
+  color: var(--color-zinc-200);
+  border-bottom-color: var(--color-zinc-700);
 }
 .leaflet-bar a:hover {
-  background: #3f3f46;
+  background: var(--color-zinc-700);
 }
 .leaflet-control-attribution {
-  background: rgba(24, 24, 27, 0.8) !important;
-  color: #71717a !important;
+  background: color-mix(in srgb, var(--color-zinc-900) 80%, transparent) !important;
+  color: var(--color-zinc-500) !important;
 }
 .leaflet-control-attribution a {
-  color: #a1a1aa;
+  color: var(--color-zinc-400);
 }
 .fc-dayGridWeek-view .fc-daygrid-day-events {
   margin-bottom: 0.25rem;
@@ -148,23 +274,24 @@ body {
 }
 
 /* Days the current user has blocked off. Striped (not blacked out) so any
-   show on that day stays visible — the conflict is the point. */
+   show on that day stays visible — the conflict is the point.
+   The ochre here must match UNAVAILABLE_COLOR in CalendarView.tsx. */
 .fc-day-unavailable .fc-daygrid-day-frame {
   background-image: repeating-linear-gradient(
     -45deg,
-    rgba(249, 115, 22, 0.14) 0 6px,
+    rgba(194, 137, 74, 0.16) 0 6px,
     transparent 6px 12px
   );
 }
 .fc-day-unavailable .fc-daygrid-day-number {
-  color: #f97316;
+  color: #c2894a;
   font-weight: 700;
 }
 /* The unavailability note renders as a dot + text annotation, not a pill. */
 .fc-unavailable-note .fc-daygrid-event-dot {
-  border-color: #f97316;
+  border-color: #c2894a;
 }
 .fc-unavailable-note .fc-event-title {
-  color: #f97316;
+  color: #c2894a;
   font-weight: 600;
 }

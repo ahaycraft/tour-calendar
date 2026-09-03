@@ -55,7 +55,10 @@ export async function POST(request: NextRequest) {
       select: { id: true },
     });
 
-    return NextResponse.json({ count: created.length }, { status: 201 });
+    return NextResponse.json(
+      { count: created.length, ids: created.map((s) => s.id) },
+      { status: 201 }
+    );
   } catch {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }

@@ -25,12 +25,14 @@ export const releaseStatusLabel: Record<ReleaseStatus, string> = {
   RELEASED: "Released",
 };
 
+// Muted status palette shared with the calendar and show badges (see the
+// --badge-* tokens / .badge-* classes in globals.css).
 export const releaseStatusClass: Record<ReleaseStatus, string> = {
   PLANNING: "bg-zinc-700 text-zinc-300",
-  WRITING: "bg-blue-500/15 text-blue-400",
-  TRACKING: "bg-amber-500/15 text-amber-400",
-  MIXING: "bg-violet-500/15 text-violet-400",
-  RELEASED: "bg-green-500/15 text-green-400",
+  WRITING: "badge-denim",
+  TRACKING: "badge-ochre",
+  MIXING: "badge-mauve",
+  RELEASED: "badge-moss",
 };
 
 export function isReleaseKind(v: unknown): v is ReleaseKind {

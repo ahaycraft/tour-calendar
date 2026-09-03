@@ -18,13 +18,15 @@ export const songStatusLabel: Record<SongStatus, string> = {
   RELEASED: "Released",
 };
 
+// Muted status palette shared with the calendar and show badges (see the
+// --badge-* tokens / .badge-* classes in globals.css).
 export const songStatusClass: Record<SongStatus, string> = {
   IDEA: "bg-zinc-700 text-zinc-300",
-  WRITING: "bg-blue-500/15 text-blue-400",
-  DEMO: "bg-violet-500/15 text-violet-400",
-  READY_TO_TRACK: "bg-amber-500/15 text-amber-400",
-  TRACKED: "bg-green-500/15 text-green-400",
-  RELEASED: "bg-teal-500/15 text-teal-400",
+  WRITING: "badge-denim",
+  DEMO: "badge-mauve",
+  READY_TO_TRACK: "badge-ochre",
+  TRACKED: "badge-moss",
+  RELEASED: "badge-teal",
 };
 
 export function isSongStatus(v: unknown): v is SongStatus {

@@ -1,8 +1,8 @@
 import { cn } from "@/lib/utils";
 
 const variants: Record<string, string> = {
-  AVAILABLE: "bg-green-500/15 text-green-400",
-  UNAVAILABLE: "bg-red-500/15 text-red-400",
+  AVAILABLE: "badge-moss",
+  UNAVAILABLE: "badge-brick",
   PENDING: "bg-zinc-700 text-zinc-400",
 };
 

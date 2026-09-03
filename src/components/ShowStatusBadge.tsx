@@ -1,9 +1,9 @@
 import { cn } from "@/lib/utils";
 
 const variants: Record<string, string> = {
-  PENDING: "bg-blue-500/15 text-blue-400",
-  CONFIRMED: "bg-green-500/15 text-green-400",
-  CANCELLED: "bg-red-500/15 text-red-400",
+  PENDING: "badge-denim",
+  CONFIRMED: "badge-moss",
+  CANCELLED: "badge-brick",
 };
 
 const labels: Record<string, string> = {

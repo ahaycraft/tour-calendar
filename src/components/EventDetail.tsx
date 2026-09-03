@@ -9,7 +9,9 @@ import AvailabilityBadge from "@/components/AvailabilityBadge";
 import ShowAvailabilityControls from "@/components/ShowAvailabilityControls";
 import ShowStatusControls from "@/components/ShowStatusControls";
 import VenueMap from "@/components/VenueMap";
+import AddToCalendar from "@/components/AddToCalendar";
 import { geocodeVenue } from "@/lib/venues";
+import { googleCalendarUrl } from "@/lib/calendar";
 import { eventHref } from "@/lib/events";
 import { canManage, isBandMember } from "@/lib/band";
 import NeedsDetailsBadge, { needsDetails } from "@/components/NeedsDetailsBadge";
@@ -55,6 +57,10 @@ export default async function EventDetail({ id, expected }: Props) {
 
   const isRecording = show.type === "RECORDING";
 
+  const appUrl = process.env.AUTH_URL?.replace(/\/$/, "") ?? "";
+  const icsUrl = `/api/shows/${show.id}/event.ics`;
+  const googleUrl = googleCalendarUrl(show, appUrl);
+
   const savedCoords =
     show.venueLat != null && show.venueLng != null
       ? { lat: show.venueLat, lng: show.venueLng }
@@ -98,15 +104,18 @@ export default async function EventDetail({ id, expected }: Props) {
                   </Link>
                 )}
               </div>
-              {isAdminOrCreator && (
-                <Link
-                  href={`${eventHref(show.type, show.id)}/edit`}
-                  className="inline-flex items-center gap-1.5 shrink-0 px-3 py-1.5 text-sm rounded-lg border border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100 font-medium transition-colors"
-                >
-                  <Pencil size={14} />
-                  Edit
-                </Link>
-              )}
+              <div className="flex items-center gap-2 shrink-0">
+                <AddToCalendar googleUrl={googleUrl} icsUrl={icsUrl} />
+                {isAdminOrCreator && (
+                  <Link
+                    href={`${eventHref(show.type, show.id)}/edit`}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100 font-medium transition-colors"
+                  >
+                    <Pencil size={14} />
+                    Edit
+                  </Link>
+                )}
+              </div>
             </div>
 
             <div className="space-y-2 text-sm text-zinc-300">

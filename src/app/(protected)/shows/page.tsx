@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { requireActiveBandId } from "@/lib/band";
 import Link from "next/link";
 import EventList from "@/components/EventList";
+import CalendarExportLink from "@/components/CalendarExportLink";
+import { isUpcomingEvent } from "@/lib/events";
 
 export default async function ShowsPage() {
   const session = await auth();
@@ -19,16 +21,23 @@ export default async function ShowsPage() {
     },
   });
 
+  const hasUpcoming = shows.some(isUpcomingEvent);
+
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between gap-3 mb-6">
         <h1 className="text-2xl font-bold text-zinc-50">Shows</h1>
-        <Link
-          href="/shows/new"
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-500 transition-colors text-sm"
-        >
-          + Add Show
-        </Link>
+        <div className="flex items-center gap-2 shrink-0">
+          {hasUpcoming && (
+            <CalendarExportLink href="/api/shows/calendar.ics?scope=upcoming&type=SHOW" />
+          )}
+          <Link
+            href="/shows/new"
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-500 transition-colors text-sm"
+          >
+            + Add Show
+          </Link>
+        </div>
       </div>
 
       <EventList

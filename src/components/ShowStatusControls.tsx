@@ -64,7 +64,7 @@ export default function ShowStatusControls({
         </p>
         <p
           className={`text-xs font-medium ${
-            everyoneAvailable ? "text-green-400" : "text-amber-400"
+            everyoneAvailable ? "tone-moss" : "tone-ochre"
           }`}
         >
           {availableCount} of {memberCount} available
@@ -75,7 +75,7 @@ export default function ShowStatusControls({
           <button
             onClick={() => onStatusClick("CONFIRMED")}
             disabled={loading}
-            className="px-3 py-1.5 text-sm rounded-lg bg-green-500/15 text-green-400 hover:bg-green-500/25 font-medium transition-colors disabled:opacity-50"
+            className="px-3 py-1.5 text-sm rounded-lg badge-moss hover:opacity-80 font-medium transition-opacity disabled:opacity-50"
           >
             Confirm {Noun}
           </button>
@@ -84,7 +84,7 @@ export default function ShowStatusControls({
           <button
             onClick={() => onStatusClick("PENDING")}
             disabled={loading}
-            className="px-3 py-1.5 text-sm rounded-lg bg-blue-500/15 text-blue-400 hover:bg-blue-500/25 font-medium transition-colors disabled:opacity-50"
+            className="px-3 py-1.5 text-sm rounded-lg badge-denim hover:opacity-80 font-medium transition-opacity disabled:opacity-50"
           >
             Mark Pending
           </button>
@@ -93,7 +93,7 @@ export default function ShowStatusControls({
           <button
             onClick={() => onStatusClick("CANCELLED")}
             disabled={loading}
-            className="px-3 py-1.5 text-sm rounded-lg bg-red-500/15 text-red-400 hover:bg-red-500/25 font-medium transition-colors disabled:opacity-50"
+            className="px-3 py-1.5 text-sm rounded-lg badge-brick hover:opacity-80 font-medium transition-opacity disabled:opacity-50"
           >
             Cancel {Noun}
           </button>

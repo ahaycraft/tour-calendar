@@ -18,7 +18,7 @@ export function locationLine(event: {
 
 export default function NeedsDetailsBadge() {
   return (
-    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400">
+    <span className="text-xs font-medium px-2 py-0.5 rounded-full badge-ochre">
       Needs details
     </span>
   );
