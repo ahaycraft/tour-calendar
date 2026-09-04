@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { format } from "date-fns";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { canManage, isBandMember } from "@/lib/band";
+import { sendPushToUsers } from "@/lib/push";
+import { eventHref } from "@/lib/events";
 
 export async function GET(
   _request: NextRequest,
@@ -127,6 +130,23 @@ export async function PATCH(
         },
       });
     });
+
+    // A moved date wipes everyone's answer, so the band needs to re-respond.
+    if (dateChanged) {
+      const members = await prisma.bandMembership.findMany({
+        where: { bandId: existing.bandId, userId: { not: session.user.id } },
+        select: { userId: true },
+      });
+      void sendPushToUsers(
+        members.map((m) => m.userId),
+        {
+          title: `${show.title} moved to ${format(show.date, "EEE, MMM d")}`,
+          body: "Your availability was reset — tap to respond again.",
+          url: eventHref(show.type, show.id),
+          tag: `show:${show.id}`,
+        }
+      );
+    }
 
     return NextResponse.json({
       ...show,

@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { requireActiveBandId } from "@/lib/band";
 import MyAvailabilityManager from "@/components/MyAvailabilityManager";
+import PushToggle from "@/components/PushToggle";
 
 export default async function MyAvailabilityPage() {
   const session = await auth();
@@ -29,6 +30,10 @@ export default async function MyAvailabilityPage() {
       <p className="text-zinc-500 text-sm mb-6">
         Manage days you can&apos;t play and your response to upcoming shows.
       </p>
+
+      <div className="mb-6">
+        <PushToggle />
+      </div>
 
       <MyAvailabilityManager
         initialUnavailableDates={unavailableDates.map((u) => ({
