@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getActiveBandId } from "@/lib/band";
-import { sendPushToUsers } from "@/lib/push";
+import { notifyBandMembers } from "@/lib/push";
 import { eventHref } from "@/lib/events";
 
 export async function GET() {
@@ -93,19 +93,12 @@ export async function POST(request: NextRequest) {
 
     // Notify the rest of the band. The app treats a missing/PENDING availability
     // row as "owes a response", so this doubles as the pending-availability alert.
-    const members = await prisma.bandMembership.findMany({
-      where: { bandId, userId: { not: session.user.id } },
-      select: { userId: true },
+    void notifyBandMembers(bandId, session.user.id, {
+      title: `New ${effectiveType === "RECORDING" ? "recording" : "show"}: ${show.title}`,
+      body: "Tap to set your availability.",
+      url: eventHref(effectiveType, show.id),
+      tag: `show:${show.id}`,
     });
-    void sendPushToUsers(
-      members.map((m) => m.userId),
-      {
-        title: `New ${effectiveType === "RECORDING" ? "recording" : "show"}: ${show.title}`,
-        body: "Tap to set your availability.",
-        url: eventHref(effectiveType, show.id),
-        tag: `show:${show.id}`,
-      }
-    );
 
     return NextResponse.json(show, { status: 201 });
   } catch {

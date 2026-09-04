@@ -77,3 +77,26 @@ export async function sendPushToUsers(
     })
   );
 }
+
+/**
+ * Notify every member of a band except `exceptUserId` — normally the person who
+ * made the change, who doesn't need to be told about their own action. Same
+ * best-effort, fire-and-forget contract as `sendPushToUsers`.
+ */
+export async function notifyBandMembers(
+  bandId: string,
+  exceptUserId: string,
+  payload: PushPayload
+): Promise<void> {
+  if (!configured) return;
+
+  const members = await prisma.bandMembership.findMany({
+    where: { bandId, userId: { not: exceptUserId } },
+    select: { userId: true },
+  });
+
+  await sendPushToUsers(
+    members.map((m) => m.userId),
+    payload
+  );
+}

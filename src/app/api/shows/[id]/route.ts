@@ -3,7 +3,7 @@ import { format } from "date-fns";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { canManage, isBandMember } from "@/lib/band";
-import { sendPushToUsers } from "@/lib/push";
+import { notifyBandMembers } from "@/lib/push";
 import { eventHref } from "@/lib/events";
 
 export async function GET(
@@ -132,20 +132,26 @@ export async function PATCH(
     });
 
     // A moved date wipes everyone's answer, so the band needs to re-respond.
+    // Otherwise, a fresh drop back to PENDING (an admin un-confirming, or
+    // reinstating a cancelled event) is worth a heads-up on its own. The move
+    // notification already implies re-confirmation, so the two are exclusive.
+    const becamePending =
+      show.status === "PENDING" && existing.status !== "PENDING";
+
     if (dateChanged) {
-      const members = await prisma.bandMembership.findMany({
-        where: { bandId: existing.bandId, userId: { not: session.user.id } },
-        select: { userId: true },
+      void notifyBandMembers(existing.bandId, session.user.id, {
+        title: `${show.title} moved to ${format(show.date, "EEE, MMM d")}`,
+        body: "Your availability was reset — tap to respond again.",
+        url: eventHref(show.type, show.id),
+        tag: `show:${show.id}`,
       });
-      void sendPushToUsers(
-        members.map((m) => m.userId),
-        {
-          title: `${show.title} moved to ${format(show.date, "EEE, MMM d")}`,
-          body: "Your availability was reset — tap to respond again.",
-          url: eventHref(show.type, show.id),
-          tag: `show:${show.id}`,
-        }
-      );
+    } else if (becamePending) {
+      void notifyBandMembers(existing.bandId, session.user.id, {
+        title: `${show.title} set to pending`,
+        body: `${format(show.date, "EEE, MMM d")} — waiting on the band to confirm.`,
+        url: eventHref(show.type, show.id),
+        tag: `show:${show.id}`,
+      });
     }
 
     return NextResponse.json({
@@ -176,5 +182,16 @@ export async function DELETE(
   }
 
   await prisma.show.delete({ where: { id } });
+
+  // Tell the band the event is gone. There's no detail page left to link to,
+  // so this points at the calendar; the shared `show:<id>` tag lets it
+  // supersede any earlier notification for this event.
+  void notifyBandMembers(show.bandId, session.user.id, {
+    title: `${show.type === "RECORDING" ? "Recording" : "Show"} deleted: ${show.title}`,
+    body: `${format(show.date, "EEE, MMM d")} is off the calendar.`,
+    url: "/calendar",
+    tag: `show:${show.id}`,
+  });
+
   return NextResponse.json({ success: true });
 }
