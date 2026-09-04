@@ -206,7 +206,7 @@ export default function MyAvailabilityManager({
           <ul className="space-y-3">
             {upcomingFiltered.map((show) => (
               <SwipeableShowRow
-                key={show.id}
+                key={`${show.id}:${show.myStatus}`}
                 show={show}
                 onRespond={handleRespond}
               />

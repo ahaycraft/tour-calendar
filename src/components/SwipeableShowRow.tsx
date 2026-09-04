@@ -35,6 +35,10 @@ export default function SwipeableShowRow({
   const [animating, setAnimating] = useState(false);
   const committedRef = useRef(false);
 
+  // This component keeps transient gesture state (offset, the committed latch)
+  // that must not outlive a status change. The parent gives us a `key` that
+  // includes `myStatus`, so an Undo — or a committed swipe landing — remounts
+  // us fresh at rest rather than leaving a row stuck off-screen and unslidable.
   const answered = show.myStatus !== "PENDING";
 
   function commit(dir: "Left" | "Right") {
