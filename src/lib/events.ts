@@ -22,3 +22,8 @@ export function eventBasePath(type: string): "/shows" | "/recordings" {
 export function eventHref(type: string, id: string): string {
   return `${eventBasePath(type)}/${id}`;
 }
+
+/** Edit page for a whole tour / recording block, keyed by its shared group id. */
+export function tourEditHref(type: string, tourGroupId: string): string {
+  return `${eventBasePath(type)}/tour/${tourGroupId}/edit`;
+}

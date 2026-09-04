@@ -5,7 +5,7 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { ChevronLeft } from "lucide-react";
 import EventForm, { type EventFormValues } from "@/components/EventForm";
-import { eventHref } from "@/lib/events";
+import { eventHref, tourEditHref } from "@/lib/events";
 import { canManage, isBandMember } from "@/lib/band";
 
 interface Props {
@@ -65,6 +65,22 @@ export default async function EventEdit({ id, expected }: Props) {
       <h1 className="text-2xl font-bold text-zinc-50 mb-6">
         Edit {isRecording ? "Recording Session" : "Show"}
       </h1>
+
+      {show.tourGroupId && (
+        <div className="mb-4 rounded-lg bg-zinc-800/50 border border-zinc-800 px-4 py-3 text-sm text-zinc-400">
+          One day of the{" "}
+          <span className="font-medium text-zinc-200">
+            {show.tourName ?? "tour"}
+          </span>{" "}
+          {isRecording ? "recording block" : "tour"}.{" "}
+          <Link
+            href={tourEditHref(show.type, show.tourGroupId)}
+            className="font-medium text-blue-400 hover:text-blue-300"
+          >
+            Edit every day at once →
+          </Link>
+        </div>
+      )}
 
       <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-6">
         <EventForm event={values} releases={releases} />

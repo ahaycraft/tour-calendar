@@ -121,6 +121,13 @@ model Show {
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 
+  // Set when the event was created as one day of a multi-day tour / recording
+  // block (POST /api/shows/bulk). Every day in that block shares the same
+  // tourGroupId, and tourName is the block's label ("Fall Tour"), kept so the
+  // block can be edited as a unit (PATCH /api/shows/bulk).
+  tourGroupId  String?
+  tourName     String?
+
   createdBy    User               @relation("ShowCreator", fields: [createdById], references: [id])
   availability ShowAvailability[]
   band         Band               @relation(fields: [bandId], references: [id], onDelete: Cascade)
@@ -133,6 +140,7 @@ model Show {
 
   @@index([bandId])
   @@index([releaseId])
+  @@index([tourGroupId])
 }
 
 enum EventType {
