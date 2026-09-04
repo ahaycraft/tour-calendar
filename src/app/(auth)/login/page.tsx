@@ -3,7 +3,6 @@
 import { Suspense, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
 
 function LoginForm() {
   const router = useRouter();
@@ -85,12 +84,9 @@ function LoginForm() {
             </button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-zinc-500">
-            Don&apos;t have an account?{" "}
-            <Link href="/register" className="text-blue-400 hover:text-blue-300 hover:underline font-medium">
-              Register
-            </Link>
-          </p>
+          {/* Self-serve registration is hidden pre-launch — the band joins by
+              invite (/invite/[token] → /register?invite=…). Restore this link to
+              reopen open sign-up. */}
         </div>
       </div>
     </div>
