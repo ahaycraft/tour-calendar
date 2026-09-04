@@ -91,8 +91,8 @@ export default async function EventDetail({ id, expected }: Props) {
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] items-start">
         <div className="space-y-6">
           <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-6">
-            <div className="flex items-start justify-between gap-4 mb-4">
-              <div>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4 mb-4">
+              <div className="min-w-0">
                 <div className="flex items-center gap-2 flex-wrap mb-1">
                   <h1 className="text-2xl font-bold text-zinc-50">{show.title}</h1>
                   {show.type !== "SHOW" && <EventTypeBadge type={show.type} />}
@@ -110,7 +110,7 @@ export default async function EventDetail({ id, expected }: Props) {
                   </Link>
                 )}
               </div>
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="flex flex-wrap items-center gap-2 shrink-0">
                 <AddToCalendar googleUrl={googleUrl} icsUrl={icsUrl} />
                 {isAdminOrCreator && (
                   <Link

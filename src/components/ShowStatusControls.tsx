@@ -104,7 +104,7 @@ export default function ShowStatusControls({
         <button
           onClick={() => setPending("delete")}
           disabled={loading}
-          className="px-3 py-1.5 text-sm rounded-lg border border-red-900 text-red-400 hover:bg-red-900/30 font-medium transition-colors disabled:opacity-50 ml-auto"
+          className="px-3 py-1.5 text-sm rounded-lg border border-zinc-700 text-zinc-400 hover:bg-zinc-800 hover:text-red-400 font-medium transition-colors disabled:opacity-50 sm:ml-auto"
         >
           Delete
         </button>
