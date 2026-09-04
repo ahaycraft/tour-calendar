@@ -1,12 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { format, startOfDay } from "date-fns";
-import AvailabilityBadge from "./AvailabilityBadge";
-import Link from "next/link";
 import { Trash2 } from "lucide-react";
-import { eventHref } from "@/lib/events";
-import { locationLine } from "./NeedsDetailsBadge";
+import SwipeableShowRow from "./SwipeableShowRow";
+import { revalidateShell } from "@/app/(protected)/actions";
 
 interface UnavailableDate {
   id: string;
@@ -30,14 +28,72 @@ interface Props {
   upcomingShows: UpcomingShow[];
 }
 
+interface UndoState {
+  showId: string;
+  prevStatus: string;
+  label: string;
+}
+
 export default function MyAvailabilityManager({
   initialUnavailableDates,
   upcomingShows,
 }: Props) {
   const [unavailableDates, setUnavailableDates] = useState(initialUnavailableDates);
+  const [shows, setShows] = useState(upcomingShows);
+  const [undo, setUndo] = useState<UndoState | null>(null);
+  const undoTimer = useRef<number | null>(null);
   const [newDate, setNewDate] = useState("");
   const [newNote, setNewNote] = useState("");
   const [adding, setAdding] = useState(false);
+
+  async function persistStatus(showId: string, status: string): Promise<boolean> {
+    const res = await fetch(`/api/shows/${showId}/availability`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+    // Keep the nav's "needs response" count in sync.
+    await revalidateShell();
+    return res.ok;
+  }
+
+  function setStatusLocal(showId: string, status: string) {
+    setShows((prev) =>
+      prev.map((s) => (s.id === showId ? { ...s, myStatus: status } : s))
+    );
+  }
+
+  async function handleRespond(
+    showId: string,
+    status: "AVAILABLE" | "UNAVAILABLE"
+  ) {
+    const prevStatus =
+      shows.find((s) => s.id === showId)?.myStatus ?? "PENDING";
+    setStatusLocal(showId, status);
+
+    if (undoTimer.current) window.clearTimeout(undoTimer.current);
+    setUndo({
+      showId,
+      prevStatus,
+      label: status === "AVAILABLE" ? "Marked available" : "Marked unavailable",
+    });
+    undoTimer.current = window.setTimeout(() => setUndo(null), 6000);
+
+    const ok = await persistStatus(showId, status);
+    if (!ok) {
+      setStatusLocal(showId, prevStatus);
+      setUndo(null);
+    }
+  }
+
+  async function handleUndo() {
+    if (!undo) return;
+    const { showId, prevStatus } = undo;
+    if (undoTimer.current) window.clearTimeout(undoTimer.current);
+    setUndo(null);
+    setStatusLocal(showId, prevStatus);
+    await persistStatus(showId, prevStatus);
+  }
 
   async function addDate(e: React.FormEvent) {
     e.preventDefault();
@@ -73,7 +129,7 @@ export default function MyAvailabilityManager({
   }
 
   const today = startOfDay(new Date());
-  const upcomingFiltered = upcomingShows.filter(
+  const upcomingFiltered = shows.filter(
     (s) => startOfDay(new Date(s.date)) >= today
   );
 
@@ -138,32 +194,43 @@ export default function MyAvailabilityManager({
 
       {/* Upcoming Shows */}
       <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-6">
-        <h2 className="font-semibold text-zinc-100 mb-4">Upcoming Shows — My Responses</h2>
+        <h2 className="font-semibold text-zinc-100 mb-1">Upcoming Shows — My Responses</h2>
+        <p className="text-xs text-zinc-500 mb-4">
+          Slide a show right if you&apos;re available, left if you&apos;re not.
+          Tap to open it.
+        </p>
 
         {upcomingFiltered.length === 0 ? (
           <p className="text-sm text-zinc-500">No upcoming shows yet.</p>
         ) : (
           <ul className="space-y-3">
             {upcomingFiltered.map((show) => (
-              <li key={show.id}>
-                <Link
-                  href={eventHref(show.type, show.id)}
-                  className="flex items-center justify-between gap-3 p-3 rounded-xl border border-zinc-800 hover:border-zinc-700 hover:bg-zinc-800/60 transition-all"
-                >
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-zinc-200">{show.title}</p>
-                    <p className="text-xs text-zinc-500">
-                      {locationLine(show)} ·{" "}
-                      {format(new Date(show.date), "MMM d, yyyy")}
-                    </p>
-                  </div>
-                  <AvailabilityBadge status={show.myStatus} className="shrink-0" />
-                </Link>
-              </li>
+              <SwipeableShowRow
+                key={show.id}
+                show={show}
+                onRespond={handleRespond}
+              />
             ))}
           </ul>
         )}
       </div>
+
+      {undo && (
+        <div
+          className="fixed inset-x-0 z-50 flex justify-center px-4 pointer-events-none"
+          style={{ bottom: "calc(1rem + env(safe-area-inset-bottom))" }}
+        >
+          <div className="pointer-events-auto flex items-center gap-3 rounded-full border border-zinc-700 bg-zinc-900 px-4 py-2 shadow-xl">
+            <span className="text-sm text-zinc-200">{undo.label}</span>
+            <button
+              onClick={handleUndo}
+              className="text-sm font-semibold text-blue-400 hover:text-blue-300"
+            >
+              Undo
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
