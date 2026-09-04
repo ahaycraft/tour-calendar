@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
 import { Geist, Geist_Mono } from "next/font/google";
+import { appleSplashScreens } from "@/lib/apple-splash-screens";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -20,6 +21,7 @@ export const metadata: Metadata = {
     capable: true,
     title: "Woodshed",
     statusBarStyle: "black-translucent",
+    startupImage: appleSplashScreens,
   },
 };
 
