@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getActiveBandId } from "@/lib/band";
+import { notifyBandMembers } from "@/lib/push";
 
 const MAX_EVENTS = 90;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -40,6 +41,8 @@ export async function POST(request: NextRequest) {
     const sorted = [...new Set(dates as string[])].sort();
     const label = name.trim();
 
+    const isRecording = (type ?? "SHOW") === "RECORDING";
+
     const created = await prisma.show.createManyAndReturn({
       data: sorted.map((d, i) => ({
         bandId,
@@ -53,6 +56,16 @@ export async function POST(request: NextRequest) {
         createdById: session.user.id,
       })),
       select: { id: true },
+    });
+
+    // One summary push for the whole batch — a per-day notification would be a
+    // storm of up to MAX_EVENTS. The tour:<id> tag keys off the first day so a
+    // later block-wide change can supersede it.
+    void notifyBandMembers(bandId, session.user.id, {
+      title: `New ${isRecording ? "recording block" : "tour"}: ${label}`,
+      body: `${created.length} ${created.length === 1 ? "day" : "days"} added — tap to set your availability.`,
+      url: "/calendar",
+      tag: `tour:${created[0].id}`,
     });
 
     return NextResponse.json(
