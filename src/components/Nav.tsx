@@ -17,13 +17,14 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import BandSwitcher, { type NavBand } from "./BandSwitcher";
-import { ThemeMenu, ThemeToggle } from "./ThemeMenu";
+import { ThemeMenu, ThemeToggle, type Theme } from "./ThemeMenu";
 
 interface NavProps {
   user: { name: string; email: string; role: string };
   bands: NavBand[];
   activeBandId: string;
   needsResponseCount?: number;
+  theme: Theme;
 }
 
 const links = [
@@ -40,6 +41,7 @@ export default function Nav({
   bands,
   activeBandId,
   needsResponseCount = 0,
+  theme,
 }: NavProps) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -144,7 +146,7 @@ export default function Nav({
 
           {/* Desktop account menu (appearance + sign out) */}
           <div className="hidden lg:flex items-center shrink-0">
-            <ThemeMenu user={user} roleChip={roleChip} />
+            <ThemeMenu user={user} roleChip={roleChip} initialTheme={theme} />
           </div>
 
           {/* Mobile menu trigger */}
@@ -236,7 +238,7 @@ export default function Nav({
                 <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
                   Appearance
                 </div>
-                <ThemeToggle className="w-full" />
+                <ThemeToggle className="w-full" initialTheme={theme} />
               </div>
               <button
                 onClick={() => signOut({ callbackUrl: "/login" })}
