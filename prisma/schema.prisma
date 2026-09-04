@@ -37,6 +37,7 @@ model User {
   sentInvites      BandInvite[]           @relation("InviteSender")
   accounts         Account[]
   sessions         Session[]
+  pushSubscriptions PushSubscription[]
 }
 
 enum Role {
@@ -204,6 +205,24 @@ model Session {
   expires      DateTime
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// One Web Push subscription = one browser on one device that opted in. A member
+// with a phone and a laptop has two rows. `endpoint` is the push service URL the
+// server POSTs to; `p256dh`/`auth` are the client's encryption keys. Rows are
+// pruned in src/lib/push.ts when the push service reports them gone (404/410).
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model VerificationToken {
