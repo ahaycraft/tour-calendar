@@ -155,48 +155,6 @@ body {
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
 
-/* App launch splash
- * ----------------
- * iOS shows a native PWA launch image only while the page is still loading, and
- * a modern manifest install uses a system-generated screen that flashes past
- * too fast to read (and Chrome on iOS shows none at all). This overlay is under
- * our control: it is server-rendered into the initial HTML so it paints with
- * the first frame, then a one-shot CSS animation fades it out. `--background`
- * follows the resolved theme, matching the manifest background_color in dark.
- * The inline script in layout.tsx adds `.no-splash` to <html> before this
- * paints when the app is NOT running as an installed/standalone PWA, so
- * browser-tab visitors never see it; SplashScreen.tsx then drops the node. */
-#app-splash {
-  position: fixed;
-  inset: 0;
-  z-index: 2147483647;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--background);
-  animation: app-splash-fade 350ms ease 600ms forwards;
-}
-#app-splash .app-splash-mark {
-  width: 112px;
-  height: 112px;
-  background: url("/icon-512.png?v=2") center / contain no-repeat;
-}
-:root.no-splash #app-splash {
-  display: none;
-}
-@keyframes app-splash-fade {
-  to {
-    opacity: 0;
-    visibility: hidden;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  #app-splash {
-    animation-delay: 500ms;
-    animation-duration: 1ms;
-  }
-}
-
 /* FullCalendar — driven by the neutral ramp so it follows the theme. */
 .fc {
   font-family: inherit;
