@@ -70,8 +70,12 @@ export default function SwipeableShowRow({
       }
     },
     trackMouse: false,
-    preventScrollOnSwipe: true,
-    delta: 12,
+    // Deliberately NOT setting preventScrollOnSwipe: it attaches a non-passive
+    // touchmove listener and calls preventDefault() for the whole gesture once
+    // tracking starts — vertical ones included — which freezes list scrolling
+    // on iOS. The `touch-pan-y` class on the <li> lets the browser own vertical
+    // scroll while still handing us the horizontal delta for the slide.
+    delta: 15,
   });
 
   const rowInner = (

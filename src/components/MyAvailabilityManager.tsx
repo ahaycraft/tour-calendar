@@ -220,8 +220,8 @@ export default function MyAvailabilityManager({
           className="fixed inset-x-0 z-50 flex justify-center px-4 pointer-events-none"
           style={{ bottom: "calc(1rem + env(safe-area-inset-bottom))" }}
         >
-          <div className="pointer-events-auto flex items-center gap-3 rounded-full border border-zinc-700 bg-zinc-900 px-4 py-2 shadow-xl">
-            <span className="text-sm text-zinc-200">{undo.label}</span>
+          <div className="pointer-events-auto flex items-center gap-3 rounded-full bg-black px-4 py-2 shadow-xl">
+            <span className="text-sm text-white">{undo.label}</span>
             <button
               onClick={handleUndo}
               className="text-sm font-semibold text-blue-400 hover:text-blue-300"
