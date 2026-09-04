@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { cookies } from "next/headers";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -29,24 +30,22 @@ export const viewport: Viewport = {
   ],
 };
 
-// Applies the saved theme to <html> before first paint so there's no flash.
-// The app is dark by default; only an explicit "light"/"dark" choice overrides.
-const themeScript = `(function(){try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}})()`;
+// The appearance choice lives in the `theme` cookie so it can be read here, on
+// the server, and rendered into <html data-theme> directly — no pre-paint
+// script, no flash, no hydration mismatch to suppress. ThemeMenu writes the
+// cookie (and updates <html> in place) when the user picks. The app is dark by
+// default; only an explicit "light" overrides.
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const theme =
+    (await cookies()).get("theme")?.value === "light" ? "light" : "dark";
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      data-theme="dark"
-      suppressHydrationWarning
+      data-theme={theme}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
-      </head>
-      <body className="min-h-full flex flex-col" suppressHydrationWarning>
-        {children}
-      </body>
+      <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
 }

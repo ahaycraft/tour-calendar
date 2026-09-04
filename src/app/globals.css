@@ -10,8 +10,9 @@
  * an Apple-style neutral grey set, and a few accent text shades are deepened
  * so they keep contrast on white. Components need no changes.
  *
- * `data-theme` is set on <html> by the inline script in app/layout.tsx before
- * first paint (default: dark).
+ * `data-theme` is rendered onto <html> by app/layout.tsx, which reads the
+ * `theme` cookie on the server (default: dark). ThemeMenu updates the cookie
+ * and the attribute when the user switches.
  */
 
 :root {

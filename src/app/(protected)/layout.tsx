@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { startOfDay } from "date-fns";
 import { auth } from "@/auth";
@@ -15,6 +16,9 @@ export default async function ProtectedLayout({
 
   const activeBand = await getActiveBand(session);
   if (!activeBand) redirect("/bands/new");
+
+  const theme =
+    (await cookies()).get("theme")?.value === "light" ? "light" : "dark";
 
   // Upcoming, non-cancelled events in the active band that the current user
   // still owes a response on. (Whether an admin has confirmed the show is a
@@ -42,6 +46,7 @@ export default async function ProtectedLayout({
         bands={userBands(session)}
         activeBandId={activeBand.id}
         needsResponseCount={needsResponseCount}
+        theme={theme}
       />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">{children}</main>
     </div>

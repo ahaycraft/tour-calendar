@@ -11,51 +11,47 @@ import { signOut } from "next-auth/react";
 import { ChevronDown, LogOut, Moon, Sun } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type Theme = "light" | "dark";
+export type Theme = "light" | "dark";
 
-const STORAGE_KEY = "theme";
-
-function readTheme(): Theme {
-  if (typeof window === "undefined") return "dark";
-  try {
-    return localStorage.getItem(STORAGE_KEY) === "light" ? "light" : "dark";
-  } catch {
-    return "dark";
-  }
-}
+const COOKIE_KEY = "theme";
+const ONE_YEAR = 60 * 60 * 24 * 365;
 
 function applyTheme(theme: Theme) {
   document.documentElement.setAttribute("data-theme", theme);
 }
 
 /**
- * Reads/writes the persisted light|dark choice and keeps <html data-theme> in
- * sync. The inline script in app/layout.tsx applies the stored value before
- * first paint; this hook owns it from hydration onward (and re-applies it after
- * React's dev-only Strict Mode remount clears attributes it doesn't manage).
+ * Owns the light|dark choice from hydration onward. The initial value is passed
+ * in from the server, which read the `theme` cookie and rendered it into
+ * <html data-theme>, so there's nothing to reconcile on hydration. On change
+ * this writes the cookie (so the next server render matches), updates <html> in
+ * place, and broadcasts to other open tabs. It also re-asserts <html data-theme>
+ * after React's dev-only Strict Mode remount.
  */
-function useTheme(): [Theme, (next: Theme) => void] {
-  const [theme, setThemeState] = useState<Theme>(readTheme);
+function useTheme(initial: Theme): [Theme, (next: Theme) => void] {
+  const [theme, setThemeState] = useState<Theme>(initial);
 
   useLayoutEffect(() => {
     applyTheme(theme);
   }, [theme]);
 
   useEffect(() => {
-    function onStorage(e: StorageEvent) {
-      if (e.key === STORAGE_KEY) setThemeState(readTheme());
-    }
-    window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
+    if (typeof BroadcastChannel === "undefined") return;
+    const channel = new BroadcastChannel(COOKIE_KEY);
+    channel.onmessage = (e) => {
+      if (e.data === "light" || e.data === "dark") setThemeState(e.data);
+    };
+    return () => channel.close();
   }, []);
 
   const setTheme = useCallback((next: Theme) => {
     setThemeState(next);
     applyTheme(next);
-    try {
-      localStorage.setItem(STORAGE_KEY, next);
-    } catch {
-      /* private mode / storage disabled — the in-memory choice still applies */
+    document.cookie = `${COOKIE_KEY}=${next}; path=/; max-age=${ONE_YEAR}; samesite=lax`;
+    if (typeof BroadcastChannel !== "undefined") {
+      const channel = new BroadcastChannel(COOKIE_KEY);
+      channel.postMessage(next);
+      channel.close();
     }
   }, []);
 
@@ -68,8 +64,14 @@ const OPTIONS: { value: Theme; label: string; icon: typeof Sun }[] = [
 ];
 
 /** Segmented Light / Dark control. Used in the desktop menu and mobile drawer. */
-export function ThemeToggle({ className }: { className?: string }) {
-  const [theme, setTheme] = useTheme();
+export function ThemeToggle({
+  className,
+  initialTheme,
+}: {
+  className?: string;
+  initialTheme: Theme;
+}) {
+  const [theme, setTheme] = useTheme(initialTheme);
 
   return (
     <div
@@ -112,9 +114,11 @@ export function ThemeToggle({ className }: { className?: string }) {
 export function ThemeMenu({
   user,
   roleChip,
+  initialTheme,
 }: {
   user: { name: string };
   roleChip: string | null;
+  initialTheme: Theme;
 }) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -169,7 +173,7 @@ export function ThemeMenu({
             Appearance
           </div>
           <div className="px-3 pb-1.5">
-            <ThemeToggle className="w-full" />
+            <ThemeToggle className="w-full" initialTheme={initialTheme} />
           </div>
           <div className="my-1 border-t border-zinc-800" />
           <button
