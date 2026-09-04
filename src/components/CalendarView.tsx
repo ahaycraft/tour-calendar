@@ -8,11 +8,11 @@ import { useRouter } from "next/navigation";
 import type { EventInput } from "@fullcalendar/core";
 import type { DateClickArg } from "@fullcalendar/interaction";
 import DayActionModal from "./DayActionModal";
-import { eventHref } from "@/lib/events";
+import { eventHref, type EventTypeStr } from "@/lib/events";
 
 interface Show {
   id: string;
-  type: "SHOW" | "RECORDING";
+  type: EventTypeStr;
   title: string;
   venue: string | null;
   city: string | null;
@@ -36,8 +36,8 @@ interface UnavailableDate {
 
 // Muted, coordinated palette so the month view reads calm rather than neon.
 // Every fill is dark enough for white event text (all ≥ 4.5:1). Hue still
-// carries meaning: cool blue = pending, green = confirmed, clay = cancelled,
-// plum = recording, ochre = member unavailable.
+// carries meaning: cool blue = pending show, green = confirmed, clay =
+// cancelled, plum = recording, teal = practice, ochre = member unavailable.
 const statusColors: Record<string, string> = {
   CONFIRMED: "#4d7c63", // muted moss
   PENDING: "#5b6f99", // dusty denim
@@ -51,6 +51,19 @@ const recordingColors: Record<string, string> = {
   CANCELLED: "#a05a52",
 };
 
+// Practices render teal, again with the shared brick tone when cancelled.
+const practiceColors: Record<string, string> = {
+  CONFIRMED: "#2f7d76", // deep teal
+  PENDING: "#4f8a84", // dusty teal
+  CANCELLED: "#a05a52",
+};
+
+function paletteFor(type: string): Record<string, string> {
+  if (type === "RECORDING") return recordingColors;
+  if (type === "PRACTICE") return practiceColors;
+  return statusColors;
+}
+
 // Member-unavailable marker (dot + note text, and the day-cell stripe defined
 // in globals.css — keep the two in sync).
 const UNAVAILABLE_COLOR = "#c2894a"; // warm ochre
@@ -60,6 +73,7 @@ const legend = [
   { label: "Confirmed", color: statusColors.CONFIRMED },
   { label: "Cancelled", color: statusColors.CANCELLED },
   { label: "Recording session", color: recordingColors.PENDING },
+  { label: "Practice", color: practiceColors.PENDING },
   { label: "Member unavailable", color: UNAVAILABLE_COLOR },
 ];
 
@@ -86,7 +100,7 @@ export default function CalendarView({ userId }: { userId: string }) {
   const showEvents: EventInput[] = shows.map((show) => {
     const myAvailability = show.availability.find((a) => a.userId === userId);
     const availableCount = show.availability.filter((a) => a.status === "AVAILABLE").length;
-    const palette = show.type === "RECORDING" ? recordingColors : statusColors;
+    const palette = paletteFor(show.type);
 
     return {
       id: show.id,
@@ -185,14 +199,15 @@ export default function CalendarView({ userId }: { userId: string }) {
         <div>
           <h1 className="text-2xl font-bold text-zinc-50">Calendar</h1>
           <p className="text-sm text-zinc-500 mt-1">
-            Click a date to add a show or block it. Click a show to view details.
+            Click a date to add an event or block it. Click an event to view
+            details.
           </p>
         </div>
         <button
           onClick={() => router.push("/shows/new")}
           className="shrink-0 self-start whitespace-nowrap px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-500 transition-colors text-sm"
         >
-          + Add Show
+          + Add Event
         </button>
       </div>
 

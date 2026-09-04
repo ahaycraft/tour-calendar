@@ -5,12 +5,23 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { ChevronLeft } from "lucide-react";
 import TourBlockForm, { type TourBlockValues } from "@/components/TourBlockForm";
-import { eventBasePath, tourEditHref } from "@/lib/events";
+import {
+  eventBasePath,
+  eventListLabel,
+  tourEditHref,
+  type EventTypeStr,
+} from "@/lib/events";
 import { canManage, isBandMember } from "@/lib/band";
+
+const BLOCK_NOUN: Record<EventTypeStr, string> = {
+  SHOW: "tour",
+  RECORDING: "recording block",
+  PRACTICE: "practice block",
+};
 
 interface Props {
   tourGroupId: string;
-  expected: "SHOW" | "RECORDING";
+  expected: EventTypeStr;
 }
 
 export default async function TourEdit({ tourGroupId, expected }: Props) {
@@ -28,7 +39,7 @@ export default async function TourEdit({ tourGroupId, expected }: Props) {
     redirect(eventBasePath(first.type));
   }
 
-  const isRecording = first.type === "RECORDING";
+  const blockNoun = BLOCK_NOUN[first.type];
   const last = events[events.length - 1];
   const range =
     events.length === 1
@@ -54,12 +65,10 @@ export default async function TourEdit({ tourGroupId, expected }: Props) {
         className="inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-200 mb-6 transition-colors"
       >
         <ChevronLeft size={16} />
-        Back to {isRecording ? "Recordings" : "Shows"}
+        Back to {eventListLabel(first.type)}
       </Link>
 
-      <h1 className="text-2xl font-bold text-zinc-50 mb-1">
-        Edit {isRecording ? "recording block" : "tour"}
-      </h1>
+      <h1 className="text-2xl font-bold text-zinc-50 mb-1">Edit {blockNoun}</h1>
       <p className="text-sm text-zinc-500 mb-6">
         {events.length} day{events.length === 1 ? "" : "s"} · {range}. Changes here
         apply to every day; edit a single day from its own page.

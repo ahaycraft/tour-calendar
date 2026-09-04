@@ -4,7 +4,12 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { eachDayOfInterval, format, isValid, parseISO } from "date-fns";
-import { eventBasePath } from "@/lib/events";
+import {
+  eventBasePath,
+  eventNoun,
+  eventNounPlural,
+  type EventTypeStr,
+} from "@/lib/events";
 import CalendarExportLink from "@/components/CalendarExportLink";
 
 const inputClass =
@@ -12,13 +17,25 @@ const inputClass =
 
 const MAX_EVENTS = 90;
 
+const TYPE_TABS: { value: EventTypeStr; label: string }[] = [
+  { value: "SHOW", label: "Shows" },
+  { value: "PRACTICE", label: "Practices" },
+  { value: "RECORDING", label: "Recordings" },
+];
+// "<block> name" label + title-stub example, per type.
+const BLOCK_META: Record<EventTypeStr, { label: string; example: string }> = {
+  SHOW: { label: "Tour", example: "Fall Tour" },
+  PRACTICE: { label: "Practice block", example: "Pre-tour Rehearsals" },
+  RECORDING: { label: "Session block", example: "LP2 Tracking" },
+};
+
 export default function BulkEventForm({
   defaultType = "SHOW",
 }: {
-  defaultType?: "SHOW" | "RECORDING";
+  defaultType?: EventTypeStr;
 }) {
   const router = useRouter();
-  const [eventType, setEventType] = useState<"SHOW" | "RECORDING">(defaultType);
+  const [eventType, setEventType] = useState<EventTypeStr>(defaultType);
   const [name, setName] = useState("");
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
@@ -31,8 +48,6 @@ export default function BulkEventForm({
   const [created, setCreated] = useState<{ count: number; ids: string[] } | null>(
     null
   );
-
-  const isRecording = eventType === "RECORDING";
 
   // Every day in the range; the user unchecks travel / off days.
   const rangeDays = useMemo(() => {
@@ -99,7 +114,7 @@ export default function BulkEventForm({
   }
 
   if (created) {
-    const noun = isRecording ? "session" : "show";
+    const noun = eventNoun(eventType);
     const listPath = eventBasePath(eventType);
     return (
       <div className="space-y-4">
@@ -129,7 +144,7 @@ export default function BulkEventForm({
             href={listPath}
             className="text-sm font-medium text-blue-400 hover:text-blue-300"
           >
-            View {isRecording ? "recordings" : "shows"} →
+            View {eventNounPlural(eventType)} →
           </Link>
           <button
             type="button"
@@ -152,25 +167,25 @@ export default function BulkEventForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="flex gap-1 p-1 bg-zinc-800/60 rounded-lg">
-        {(["SHOW", "RECORDING"] as const).map((t) => (
+        {TYPE_TABS.map(({ value, label }) => (
           <button
-            key={t}
+            key={value}
             type="button"
-            onClick={() => setEventType(t)}
+            onClick={() => setEventType(value)}
             className={`flex-1 py-1.5 rounded-md text-sm font-medium transition-colors ${
-              eventType === t
+              eventType === value
                 ? "bg-zinc-700 text-zinc-50"
                 : "text-zinc-400 hover:text-zinc-200"
             }`}
           >
-            {t === "SHOW" ? "Shows" : "Recordings"}
+            {label}
           </button>
         ))}
       </div>
 
       <div>
         <label className="block text-sm font-medium text-zinc-300 mb-1">
-          {isRecording ? "Session block" : "Tour"} name{" "}
+          {BLOCK_META[eventType].label} name{" "}
           <span className="text-red-500">*</span>
         </label>
         <input
@@ -178,11 +193,11 @@ export default function BulkEventForm({
           value={name}
           onChange={(e) => setName(e.target.value)}
           className={inputClass}
-          placeholder={isRecording ? "e.g. LP2 Tracking" : "e.g. Fall Tour"}
+          placeholder={`e.g. ${BLOCK_META[eventType].example}`}
         />
         <p className="mt-1 text-xs text-zinc-600">
-          Events are titled &ldquo;{name.trim() || "Fall Tour"} — Day 1&rdquo;,
-          &ldquo;Day 2&rdquo;, and so on.
+          Events are titled &ldquo;{name.trim() || BLOCK_META[eventType].example} —
+          Day 1&rdquo;, &ldquo;Day 2&rdquo;, and so on.
         </p>
       </div>
 
@@ -285,7 +300,7 @@ export default function BulkEventForm({
         ) : (
           <>
             Creates <span className="font-medium text-zinc-200">{selected.length}</span>{" "}
-            {isRecording ? "recording session" : "show"}
+            {eventNoun(eventType)}
             {selected.length === 1 ? "" : "s"}:{" "}
             {selected
               .slice(0, 8)
@@ -306,9 +321,9 @@ export default function BulkEventForm({
       >
         {loading
           ? "Creating..."
-          : `Create ${selected.length || ""} ${
-              isRecording ? "session" : "show"
-            }${selected.length === 1 ? "" : "s"}`}
+          : `Create ${selected.length || ""} ${eventNoun(eventType)}${
+              selected.length === 1 ? "" : "s"
+            }`}
       </button>
     </form>
   );

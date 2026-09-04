@@ -3,11 +3,13 @@ import { cn } from "@/lib/utils";
 const variants: Record<string, string> = {
   SHOW: "badge-denim",
   RECORDING: "badge-mauve",
+  PRACTICE: "badge-moss",
 };
 
 const labels: Record<string, string> = {
   SHOW: "Show",
   RECORDING: "Recording",
+  PRACTICE: "Practice",
 };
 
 export default function EventTypeBadge({ type }: { type: string }) {

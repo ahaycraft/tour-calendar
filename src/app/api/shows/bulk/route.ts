@@ -3,10 +3,19 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getActiveBandId, canManage, isBandMember } from "@/lib/band";
 import { notifyBandMembers } from "@/lib/push";
+import { isEventType } from "@/lib/events";
 
 const MAX_EVENTS = 90;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const STATUSES = ["PENDING", "CONFIRMED", "CANCELLED"] as const;
+
+/** What a multi-day block of each type is called in notifications. */
+const BLOCK_LABEL: Record<string, string> = {
+  SHOW: "tour",
+  RECORDING: "recording block",
+  PRACTICE: "practice block",
+};
+const blockLabel = (type: string) => BLOCK_LABEL[type] ?? "tour";
 
 export async function POST(request: NextRequest) {
   const session = await auth();
@@ -15,7 +24,7 @@ export async function POST(request: NextRequest) {
   try {
     const { type, name, dates, city, state, country } = await request.json();
 
-    if (type !== undefined && type !== "SHOW" && type !== "RECORDING") {
+    if (type !== undefined && !isEventType(type)) {
       return NextResponse.json({ error: "Invalid event type" }, { status: 400 });
     }
     if (!name || typeof name !== "string" || !name.trim()) {
@@ -41,7 +50,7 @@ export async function POST(request: NextRequest) {
 
     const sorted = [...new Set(dates as string[])].sort();
     const label = name.trim();
-    const isRecording = (type ?? "SHOW") === "RECORDING";
+    const effectiveType = type ?? "SHOW";
 
     // Every day of the block shares this id so it can be edited as a unit later.
     const tourGroupId = crypto.randomUUID();
@@ -49,7 +58,7 @@ export async function POST(request: NextRequest) {
     const created = await prisma.show.createManyAndReturn({
       data: sorted.map((d, i) => ({
         bandId,
-        type: type ?? "SHOW",
+        type: effectiveType,
         title: `${label} — Day ${i + 1}`,
         venue: null,
         city: city || null,
@@ -67,7 +76,7 @@ export async function POST(request: NextRequest) {
     // storm of up to MAX_EVENTS. The tour:<groupId> tag is reused by later
     // block-wide edits so each new one supersedes it.
     void notifyBandMembers(bandId, session.user.id, {
-      title: `New ${isRecording ? "recording block" : "tour"}: ${label}`,
+      title: `New ${blockLabel(effectiveType)}: ${label}`,
       body: `${created.length} ${created.length === 1 ? "day" : "days"} added — tap to set your availability.`,
       url: "/calendar",
       tag: `tour:${tourGroupId}`,
@@ -187,11 +196,11 @@ export async function PATCH(request: NextRequest) {
     ]);
 
     const finalName = renamed ? label! : current.tourName ?? "tour";
-    const isRecording = current.type === "RECORDING";
+    const noun = blockLabel(current.type);
     const summary = `${changes.join(", ")}.`;
 
     void notifyBandMembers(bandId, session.user.id, {
-      title: `${isRecording ? "Recording block" : "Tour"} updated: ${finalName}`,
+      title: `${noun[0].toUpperCase() + noun.slice(1)} updated: ${finalName}`,
       body: summary[0].toUpperCase() + summary.slice(1),
       url: "/calendar",
       tag: `tour:${tourGroupId}`,

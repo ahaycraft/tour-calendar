@@ -146,6 +146,7 @@ model Show {
 enum EventType {
   SHOW
   RECORDING
+  PRACTICE
 }
 
 enum ShowStatus {

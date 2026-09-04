@@ -5,12 +5,23 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { ChevronLeft } from "lucide-react";
 import EventForm, { type EventFormValues } from "@/components/EventForm";
-import { eventHref, tourEditHref } from "@/lib/events";
+import {
+  eventHref,
+  eventTypeLabel,
+  tourEditHref,
+  type EventTypeStr,
+} from "@/lib/events";
 import { canManage, isBandMember } from "@/lib/band";
+
+const BLOCK_NOUN: Record<EventTypeStr, string> = {
+  SHOW: "tour",
+  RECORDING: "recording block",
+  PRACTICE: "practice block",
+};
 
 interface Props {
   id: string;
-  expected: "SHOW" | "RECORDING";
+  expected: EventTypeStr;
 }
 
 export default async function EventEdit({ id, expected }: Props) {
@@ -50,7 +61,8 @@ export default async function EventEdit({ id, expected }: Props) {
     releaseId: show.releaseId ?? "",
   };
 
-  const isRecording = show.type === "RECORDING";
+  const heading =
+    show.type === "RECORDING" ? "Recording Session" : eventTypeLabel(show.type);
 
   return (
     <div className="max-w-xl">
@@ -62,9 +74,7 @@ export default async function EventEdit({ id, expected }: Props) {
         Back to {show.title}
       </Link>
 
-      <h1 className="text-2xl font-bold text-zinc-50 mb-6">
-        Edit {isRecording ? "Recording Session" : "Show"}
-      </h1>
+      <h1 className="text-2xl font-bold text-zinc-50 mb-6">Edit {heading}</h1>
 
       {show.tourGroupId && (
         <div className="mb-4 rounded-lg bg-zinc-800/50 border border-zinc-800 px-4 py-3 text-sm text-zinc-400">
@@ -72,7 +82,7 @@ export default async function EventEdit({ id, expected }: Props) {
           <span className="font-medium text-zinc-200">
             {show.tourName ?? "tour"}
           </span>{" "}
-          {isRecording ? "recording block" : "tour"}.{" "}
+          {BLOCK_NOUN[show.type]}.{" "}
           <Link
             href={tourEditHref(show.type, show.tourGroupId)}
             className="font-medium text-blue-400 hover:text-blue-300"

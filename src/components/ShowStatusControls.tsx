@@ -10,7 +10,9 @@ interface Props {
   currentStatus: string;
   availableCount: number;
   memberCount: number;
-  noun?: "show" | "session";
+  noun?: string;
+  /** List route to return to after a delete. */
+  basePath?: string;
 }
 
 export default function ShowStatusControls({
@@ -19,6 +21,7 @@ export default function ShowStatusControls({
   availableCount,
   memberCount,
   noun = "show",
+  basePath = "/shows",
 }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -52,7 +55,7 @@ export default function ShowStatusControls({
     setLoading(true);
     await fetch(`/api/shows/${showId}`, { method: "DELETE" });
     await revalidateShell();
-    router.push(noun === "session" ? "/recordings" : "/shows");
+    router.push(basePath);
     router.refresh();
   }
 

@@ -3,7 +3,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getActiveBandId } from "@/lib/band";
 import { notifyBandMembers } from "@/lib/push";
-import { eventHref } from "@/lib/events";
+import { eventHref, eventTypeLabel, isEventType } from "@/lib/events";
 
 export async function GET() {
   const session = await auth();
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Title and date are required" }, { status: 400 });
     }
 
-    if (type !== undefined && type !== "SHOW" && type !== "RECORDING") {
+    if (type !== undefined && !isEventType(type)) {
       return NextResponse.json({ error: "Invalid event type" }, { status: 400 });
     }
 
@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
     // Notify the rest of the band. The app treats a missing/PENDING availability
     // row as "owes a response", so this doubles as the pending-availability alert.
     void notifyBandMembers(bandId, session.user.id, {
-      title: `New ${effectiveType === "RECORDING" ? "recording" : "show"}: ${show.title}`,
+      title: `New ${eventTypeLabel(effectiveType).toLowerCase()}: ${show.title}`,
       body: "Tap to set your availability.",
       url: eventHref(effectiveType, show.id),
       tag: `show:${show.id}`,

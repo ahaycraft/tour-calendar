@@ -4,7 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { canManage, isBandMember } from "@/lib/band";
 import { notifyBandMembers } from "@/lib/push";
-import { eventHref } from "@/lib/events";
+import { eventHref, isEventType } from "@/lib/events";
 
 export async function GET(
   _request: NextRequest,
@@ -55,7 +55,7 @@ export async function PATCH(
     const body = await request.json();
     const { type, title, venue, city, state, country, date, doorsTime, setTime, loadInTime, guarantee, notes, status, venueAddress, venueLat, venueLng, releaseId } = body;
 
-    if (type !== undefined && type !== "SHOW" && type !== "RECORDING") {
+    if (type !== undefined && !isEventType(type)) {
       return NextResponse.json({ error: "Invalid event type" }, { status: 400 });
     }
 

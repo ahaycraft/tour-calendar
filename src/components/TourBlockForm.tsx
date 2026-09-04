@@ -2,8 +2,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { eventBasePath } from "@/lib/events";
+import { eventBasePath, type EventTypeStr } from "@/lib/events";
 import { revalidateShell } from "@/app/(protected)/actions";
+
+const BLOCK_NOUN: Record<EventTypeStr, string> = {
+  SHOW: "Tour",
+  RECORDING: "Recording block",
+  PRACTICE: "Practice block",
+};
 
 const inputClass =
   "w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent";
@@ -16,7 +22,7 @@ const STATUSES = [
 
 export interface TourBlockValues {
   tourGroupId: string;
-  type: "SHOW" | "RECORDING";
+  type: EventTypeStr;
   name: string;
   city: string;
   state: string;
@@ -28,7 +34,7 @@ export interface TourBlockValues {
 
 export default function TourBlockForm({ initial }: { initial: TourBlockValues }) {
   const router = useRouter();
-  const isRecording = initial.type === "RECORDING";
+  const blockNoun = BLOCK_NOUN[initial.type];
 
   const [name, setName] = useState(initial.name);
   const [city, setCity] = useState(initial.city);
@@ -78,7 +84,7 @@ export default function TourBlockForm({ initial }: { initial: TourBlockValues })
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <label className="block text-sm font-medium text-zinc-300 mb-1">
-          {isRecording ? "Recording block" : "Tour"} name{" "}
+          {blockNoun} name{" "}
           <span className="text-red-500">*</span>
         </label>
         <input

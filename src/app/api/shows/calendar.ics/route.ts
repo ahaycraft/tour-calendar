@@ -10,6 +10,7 @@ import {
   icsFilename,
   resolveAppUrl,
 } from "@/lib/calendar";
+import { isEventType, eventBasePath } from "@/lib/events";
 
 const MAX_EVENTS = 100;
 
@@ -18,8 +19,8 @@ const MAX_EVENTS = 100;
  *   ?ids=a,b,c            explicit selection (cancelled events kept, prefixed)
  *   ?releaseId=xxx        every session tracking a release
  *   ?scope=upcoming       everything today or later
- * plus optional &type=SHOW|RECORDING. Always scoped to the caller's active
- * band, so guessed ids from another band return nothing.
+ * plus optional &type=SHOW|RECORDING|PRACTICE. Always scoped to the caller's
+ * active band, so guessed ids from another band return nothing.
  */
 export async function GET(request: NextRequest) {
   const session = await auth();
@@ -39,7 +40,7 @@ export async function GET(request: NextRequest) {
   const type = searchParams.get("type");
 
   const where: Prisma.ShowWhereInput = { bandId };
-  if (type === "SHOW" || type === "RECORDING") where.type = type;
+  if (isEventType(type)) where.type = type;
 
   let name = "woodshed-events";
 
@@ -60,12 +61,9 @@ export async function GET(request: NextRequest) {
   } else if (scope === "upcoming") {
     where.date = { gte: startOfDay(new Date()) };
     where.status = { not: "CANCELLED" };
-    name =
-      type === "RECORDING"
-        ? "woodshed-upcoming-recordings"
-        : type === "SHOW"
-          ? "woodshed-upcoming-shows"
-          : "woodshed-upcoming";
+    name = isEventType(type)
+      ? `woodshed-upcoming-${eventBasePath(type).slice(1)}`
+      : "woodshed-upcoming";
   } else {
     return NextResponse.json(
       { error: "Specify ids, releaseId, or scope=upcoming" },

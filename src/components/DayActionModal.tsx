@@ -4,6 +4,18 @@ import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { X, CalendarPlus, Ban, Trash2 } from "lucide-react";
 import VenueSearch, { type VenueResult } from "./VenueSearch";
+import { type EventTypeStr } from "@/lib/events";
+
+const TYPE_TABS: { value: EventTypeStr; label: string }[] = [
+  { value: "SHOW", label: "Show" },
+  { value: "PRACTICE", label: "Practice" },
+  { value: "RECORDING", label: "Recording" },
+];
+const TITLE_NOUN: Record<EventTypeStr, string> = {
+  SHOW: "Show",
+  PRACTICE: "Practice",
+  RECORDING: "Session",
+};
 
 interface UnavailableDate {
   id: string;
@@ -21,7 +33,7 @@ interface RosterEntry {
 
 interface Show {
   id: string;
-  type: "SHOW" | "RECORDING";
+  type: EventTypeStr;
   title: string;
   venue: string | null;
   city: string | null;
@@ -56,7 +68,7 @@ export default function DayActionModal({
   onShowAdded,
 }: Props) {
   const [tab, setTab] = useState<"unavailability" | "event">("unavailability");
-  const [eventType, setEventType] = useState<"SHOW" | "RECORDING">("SHOW");
+  const [eventType, setEventType] = useState<EventTypeStr>("SHOW");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [note, setNote] = useState("");
@@ -68,6 +80,8 @@ export default function DayActionModal({
   const [venueMeta, setVenueMeta] = useState(emptyMeta);
 
   const isRecording = eventType === "RECORDING";
+  const isShow = eventType === "SHOW";
+  const isPractice = eventType === "PRACTICE";
 
   function handleVenueSelect(v: VenueResult) {
     setVenue(v.name);
@@ -147,10 +161,10 @@ export default function DayActionModal({
         state: stateField || undefined,
         country: country || "US",
         date: `${date}T00:00:00`,
-        loadInTime,
-        doorsTime: isRecording ? undefined : doorsTime,
-        setTime,
-        guarantee: isRecording ? undefined : data.guarantee || undefined,
+        loadInTime: isPractice ? undefined : loadInTime,
+        doorsTime: isShow ? doorsTime : undefined,
+        setTime: isPractice ? undefined : setTime,
+        guarantee: isShow ? data.guarantee || undefined : undefined,
         notes: data.notes || undefined,
         venueAddress: venueMeta.address || undefined,
         venueLat: venueMeta.lat ?? undefined,
@@ -162,7 +176,7 @@ export default function DayActionModal({
 
     if (!res.ok) {
       const json = await res.json().catch(() => ({}));
-      setError(json.error || "Failed to create show");
+      setError(json.error || "Failed to create event");
       return;
     }
 
@@ -291,24 +305,24 @@ export default function DayActionModal({
           ) : (
             <form onSubmit={addShow} className="space-y-3">
               <div className="flex gap-1 p-1 bg-zinc-800/60 rounded-lg">
-                {(["SHOW", "RECORDING"] as const).map((t) => (
+                {TYPE_TABS.map(({ value, label }) => (
                   <button
-                    key={t}
+                    key={value}
                     type="button"
-                    onClick={() => setEventType(t)}
+                    onClick={() => setEventType(value)}
                     className={`flex-1 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                      eventType === t
+                      eventType === value
                         ? "bg-zinc-700 text-zinc-50"
                         : "text-zinc-400 hover:text-zinc-200"
                     }`}
                   >
-                    {t === "SHOW" ? "Show" : "Recording"}
+                    {label}
                   </button>
                 ))}
               </div>
               <div>
                 <label className="block text-sm font-medium text-zinc-300 mb-1">
-                  {isRecording ? "Session" : "Show"} Title{" "}
+                  {TITLE_NOUN[eventType]} Title{" "}
                   <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -318,13 +332,15 @@ export default function DayActionModal({
                   placeholder={
                     isRecording
                       ? "e.g. Album tracking — Day 1"
-                      : "e.g. The Roxy w/ Support Act"
+                      : isPractice
+                        ? "e.g. Thursday rehearsal"
+                        : "e.g. The Roxy w/ Support Act"
                   }
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-zinc-300 mb-1">
-                  {isRecording ? "Studio" : "Venue"}
+                  {isRecording ? "Studio" : isPractice ? "Location" : "Venue"}
                 </label>
                 <VenueSearch
                   value={venue}
@@ -335,7 +351,11 @@ export default function DayActionModal({
                   onSelect={handleVenueSelect}
                   inputClassName={inputClass}
                   placeholder={
-                    isRecording ? "Search studios…" : "Search venues by name or city…"
+                    isRecording
+                      ? "Search studios…"
+                      : isPractice
+                        ? "Search rehearsal spaces…"
+                        : "Search venues by name or city…"
                   }
                 />
               </div>
@@ -363,7 +383,8 @@ export default function DayActionModal({
                   />
                 </div>
               </div>
-              {isRecording ? (
+              {/* Practices stay minimal — no call sheet, no guarantee. */}
+              {isRecording && (
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <label className="block text-sm font-medium text-zinc-300 mb-1">
@@ -378,7 +399,8 @@ export default function DayActionModal({
                     <input name="setTime" type="time" className={inputClass} />
                   </div>
                 </div>
-              ) : (
+              )}
+              {isShow && (
                 <div className="grid grid-cols-3 gap-2">
                   <div>
                     <label className="block text-sm font-medium text-zinc-300 mb-1">Load In</label>
@@ -394,7 +416,7 @@ export default function DayActionModal({
                   </div>
                 </div>
               )}
-              {!isRecording && (
+              {isShow && (
                 <div>
                   <label className="block text-sm font-medium text-zinc-300 mb-1">
                     Guarantee ($)
@@ -416,7 +438,11 @@ export default function DayActionModal({
                   rows={2}
                   className={`${inputClass} resize-none`}
                   placeholder={
-                    isRecording ? "Engineer, gear, song list, etc." : "Parking info, contacts, etc."
+                    isRecording
+                      ? "Engineer, gear, song list, etc."
+                      : isPractice
+                        ? "Rehearsal focus, room booking, etc."
+                        : "Parking info, contacts, etc."
                   }
                 />
               </div>
@@ -429,7 +455,9 @@ export default function DayActionModal({
                   ? "Adding..."
                   : isRecording
                     ? "Add Recording Session"
-                    : "Add Show"}
+                    : isPractice
+                      ? "Add Practice"
+                      : "Add Show"}
               </button>
             </form>
           )}

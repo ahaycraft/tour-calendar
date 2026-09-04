@@ -12,7 +12,13 @@ import VenueMap from "@/components/VenueMap";
 import AddToCalendar from "@/components/AddToCalendar";
 import { geocodeVenue } from "@/lib/venues";
 import { googleCalendarUrl } from "@/lib/calendar";
-import { eventHref } from "@/lib/events";
+import {
+  eventBasePath,
+  eventHref,
+  eventListLabel,
+  eventNoun,
+  type EventTypeStr,
+} from "@/lib/events";
 import { canManage, isBandMember } from "@/lib/band";
 import NeedsDetailsBadge, { needsDetails } from "@/components/NeedsDetailsBadge";
 import { ChevronLeft, MapPin, Clock, DollarSign, FileText, Pencil, Disc3 } from "lucide-react";
@@ -20,7 +26,7 @@ import { ChevronLeft, MapPin, Clock, DollarSign, FileText, Pencil, Disc3 } from 
 interface Props {
   id: string;
   /** Which route rendered this; a mismatched event is redirected to its own route. */
-  expected: "SHOW" | "RECORDING";
+  expected: EventTypeStr;
 }
 
 export default async function EventDetail({ id, expected }: Props) {
@@ -75,11 +81,11 @@ export default async function EventDetail({ id, expected }: Props) {
   return (
     <div className="max-w-5xl">
       <Link
-        href={isRecording ? "/recordings" : "/shows"}
+        href={eventBasePath(show.type)}
         className="inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-200 mb-6 transition-colors"
       >
         <ChevronLeft size={16} />
-        Back to {isRecording ? "Recordings" : "Shows"}
+        Back to {eventListLabel(show.type)}
       </Link>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] items-start">
@@ -89,7 +95,7 @@ export default async function EventDetail({ id, expected }: Props) {
               <div>
                 <div className="flex items-center gap-2 flex-wrap mb-1">
                   <h1 className="text-2xl font-bold text-zinc-50">{show.title}</h1>
-                  {isRecording && <EventTypeBadge type={show.type} />}
+                  {show.type !== "SHOW" && <EventTypeBadge type={show.type} />}
                   <ShowStatusBadge status={show.status} />
                   {needsDetails(show) && <NeedsDetailsBadge />}
                 </div>
@@ -187,7 +193,8 @@ export default async function EventDetail({ id, expected }: Props) {
                 currentStatus={show.status}
                 availableCount={availableMembers.length}
                 memberCount={memberCount}
-                noun={isRecording ? "session" : "show"}
+                noun={eventNoun(show.type)}
+                basePath={eventBasePath(show.type)}
               />
             )}
           </div>

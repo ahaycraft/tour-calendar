@@ -6,8 +6,11 @@ import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
   Calendar,
+  CalendarDays,
+  ChevronDown,
   List,
   Mic,
+  Users,
   Music,
   Disc3,
   UserX,
@@ -28,14 +31,100 @@ interface NavProps {
   theme: Theme;
 }
 
-const links = [
-  { href: "/calendar", label: "Calendar", icon: Calendar },
+// Shows, practices, and recordings are one model (`Show`) discriminated by
+// `type`; they're grouped under one "Events" nav parent.
+const EVENT_LINKS = [
   { href: "/shows", label: "Shows", icon: List },
+  { href: "/practices", label: "Practices", icon: Users },
   { href: "/recordings", label: "Recordings", icon: Mic },
+];
+
+const PRIMARY_LINK = { href: "/calendar", label: "Calendar", icon: Calendar };
+
+const SECONDARY_LINKS = [
   { href: "/songs", label: "Songs", icon: Music },
   { href: "/releases", label: "Releases", icon: Disc3 },
   { href: "/my-availability", label: "My Availability", icon: UserX },
 ];
+
+const pathMatches = (pathname: string, href: string) =>
+  pathname === href || pathname.startsWith(`${href}/`);
+
+/** Desktop-only "Events ▾" dropdown grouping the three event list routes. */
+function EventsMenu({ pathname }: { pathname: string }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const active = EVENT_LINKS.some((l) => pathMatches(pathname, l.href));
+
+  useEffect(() => {
+    if (!open) return;
+    function onDown(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        className={cn(
+          "flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+          active
+            ? "bg-blue-600/20 text-blue-400"
+            : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
+        )}
+      >
+        <CalendarDays size={16} />
+        Events
+        <ChevronDown
+          size={14}
+          className={cn("shrink-0 transition-transform", open && "rotate-180")}
+        />
+      </button>
+
+      {open && (
+        <div
+          role="menu"
+          className="absolute left-0 mt-1 w-48 z-50 rounded-lg border border-zinc-800 bg-zinc-900 shadow-xl py-1"
+        >
+          {EVENT_LINKS.map(({ href, label, icon: Icon }) => {
+            const isActive = pathMatches(pathname, href);
+            return (
+              <Link
+                key={href}
+                href={href}
+                role="menuitem"
+                onClick={() => setOpen(false)}
+                aria-current={isActive ? "page" : undefined}
+                className={cn(
+                  "flex items-center gap-2.5 px-3 py-2 text-sm font-medium transition-colors",
+                  isActive
+                    ? "text-blue-400"
+                    : "text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100"
+                )}
+              >
+                <Icon size={16} />
+                {label}
+              </Link>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function Nav({
   user,
@@ -57,7 +146,7 @@ export default function Nav({
 
   const badgeFor = (href: string) =>
     href === "/my-availability" && needsResponseCount > 0 ? needsResponseCount : 0;
-  const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+  const isActive = (href: string) => pathMatches(pathname, href);
 
   // While the drawer is open: lock scroll, trap focus, close on Escape,
   // and restore focus to the trigger on close.
@@ -103,6 +192,73 @@ export default function Nav({
     };
   }, [open]);
 
+  const drawerLink = ({
+    href,
+    label,
+    icon: Icon,
+  }: {
+    href: string;
+    label: string;
+    icon: typeof Calendar;
+  }) => {
+    const badge = badgeFor(href);
+    return (
+      <Link
+        key={href}
+        href={href}
+        onClick={() => setOpen(false)}
+        aria-current={isActive(href) ? "page" : undefined}
+        className={cn(
+          "flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors",
+          isActive(href)
+            ? "bg-blue-600/20 text-blue-400"
+            : "text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100"
+        )}
+      >
+        <Icon size={18} />
+        <span className="flex-1">{label}</span>
+        {badge > 0 && (
+          <span className="min-w-5 px-1.5 h-5 inline-flex items-center justify-center rounded-full bg-amber-500 text-[11px] font-bold text-amber-950">
+            {badge}
+          </span>
+        )}
+      </Link>
+    );
+  };
+
+  const desktopLink = ({
+    href,
+    label,
+    icon: Icon,
+  }: {
+    href: string;
+    label: string;
+    icon: typeof Calendar;
+  }) => {
+    const badge = badgeFor(href);
+    return (
+      <Link
+        key={href}
+        href={href}
+        aria-current={isActive(href) ? "page" : undefined}
+        className={cn(
+          "flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+          isActive(href)
+            ? "bg-blue-600/20 text-blue-400"
+            : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
+        )}
+      >
+        <Icon size={16} />
+        {label}
+        {badge > 0 && (
+          <span className="ml-0.5 min-w-4 px-1 h-4 inline-flex items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-amber-950">
+            {badge}
+          </span>
+        )}
+      </Link>
+    );
+  };
+
   return (
     <header className="bg-zinc-900 border-b border-zinc-800 sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -121,30 +277,9 @@ export default function Nav({
 
             {/* Desktop nav */}
             <nav className="hidden lg:flex gap-1">
-              {links.map(({ href, label, icon: Icon }) => {
-                const badge = badgeFor(href);
-                return (
-                  <Link
-                    key={href}
-                    href={href}
-                    aria-current={isActive(href) ? "page" : undefined}
-                    className={cn(
-                      "flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                      isActive(href)
-                        ? "bg-blue-600/20 text-blue-400"
-                        : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
-                    )}
-                  >
-                    <Icon size={16} />
-                    {label}
-                    {badge > 0 && (
-                      <span className="ml-0.5 min-w-4 px-1 h-4 inline-flex items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-amber-950">
-                        {badge}
-                      </span>
-                    )}
-                  </Link>
-                );
-              })}
+              {desktopLink(PRIMARY_LINK)}
+              <EventsMenu pathname={pathname} />
+              {SECONDARY_LINKS.map(desktopLink)}
             </nav>
           </div>
 
@@ -215,31 +350,17 @@ export default function Nav({
             </div>
 
             <nav className="flex-1 overflow-y-auto p-3 space-y-1">
-              {links.map(({ href, label, icon: Icon }) => {
-                const badge = badgeFor(href);
-                return (
-                  <Link
-                    key={href}
-                    href={href}
-                    onClick={() => setOpen(false)}
-                    aria-current={isActive(href) ? "page" : undefined}
-                    className={cn(
-                      "flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors",
-                      isActive(href)
-                        ? "bg-blue-600/20 text-blue-400"
-                        : "text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100"
-                    )}
-                  >
-                    <Icon size={18} />
-                    <span className="flex-1">{label}</span>
-                    {badge > 0 && (
-                      <span className="min-w-5 px-1.5 h-5 inline-flex items-center justify-center rounded-full bg-amber-500 text-[11px] font-bold text-amber-950">
-                        {badge}
-                      </span>
-                    )}
-                  </Link>
-                );
-              })}
+              {drawerLink(PRIMARY_LINK)}
+
+              {/* Events broken out as siblings on mobile — a nested disclosure
+                  here would be more fiddly than it's worth. */}
+              <div className="px-3 pt-3 pb-1 text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
+                Events
+              </div>
+              {EVENT_LINKS.map(drawerLink)}
+
+              <div className="pt-2" />
+              {SECONDARY_LINKS.map(drawerLink)}
             </nav>
 
             <div className="p-3 border-t border-zinc-800 space-y-3">

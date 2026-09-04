@@ -1,5 +1,7 @@
+import { eventBasePath } from "@/lib/events";
+
 /**
- * "Add to calendar" links for a show or recording session.
+ * "Add to calendar" links for a show, practice, or recording session.
  *
  * No external library — an iCalendar VEVENT is a short, well-specified text
  * format. `buildCalendar` produces an `.ics` payload (Apple Calendar, Outlook,
@@ -51,7 +53,7 @@ export function icsFilename(name: string): string {
 
 export interface CalendarEventInput {
   id: string;
-  type: string; // "SHOW" | "RECORDING"
+  type: string; // "SHOW" | "RECORDING" | "PRACTICE"
   title: string;
   status: string; // "PENDING" | "CONFIRMED" | "CANCELLED"
   date: Date;
@@ -116,8 +118,14 @@ function resolveTiming(e: CalendarEventInput): Timing {
 }
 
 function eventPath(e: CalendarEventInput): string {
-  return `/${e.type === "RECORDING" ? "recordings" : "shows"}/${e.id}`;
+  return `${eventBasePath(e.type)}/${e.id}`;
 }
+
+const DESCRIPTION_NOUN: Record<string, string> = {
+  SHOW: "Show",
+  RECORDING: "Recording session",
+  PRACTICE: "Practice",
+};
 
 function locationString(e: CalendarEventInput): string {
   const parts = e.venueAddress
@@ -139,7 +147,7 @@ function description(e: CalendarEventInput, appUrl: string): string {
   const lines: string[] = [];
   if (e.notes) lines.push(e.notes.trim(), "");
   lines.push(
-    `${e.type === "RECORDING" ? "Recording session" : "Show"} in Woodshed:`,
+    `${DESCRIPTION_NOUN[e.type] ?? "Event"} in Woodshed:`,
     `${appUrl}${eventPath(e)}`
   );
   return lines.join("\n");

@@ -4,8 +4,20 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import VenueSearch, { type VenueResult } from "./VenueSearch";
 import ConfirmDialog from "./ConfirmDialog";
-import { eventHref } from "@/lib/events";
+import { eventHref, eventNoun, type EventTypeStr } from "@/lib/events";
 import { AlertTriangle } from "lucide-react";
+
+const TYPE_TABS: { value: EventTypeStr; label: string }[] = [
+  { value: "SHOW", label: "Show" },
+  { value: "PRACTICE", label: "Practice" },
+  { value: "RECORDING", label: "Recording" },
+];
+// The word for the event's own title field, per type.
+const TITLE_NOUN: Record<EventTypeStr, string> = {
+  SHOW: "Show",
+  PRACTICE: "Practice",
+  RECORDING: "Session",
+};
 
 const inputClass =
   "w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent";
@@ -15,7 +27,7 @@ const emptyMeta = { address: "", lat: null as number | null, lng: null as number
 /** Plain-string shape so the server page can hand values to this client form. */
 export interface EventFormValues {
   id: string;
-  type: "SHOW" | "RECORDING";
+  type: EventTypeStr;
   title: string;
   venue: string;
   city: string;
@@ -37,7 +49,7 @@ export interface EventFormValues {
 }
 
 interface Props {
-  defaultType?: "SHOW" | "RECORDING";
+  defaultType?: EventTypeStr;
   /** Present when editing an existing event. */
   event?: EventFormValues;
   /** The band's releases, offered as a link target for recording sessions. */
@@ -52,7 +64,7 @@ export default function EventForm({ defaultType = "SHOW", event, releases = [] }
   const [error, setError] = useState("");
   const [confirmingDateChange, setConfirmingDateChange] = useState(false);
 
-  const [eventType, setEventType] = useState<"SHOW" | "RECORDING">(
+  const [eventType, setEventType] = useState<EventTypeStr>(
     event?.type ?? defaultType
   );
   const [date, setDate] = useState(event?.date ?? "");
@@ -68,6 +80,8 @@ export default function EventForm({ defaultType = "SHOW", event, releases = [] }
   );
 
   const isRecording = eventType === "RECORDING";
+  const isShow = eventType === "SHOW";
+  const isPractice = eventType === "PRACTICE";
   const dateChanged = isEdit && date !== event.date;
 
   function handleVenueSelect(v: VenueResult) {
@@ -95,10 +109,10 @@ export default function EventForm({ defaultType = "SHOW", event, releases = [] }
       state: stateField || null,
       country: country || "US",
       date: `${date}T00:00:00`,
-      loadInTime,
-      doorsTime: isRecording ? null : doorsTime,
-      setTime,
-      guarantee: isRecording ? null : data.guarantee || null,
+      loadInTime: isPractice ? null : loadInTime,
+      doorsTime: isShow ? doorsTime : null,
+      setTime: isPractice ? null : setTime,
+      guarantee: isShow ? data.guarantee || null : null,
       notes: data.notes || null,
       venueAddress: venueMeta.address || null,
       venueLat: venueMeta.lat,
@@ -142,25 +156,25 @@ export default function EventForm({ defaultType = "SHOW", event, releases = [] }
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="flex gap-1 p-1 bg-zinc-800/60 rounded-lg">
-        {(["SHOW", "RECORDING"] as const).map((t) => (
+        {TYPE_TABS.map(({ value, label }) => (
           <button
-            key={t}
+            key={value}
             type="button"
-            onClick={() => setEventType(t)}
+            onClick={() => setEventType(value)}
             className={`flex-1 py-1.5 rounded-md text-sm font-medium transition-colors ${
-              eventType === t
+              eventType === value
                 ? "bg-zinc-700 text-zinc-50"
                 : "text-zinc-400 hover:text-zinc-200"
             }`}
           >
-            {t === "SHOW" ? "Show" : "Recording"}
+            {label}
           </button>
         ))}
       </div>
 
       <div>
         <label className="block text-sm font-medium text-zinc-300 mb-1">
-          {isRecording ? "Session" : "Show"} Title <span className="text-red-500">*</span>
+          {TITLE_NOUN[eventType]} Title <span className="text-red-500">*</span>
         </label>
         <input
           name="title"
@@ -168,7 +182,11 @@ export default function EventForm({ defaultType = "SHOW", event, releases = [] }
           defaultValue={event?.title}
           className={inputClass}
           placeholder={
-            isRecording ? "e.g. Album tracking — Day 1" : "e.g. The Roxy w/ Support Act"
+            isRecording
+              ? "e.g. Album tracking — Day 1"
+              : isPractice
+                ? "e.g. Thursday rehearsal"
+                : "e.g. The Roxy w/ Support Act"
           }
         />
       </div>
@@ -216,7 +234,7 @@ export default function EventForm({ defaultType = "SHOW", event, releases = [] }
 
       <div>
         <label className="block text-sm font-medium text-zinc-300 mb-1">
-          {isRecording ? "Studio" : "Venue"}
+          {isRecording ? "Studio" : isPractice ? "Location" : "Venue"}
         </label>
         <VenueSearch
           value={venue}
@@ -226,7 +244,13 @@ export default function EventForm({ defaultType = "SHOW", event, releases = [] }
           }}
           onSelect={handleVenueSelect}
           inputClassName={inputClass}
-          placeholder={isRecording ? "Search studios…" : "Search venues by name or city…"}
+          placeholder={
+            isRecording
+              ? "Search studios…"
+              : isPractice
+                ? "Search rehearsal spaces by name or city…"
+                : "Search venues by name or city…"
+          }
         />
         <p className="mt-1 text-xs text-zinc-600">
           Start typing to search; pick a result to auto-fill city, state, and address.
@@ -268,7 +292,8 @@ export default function EventForm({ defaultType = "SHOW", event, releases = [] }
         />
       </div>
 
-      {isRecording ? (
+      {/* Practices are minimal: date + location + notes, no call sheet. */}
+      {isRecording && (
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="block text-sm font-medium text-zinc-300 mb-1">Call Time</label>
@@ -289,7 +314,9 @@ export default function EventForm({ defaultType = "SHOW", event, releases = [] }
             />
           </div>
         </div>
-      ) : (
+      )}
+
+      {isShow && (
         <div className="grid grid-cols-3 gap-3">
           <div>
             <label className="block text-sm font-medium text-zinc-300 mb-1">Load In</label>
@@ -321,7 +348,7 @@ export default function EventForm({ defaultType = "SHOW", event, releases = [] }
         </div>
       )}
 
-      {!isRecording && (
+      {isShow && (
         <div>
           <label className="block text-sm font-medium text-zinc-300 mb-1">Guarantee ($)</label>
           <input
@@ -344,7 +371,11 @@ export default function EventForm({ defaultType = "SHOW", event, releases = [] }
           defaultValue={event?.notes}
           className={`${inputClass} resize-none`}
           placeholder={
-            isRecording ? "Engineer, gear, song list, etc." : "Parking info, contacts, etc."
+            isRecording
+              ? "Engineer, gear, song list, etc."
+              : isPractice
+                ? "Rehearsal focus, room booking, etc."
+                : "Parking info, contacts, etc."
           }
         />
       </div>
@@ -372,7 +403,9 @@ export default function EventForm({ defaultType = "SHOW", event, releases = [] }
               ? "Save Changes"
               : isRecording
                 ? "Add Recording Session"
-                : "Add Show"}
+                : isPractice
+                  ? "Add Practice"
+                  : "Add Show"}
         </button>
       </div>
 
@@ -381,9 +414,9 @@ export default function EventForm({ defaultType = "SHOW", event, releases = [] }
         title="Date changed — reset availability?"
         message={
           <>
-            Moving this {isRecording ? "session" : "show"} to a new date clears every
+            Moving this {eventNoun(eventType)} to a new date clears every
             member&apos;s availability response, including your own, and sends a
-            confirmed {isRecording ? "session" : "show"} back to pending. Everyone will
+            confirmed {eventNoun(eventType)} back to pending. Everyone will
             need to mark themselves available again.
           </>
         }
