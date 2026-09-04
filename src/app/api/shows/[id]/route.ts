@@ -184,13 +184,14 @@ export async function DELETE(
   await prisma.show.delete({ where: { id } });
 
   // Tell the band the event is gone. There's no detail page left to link to,
-  // so this points at the calendar; the shared `show:<id>` tag lets it
-  // supersede any earlier notification for this event.
+  // so this points at the calendar. Its own tag (not the shared `show:<id>`)
+  // so it alerts on its own instead of silently replacing the earlier
+  // "new event" notification that shares that id.
   void notifyBandMembers(show.bandId, session.user.id, {
     title: `${show.type === "RECORDING" ? "Recording" : "Show"} deleted: ${show.title}`,
     body: `${format(show.date, "EEE, MMM d")} is off the calendar.`,
     url: "/calendar",
-    tag: `show:${show.id}`,
+    tag: `show-deleted:${show.id}`,
   });
 
   return NextResponse.json({ success: true });
