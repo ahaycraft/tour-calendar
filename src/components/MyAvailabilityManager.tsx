@@ -148,16 +148,16 @@ export default function MyAvailabilityManager({
               <li key={show.id}>
                 <Link
                   href={eventHref(show.type, show.id)}
-                  className="flex items-center justify-between p-3 rounded-xl border border-zinc-800 hover:border-zinc-700 hover:bg-zinc-800/60 transition-all"
+                  className="flex items-center justify-between gap-3 p-3 rounded-xl border border-zinc-800 hover:border-zinc-700 hover:bg-zinc-800/60 transition-all"
                 >
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-sm font-medium text-zinc-200">{show.title}</p>
                     <p className="text-xs text-zinc-500">
                       {locationLine(show)} ·{" "}
                       {format(new Date(show.date), "MMM d, yyyy")}
                     </p>
                   </div>
-                  <AvailabilityBadge status={show.myStatus} />
+                  <AvailabilityBadge status={show.myStatus} className="shrink-0" />
                 </Link>
               </li>
             ))}

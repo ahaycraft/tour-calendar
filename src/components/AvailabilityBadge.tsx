@@ -12,9 +12,21 @@ const labels: Record<string, string> = {
   PENDING: "No response",
 };
 
-export default function AvailabilityBadge({ status }: { status: string }) {
+export default function AvailabilityBadge({
+  status,
+  className,
+}: {
+  status: string;
+  className?: string;
+}) {
   return (
-    <span className={cn("text-xs font-medium px-2 py-0.5 rounded-full", variants[status] ?? "bg-zinc-700 text-zinc-400")}>
+    <span
+      className={cn(
+        "inline-flex items-center whitespace-nowrap text-xs font-medium px-2 py-0.5 rounded-full",
+        variants[status] ?? "bg-zinc-700 text-zinc-400",
+        className
+      )}
+    >
       {labels[status] ?? status}
     </span>
   );
