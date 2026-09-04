@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { format } from "date-fns";
 import { Check, Copy, Loader2, X } from "lucide-react";
 import ConfirmDialog from "./ConfirmDialog";
 
@@ -299,7 +300,7 @@ export default function BandSettings({
                     <p className="text-sm text-zinc-200 truncate">{inv.email}</p>
                     <p className="text-xs text-zinc-500">
                       {inv.role.toLowerCase()} · expires{" "}
-                      {new Date(inv.expiresAt).toLocaleDateString()}
+                      {format(new Date(inv.expiresAt), "MMM d, yyyy")}
                     </p>
                   </div>
                   <button
