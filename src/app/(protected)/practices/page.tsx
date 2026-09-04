@@ -25,15 +25,15 @@ export default async function PracticesPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between gap-3 mb-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
         <h1 className="text-2xl font-bold text-zinc-50">Practices</h1>
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
           {hasUpcoming && (
             <CalendarExportLink href="/api/shows/calendar.ics?scope=upcoming&type=PRACTICE" />
           )}
           <Link
             href="/practices/new"
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-500 transition-colors text-sm"
+            className="whitespace-nowrap px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-500 transition-colors text-sm"
           >
             + Add Practice
           </Link>

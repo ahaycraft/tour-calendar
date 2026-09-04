@@ -22,7 +22,7 @@ export default function CalendarExportLink({
     <a
       href={href}
       className={cn(
-        "inline-flex items-center gap-1.5 font-medium transition-colors",
+        "inline-flex items-center gap-1.5 whitespace-nowrap font-medium transition-colors",
         variant === "primary"
           ? "px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-500"
           : "px-3 py-2 text-sm rounded-lg border border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100"
