@@ -17,13 +17,14 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import BandSwitcher, { type NavBand } from "./BandSwitcher";
-import { ThemeMenu, ThemeToggle, type Theme } from "./ThemeMenu";
+import { ThemeMenu, ThemeToggle, useTheme, type Theme } from "./ThemeMenu";
 
 interface NavProps {
   user: { name: string; email: string; role: string };
   bands: NavBand[];
   activeBandId: string;
   needsResponseCount?: number;
+  /** Server-rendered appearance from the `theme` cookie; seeds the client hook. */
   theme: Theme;
 }
 
@@ -41,11 +42,14 @@ export default function Nav({
   bands,
   activeBandId,
   needsResponseCount = 0,
-  theme,
+  theme: initialTheme,
 }: NavProps) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
+  // Nav stays mounted for the whole session, so the theme choice is owned here
+  // rather than inside the conditionally-mounted menu/drawer.
+  const [theme, setTheme] = useTheme(initialTheme);
 
   const activeRole = bands.find((b) => b.id === activeBandId)?.role;
   const roleChip =
@@ -146,7 +150,12 @@ export default function Nav({
 
           {/* Desktop account menu (appearance + sign out) */}
           <div className="hidden lg:flex items-center shrink-0">
-            <ThemeMenu user={user} roleChip={roleChip} initialTheme={theme} />
+            <ThemeMenu
+              user={user}
+              roleChip={roleChip}
+              theme={theme}
+              onThemeChange={setTheme}
+            />
           </div>
 
           {/* Mobile menu trigger */}
@@ -238,7 +247,11 @@ export default function Nav({
                 <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
                   Appearance
                 </div>
-                <ThemeToggle className="w-full" initialTheme={theme} />
+                <ThemeToggle
+                  className="w-full"
+                  theme={theme}
+                  onChange={setTheme}
+                />
               </div>
               <button
                 onClick={() => signOut({ callbackUrl: "/login" })}

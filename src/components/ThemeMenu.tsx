@@ -27,8 +27,14 @@ function applyTheme(theme: Theme) {
  * this writes the cookie (so the next server render matches), updates <html> in
  * place, and broadcasts to other open tabs. It also re-asserts <html data-theme>
  * after React's dev-only Strict Mode remount.
+ *
+ * Call this once from a component that stays mounted for the whole session
+ * (Nav), not from the toggle UI: the menus that render <ThemeToggle> are
+ * conditionally mounted, so a hook instance living there would re-seed from the
+ * now-stale `initial` prop every time the menu reopens and stomp the user's
+ * choice back onto <html>.
  */
-function useTheme(initial: Theme): [Theme, (next: Theme) => void] {
+export function useTheme(initial: Theme): [Theme, (next: Theme) => void] {
   const [theme, setThemeState] = useState<Theme>(initial);
 
   useLayoutEffect(() => {
@@ -66,13 +72,13 @@ const OPTIONS: { value: Theme; label: string; icon: typeof Sun }[] = [
 /** Segmented Light / Dark control. Used in the desktop menu and mobile drawer. */
 export function ThemeToggle({
   className,
-  initialTheme,
+  theme,
+  onChange,
 }: {
   className?: string;
-  initialTheme: Theme;
+  theme: Theme;
+  onChange: (next: Theme) => void;
 }) {
-  const [theme, setTheme] = useTheme(initialTheme);
-
   return (
     <div
       role="radiogroup"
@@ -90,7 +96,7 @@ export function ThemeToggle({
             type="button"
             role="radio"
             aria-checked={active}
-            onClick={() => setTheme(value)}
+            onClick={() => onChange(value)}
             className={cn(
               "flex flex-1 items-center justify-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
               active
@@ -114,11 +120,13 @@ export function ThemeToggle({
 export function ThemeMenu({
   user,
   roleChip,
-  initialTheme,
+  theme,
+  onThemeChange,
 }: {
   user: { name: string };
   roleChip: string | null;
-  initialTheme: Theme;
+  theme: Theme;
+  onThemeChange: (next: Theme) => void;
 }) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -173,7 +181,7 @@ export function ThemeMenu({
             Appearance
           </div>
           <div className="px-3 pb-1.5">
-            <ThemeToggle className="w-full" initialTheme={initialTheme} />
+            <ThemeToggle className="w-full" theme={theme} onChange={onThemeChange} />
           </div>
           <div className="my-1 border-t border-zinc-800" />
           <button
