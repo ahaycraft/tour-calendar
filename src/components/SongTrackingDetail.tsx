@@ -191,8 +191,10 @@ export default function SongTrackingDetail({
         All songs
       </Link>
 
-      <div className="flex items-center gap-2">
-        <h1 className="text-xl font-bold text-zinc-50 truncate">{song.title}</h1>
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+        <h1 className="min-w-0 truncate text-xl font-bold text-zinc-50">
+          {song.title}
+        </h1>
         <SongStatusBadge status={song.status} />
         <Link
           href={`/songs/${song.id}`}

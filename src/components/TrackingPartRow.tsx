@@ -80,12 +80,14 @@ export default function TrackingPartRow({
           aria-label="Part label"
         />
 
-        <div className="ml-auto flex items-center gap-2">
+        {/* Full-width row of its own on mobile so the selects can share the
+            space; right-aligned beside the label from `sm:` up. */}
+        <div className="flex w-full items-center gap-2 sm:ml-auto sm:w-auto">
           <select
             value={part.status}
             onChange={(e) => onPatch(part.id, { status: e.target.value })}
             className={cn(
-              "px-2 py-1 rounded-md text-xs font-medium border-0 focus:outline-none focus:ring-2 focus:ring-blue-500",
+              "min-w-0 px-2 py-1 rounded-md text-xs font-medium border-0 focus:outline-none focus:ring-2 focus:ring-blue-500",
               recordingPartStatusClass[part.status as RecordingPartStatus] ??
                 "bg-zinc-700 text-zinc-300"
             )}
@@ -103,7 +105,10 @@ export default function TrackingPartRow({
             onChange={(e) =>
               onPatch(part.id, { assigneeId: e.target.value || null })
             }
-            className={cn(fieldClass, "max-w-[9rem]")}
+            className={cn(
+              fieldClass,
+              "min-w-0 flex-1 sm:flex-none sm:max-w-[9rem]"
+            )}
             aria-label="Assignee"
           >
             <option value="">Unassigned</option>
@@ -117,7 +122,7 @@ export default function TrackingPartRow({
           <button
             type="button"
             onClick={() => onDelete(part.id)}
-            className="p-1 text-zinc-500 hover:text-red-400 transition-colors"
+            className="shrink-0 p-1 text-zinc-500 hover:text-red-400 transition-colors"
             aria-label="Remove part"
           >
             <Trash2 size={14} />
