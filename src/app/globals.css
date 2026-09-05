@@ -142,6 +142,25 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   cursor: pointer;
 }
 
+/* iOS Safari can render the "mm/dd/yyyy" / "--:--" field segments using its
+   own system color instead of the input's `color` — most noticeably in an
+   installed PWA — leaving them invisible against our custom background.
+   Force every sub-field to inherit the input's actual text color. */
+input[type="date"]::-webkit-datetime-edit-fields-wrapper,
+input[type="date"]::-webkit-datetime-edit-text,
+input[type="date"]::-webkit-datetime-edit-month-field,
+input[type="date"]::-webkit-datetime-edit-day-field,
+input[type="date"]::-webkit-datetime-edit-year-field,
+input[type="time"]::-webkit-datetime-edit-fields-wrapper,
+input[type="time"]::-webkit-datetime-edit-text,
+input[type="time"]::-webkit-datetime-edit-hour-field,
+input[type="time"]::-webkit-datetime-edit-minute-field,
+input[type="time"]::-webkit-datetime-edit-ampm-field {
+  color: inherit;
+  opacity: 1;
+  -webkit-text-fill-color: currentColor;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
