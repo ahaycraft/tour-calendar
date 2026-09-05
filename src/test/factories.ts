@@ -73,3 +73,9 @@ export function jsonRequest(body: unknown): {
 export function routeCtx(id: string): { params: Promise<{ id: string }> } {
   return { params: Promise.resolve({ id }) };
 }
+
+/** A stand-in for NextRequest that only answers `.url`, for GET handlers that
+ *  read query params via `new URL(request.url)`. */
+export function urlRequest(url: string): { url: string } {
+  return { url: `http://localhost${url}` };
+}

@@ -142,7 +142,7 @@ model Show {
   release   Release? @relation(fields: [releaseId], references: [id], onDelete: SetNull)
   releaseId String?
 
-  @@index([bandId])
+  @@index([bandId, date])
   @@index([releaseId])
   @@index([tourGroupId])
 }

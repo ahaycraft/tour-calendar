@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { useRouter } from "next/navigation";
-import type { EventInput } from "@fullcalendar/core";
+import type { EventInput, DatesSetArg } from "@fullcalendar/core";
 import type { DateClickArg } from "@fullcalendar/interaction";
 import DayActionModal from "./DayActionModal";
 import { eventHref, type EventTypeStr } from "@/lib/events";
@@ -77,25 +77,57 @@ const legend = [
   { label: "Member unavailable", color: UNAVAILABLE_COLOR },
 ];
 
+// Merge freshly-fetched rows into existing state by id, so re-fetching an
+// overlapping range (e.g. the shared padding days between two adjacent
+// months) de-dupes instead of appending duplicates.
+function mergeById<T extends { id: string }>(existing: T[], incoming: T[]): T[] {
+  const byId = new Map(existing.map((item) => [item.id, item]));
+  for (const item of incoming) byId.set(item.id, item);
+  return [...byId.values()];
+}
+
 export default function CalendarView({ userId }: { userId: string }) {
   const router = useRouter();
   const [shows, setShows] = useState<Show[]>([]);
   const [unavailableDates, setUnavailableDates] = useState<UnavailableDate[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalDate, setModalDate] = useState<string | null>(null);
+  // Date ranges already fetched (`${from}_${to}` on the calendar's own visible
+  // range, e.g. from `datesSet`), so paging back to a month already seen
+  // doesn't re-fetch it. A ref, not state — it's read/written synchronously
+  // and shouldn't trigger a render on its own.
+  const loadedRanges = useRef(new Set<string>());
 
-  useEffect(() => {
-    async function load() {
-      const [showsRes, unavailRes] = await Promise.all([
-        fetch("/api/shows"),
-        fetch("/api/unavailability"),
-      ]);
-      if (showsRes.ok) setShows(await showsRes.json());
-      if (unavailRes.ok) setUnavailableDates(await unavailRes.json());
-      setLoading(false);
+  // FullCalendar's day-cell dates are UTC-based (see fmtCellDate below), so
+  // the visible range's start/end read the same way.
+  async function loadRange(start: Date, end: Date) {
+    const from = start.toISOString().slice(0, 10);
+    const to = end.toISOString().slice(0, 10);
+    const key = `${from}_${to}`;
+    if (loadedRanges.current.has(key)) return;
+    loadedRanges.current.add(key);
+
+    const [showsRes, unavailRes] = await Promise.all([
+      fetch(`/api/shows?from=${from}&to=${to}`),
+      fetch(`/api/unavailability?from=${from}&to=${to}`),
+    ]);
+    if (showsRes.ok) {
+      const fetched: Show[] = await showsRes.json();
+      setShows((prev) => mergeById(prev, fetched));
     }
-    load();
-  }, []);
+    if (unavailRes.ok) {
+      const fetched: UnavailableDate[] = await unavailRes.json();
+      setUnavailableDates((prev) => mergeById(prev, fetched));
+    }
+    setLoading(false);
+  }
+
+  // Fires on initial render and on every prev/next/today/view change, with
+  // the grid's full visible range (including the adjacent-month padding
+  // days), so this is the only load path — no separate mount-time fetch.
+  function handleDatesSet(arg: DatesSetArg) {
+    loadRange(arg.start, arg.end);
+  }
 
   const showEvents: EventInput[] = shows.map((show) => {
     const myAvailability = show.availability.find((a) => a.userId === userId);
@@ -185,19 +217,16 @@ export default function CalendarView({ userId }: { userId: string }) {
           }))
       : [];
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64 text-zinc-500">
-        Loading calendar...
-      </div>
-    );
-  }
-
   return (
     <div>
       <div className="hidden sm:flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-50">Calendar</h1>
+          <h1 className="text-2xl font-bold text-zinc-50">
+            Calendar
+            {loading && (
+              <span className="ml-2 text-sm font-normal text-zinc-500">Loading…</span>
+            )}
+          </h1>
           <p className="text-sm text-zinc-500 mt-1">
             Click a date to add an event or block it. Click an event to view
             details.
@@ -235,6 +264,7 @@ export default function CalendarView({ userId }: { userId: string }) {
                 ? "fc-day-unavailable"
                 : ""
             }
+            datesSet={handleDatesSet}
             dateClick={handleDateClick}
             eventClick={(info) => {
               const { type, show } = info.event.extendedProps;

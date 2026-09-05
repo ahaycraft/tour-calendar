@@ -10,24 +10,27 @@ vi.mock("@/lib/prisma", () => ({
 vi.mock("@/lib/band", () => ({ getActiveBandId: vi.fn() }));
 vi.mock("@/lib/push", () => ({ notifyBandMembers: vi.fn() }));
 
-import { POST } from "@/app/api/shows/route";
+import { GET, POST } from "@/app/api/shows/route";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getActiveBandId } from "@/lib/band";
 import { notifyBandMembers } from "@/lib/push";
-import { jsonRequest, makeSession } from "@/test/factories";
+import { jsonRequest, makeSession, urlRequest } from "@/test/factories";
 
 // `auth` is an overloaded next-auth export and Prisma's delegate signatures are
 // deeply generic; cast the doubles to a plain Mock so `.mockResolvedValue` etc.
 // don't fight those types.
 const authMock = auth as unknown as Mock;
 const createMock = prisma.show.create as unknown as Mock;
+const findManyMock = prisma.show.findMany as unknown as Mock;
 const releaseFindMock = prisma.release.findFirst as unknown as Mock;
 const getActiveBandIdMock = vi.mocked(getActiveBandId);
 const notifyMock = vi.mocked(notifyBandMembers);
 
 const call = (body: unknown) =>
   POST(jsonRequest(body) as Parameters<typeof POST>[0]);
+const list = (url: string) =>
+  GET(urlRequest(url) as Parameters<typeof GET>[0]);
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -38,6 +41,41 @@ beforeEach(() => {
     async (args: { data: { title: string; type: string } }) =>
       ({ id: "new1", title: args.data.title, type: args.data.type }) as never
   );
+});
+
+describe("GET /api/shows", () => {
+  it("401 without a session", async () => {
+    authMock.mockResolvedValue(null);
+    const res = await list("/api/shows?from=2026-06-01&to=2026-07-01");
+    expect(res.status).toBe(401);
+  });
+
+  it("400 when from or to is missing", async () => {
+    expect((await list("/api/shows")).status).toBe(400);
+    expect((await list("/api/shows?from=2026-06-01")).status).toBe(400);
+  });
+
+  it("400 for an unparseable from or to", async () => {
+    const res = await list("/api/shows?from=not-a-date&to=2026-07-01");
+    expect(res.status).toBe(400);
+  });
+
+  it("scopes the query to the given band and date range", async () => {
+    findManyMock.mockResolvedValue([]);
+    const res = await list("/api/shows?from=2026-06-01&to=2026-07-01");
+    expect(res.status).toBe(200);
+    expect(findManyMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          bandId: "band1",
+          date: {
+            gte: new Date("2026-06-01T00:00:00Z"),
+            lt: new Date("2026-07-01T00:00:00Z"),
+          },
+        },
+      })
+    );
+  });
 });
 
 describe("POST /api/shows — guards", () => {

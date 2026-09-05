@@ -17,16 +17,33 @@ function eachDateString(startStr: string, endStr: string): string[] {
 }
 
 // Returns unavailability for every member of the active band (not just the
-// caller) so the calendar can show who is blocked on a given day.
-export async function GET() {
+// caller) so the calendar can show who is blocked on a given day. `from`/`to`
+// scope this to the calendar's visible range (`to` exclusive), matching
+// GET /api/shows — otherwise this grows without bound as members block dates.
+export async function GET(request: NextRequest) {
   const session = await auth();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const bandId = await getActiveBandId(session);
   if (!bandId) return NextResponse.json([]);
 
+  const { searchParams } = new URL(request.url);
+  const fromParam = searchParams.get("from");
+  const toParam = searchParams.get("to");
+  if (!fromParam || !toParam) {
+    return NextResponse.json({ error: "from and to are required" }, { status: 400 });
+  }
+  const from = new Date(`${fromParam}T00:00:00Z`);
+  const to = new Date(`${toParam}T00:00:00Z`);
+  if (isNaN(from.getTime()) || isNaN(to.getTime())) {
+    return NextResponse.json({ error: "Invalid from or to date" }, { status: 400 });
+  }
+
   const unavailableDates = await prisma.memberUnavailability.findMany({
-    where: { user: { bandMemberships: { some: { bandId } } } },
+    where: {
+      date: { gte: from, lt: to },
+      user: { bandMemberships: { some: { bandId } } },
+    },
     orderBy: { date: "asc" },
     include: { user: { select: { id: true, name: true } } },
   });

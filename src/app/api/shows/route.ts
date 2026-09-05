@@ -5,15 +5,30 @@ import { getActiveBandId } from "@/lib/band";
 import { notifyBandMembers } from "@/lib/push";
 import { eventHref, eventTypeLabel, isEventType } from "@/lib/events";
 
-export async function GET() {
+// `from`/`to` are the calendar's currently visible date range (`to` exclusive),
+// e.g. what FullCalendar's `datesSet` reports — not a full-history dump, since
+// a long-running band's show count only grows.
+export async function GET(request: NextRequest) {
   const session = await auth();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const bandId = await getActiveBandId(session);
   if (!bandId) return NextResponse.json([]);
 
+  const { searchParams } = new URL(request.url);
+  const fromParam = searchParams.get("from");
+  const toParam = searchParams.get("to");
+  if (!fromParam || !toParam) {
+    return NextResponse.json({ error: "from and to are required" }, { status: 400 });
+  }
+  const from = new Date(`${fromParam}T00:00:00Z`);
+  const to = new Date(`${toParam}T00:00:00Z`);
+  if (isNaN(from.getTime()) || isNaN(to.getTime())) {
+    return NextResponse.json({ error: "Invalid from or to date" }, { status: 400 });
+  }
+
   const shows = await prisma.show.findMany({
-    where: { bandId },
+    where: { bandId, date: { gte: from, lt: to } },
     orderBy: { date: "asc" },
     include: {
       createdBy: { select: { id: true, name: true } },
