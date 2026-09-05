@@ -315,3 +315,18 @@ body {
   color: #c2894a;
   font-weight: 600;
 }
+
+/* FullCalendar dims the day number to 30% opacity on adjacent-month cells
+   (.fc-day-other) but doesn't touch anything else in the cell — match that
+   fade on the unavailable stripe and note so they don't stay full-strength
+   while the date itself looks faded. */
+.fc-day-other.fc-day-unavailable .fc-daygrid-day-frame {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(194, 137, 74, 0.05) 0 6px,
+    transparent 6px 12px
+  );
+}
+.fc-day-other .fc-unavailable-note {
+  opacity: 0.3;
+}
