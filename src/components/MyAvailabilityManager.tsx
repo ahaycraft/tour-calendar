@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { format, startOfDay } from "date-fns";
 import { Trash2 } from "lucide-react";
 import SwipeableShowRow from "./SwipeableShowRow";
-import DatePicker from "./DatePicker";
+import DateRangePicker from "./DateRangePicker";
 import { revalidateShell } from "@/app/(protected)/actions";
 import { calendarDate } from "@/lib/utils";
 
@@ -160,12 +160,14 @@ export default function MyAvailabilityManager({
         <h2 className="font-semibold text-zinc-100 mb-4">Blocked Dates</h2>
 
         <form onSubmit={addDate} className="flex flex-col gap-2 mb-4 sm:flex-row sm:flex-wrap">
-          <DatePicker label="Start date" value={newDate} onChange={setNewDate} />
-          <DatePicker
-            label="End date (optional)"
-            value={newEndDate}
-            onChange={setNewEndDate}
-            min={newDate || undefined}
+          <DateRangePicker
+            label="Date(s)"
+            value={{ start: newDate, end: newEndDate }}
+            onChange={({ start, end }) => {
+              setNewDate(start);
+              setNewEndDate(end);
+            }}
+            required
           />
           <div className="w-full sm:flex-1 sm:min-w-[140px]">
             <label className="block text-xs text-zinc-500 mb-1 sm:invisible">Reason</label>
