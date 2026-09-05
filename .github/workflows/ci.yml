@@ -31,6 +31,12 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # RootLayout (and other pages) use Next's generated LayoutProps/PageProps
+      # types, which only exist after `next dev` or `next build` has run once.
+      # `typegen` produces just those without a full build.
+      - name: Generate route types
+        run: npx next typegen
+
       - name: Typecheck
         run: npx tsc --noEmit
 
