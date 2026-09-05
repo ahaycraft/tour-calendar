@@ -121,6 +121,10 @@ model Show {
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 
+  // Stamped by /api/push/event-reminders once the "day before" push has gone
+  // out, so the daily cron never reminds the same event twice.
+  remindedAt DateTime?
+
   // Set when the event was created as one day of a multi-day tour / recording
   // block (POST /api/shows/bulk). Every day in that block shares the same
   // tourGroupId, and tourName is the block's label ("Fall Tour"), kept so the
