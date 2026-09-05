@@ -55,7 +55,7 @@ async function handle(request: NextRequest) {
 
       await sendPushToUsers(userIds, {
         title: `${eventTypeLabel(event.type)} tomorrow: ${event.title}`,
-        body: location || "Details are in Woodshed.",
+        body: location || "Details are in Woodshedd.",
         url: eventHref(event.type, event.id),
         tag: `event-reminder-${event.id}`,
       });

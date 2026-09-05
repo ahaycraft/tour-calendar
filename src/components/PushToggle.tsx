@@ -137,7 +137,7 @@ export default function PushToggle() {
         </div>
         Open the Share menu and tap{" "}
         <span className="text-zinc-200">Add to Home Screen</span>. Then open
-        Woodshed from the new icon and turn on notifications here.
+        Woodshedd from the new icon and turn on notifications here.
       </div>
     );
   }

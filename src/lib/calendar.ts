@@ -147,7 +147,7 @@ function description(e: CalendarEventInput, appUrl: string): string {
   const lines: string[] = [];
   if (e.notes) lines.push(e.notes.trim(), "");
   lines.push(
-    `${DESCRIPTION_NOUN[e.type] ?? "Event"} in Woodshed:`,
+    `${DESCRIPTION_NOUN[e.type] ?? "Event"} in Woodshedd:`,
     `${appUrl}${eventPath(e)}`
   );
   return lines.join("\n");
@@ -213,7 +213,7 @@ function eventToVevent(e: CalendarEventInput, appUrl: string): string {
   const t = resolveTiming(e);
   const rows = [
     "BEGIN:VEVENT",
-    `UID:${e.id}@woodshed`,
+    `UID:${e.id}@woodshedd`,
     `DTSTAMP:${utcStamp(new Date())}`,
     t.allDay
       ? `DTSTART;VALUE=DATE:${dateStamp(t.start)}`
@@ -240,7 +240,7 @@ export function buildCalendar(
     [
       "BEGIN:VCALENDAR",
       "VERSION:2.0",
-      "PRODID:-//Woodshed//Calendar//EN",
+      "PRODID:-//Woodshedd//Calendar//EN",
       "CALSCALE:GREGORIAN",
       "METHOD:PUBLISH",
       ...events.map((e) => eventToVevent(e, appUrl)),

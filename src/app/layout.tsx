@@ -14,11 +14,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Woodshed",
+  title: "Woodshedd",
   description: "Band calendar, availability, songwriting, and release planning",
   appleWebApp: {
     capable: true,
-    title: "Woodshed",
+    title: "Woodshedd",
     statusBarStyle: "black-translucent",
   },
 };

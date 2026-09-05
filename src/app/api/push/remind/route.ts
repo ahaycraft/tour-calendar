@@ -59,7 +59,7 @@ async function handle(request: NextRequest) {
         pending === 1
           ? "1 show needs your availability"
           : `${pending} shows need your availability`,
-      body: "Open Woodshed to let the band know if you're in or out.",
+      body: "Open Woodshedd to let the band know if you're in or out.",
       url: "/my-availability",
       tag: "availability-reminder",
     });

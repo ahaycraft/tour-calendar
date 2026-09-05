@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Woodshed",
-    short_name: "Woodshed",
+    name: "Woodshedd",
+    short_name: "Woodshedd",
     description: "Band calendar, availability, songwriting, and release planning",
     start_url: "/",
     display: "standalone",

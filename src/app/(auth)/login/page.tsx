@@ -39,7 +39,7 @@ function LoginForm() {
       <div className="w-full max-w-md">
         <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-8">
           <div className="mb-8">
-            <h1 className="text-2xl font-bold text-zinc-50">Woodshed</h1>
+            <h1 className="text-2xl font-bold text-zinc-50">Woodshedd</h1>
             <p className="text-zinc-500 mt-1">Sign in to your account</p>
           </div>
 

@@ -271,7 +271,7 @@ export default function Nav({
               href="/calendar"
               className="font-bold text-zinc-50 text-lg whitespace-nowrap shrink-0"
             >
-              Woodshed
+              Woodshedd
             </Link>
 
             <div className="hidden lg:block">

@@ -6,7 +6,7 @@ import {
   type CalendarEventInput,
 } from "@/lib/calendar";
 
-const APP_URL = "https://woodshed.test";
+const APP_URL = "https://woodshedd.test";
 
 function makeEvent(
   overrides: Partial<CalendarEventInput> = {}
@@ -44,7 +44,7 @@ function line(ics: string, key: string): string | undefined {
 
 describe("icsFilename", () => {
   it("slugifies to lowercase, collapsing runs of non-alphanumerics to one dash", () => {
-    expect(icsFilename("Woodshed Events")).toBe("woodshed-events.ics");
+    expect(icsFilename("Woodshedd Events")).toBe("woodshedd-events.ics");
     expect(icsFilename("Fall Tour 2026!!")).toBe("fall-tour-2026.ics");
   });
 
@@ -69,7 +69,7 @@ describe("buildCalendar — envelope", () => {
     expect(ics.startsWith("BEGIN:VCALENDAR\r\n")).toBe(true);
     expect(ics.endsWith("END:VCALENDAR\r\n")).toBe(true);
     expect(ics).toContain("VERSION:2.0");
-    expect(ics).toContain("PRODID:-//Woodshed//Calendar//EN");
+    expect(ics).toContain("PRODID:-//Woodshedd//Calendar//EN");
   });
 
   it("emits one VEVENT per input event", () => {
@@ -199,7 +199,7 @@ describe("buildCalendar — identity and description per type", () => {
       [makeEvent({ id: "rec9", type: "RECORDING" })],
       APP_URL
     );
-    expect(line(ics, "UID")).toBe("UID:rec9@woodshed");
+    expect(line(ics, "UID")).toBe("UID:rec9@woodshedd");
     expect(line(ics, "URL")).toBe(`URL:${APP_URL}/recordings/rec9`);
   });
 
@@ -210,7 +210,7 @@ describe("buildCalendar — identity and description per type", () => {
   ] as const)("%s description names the type and links the route", (type, base, noun) => {
     const ics = buildCalendar([makeEvent({ id: "x1", type })], APP_URL);
     const desc = line(ics, "DESCRIPTION")!;
-    expect(desc).toContain(`${noun} in Woodshed:`);
+    expect(desc).toContain(`${noun} in Woodshedd:`);
     expect(desc).toContain(`${APP_URL}${base}/x1`);
   });
 

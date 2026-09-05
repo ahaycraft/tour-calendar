@@ -43,7 +43,7 @@ export default function InterestPage() {
             <div className="text-center">
               <h1 className="text-2xl font-bold text-zinc-50 mb-2">Thanks!</h1>
               <p className="text-zinc-400">
-                We&apos;ve got your info and will reach out when Woodshed opens up.
+                We&apos;ve got your info and will reach out when Woodshedd opens up.
               </p>
               <Link
                 href="/login"
@@ -57,7 +57,7 @@ export default function InterestPage() {
               <div className="mb-8">
                 <h1 className="text-2xl font-bold text-zinc-50">Express interest</h1>
                 <p className="text-zinc-500 mt-1">
-                  Woodshed is invite-only right now. Leave your info and
+                  Woodshedd is invite-only right now. Leave your info and
                   we&apos;ll reach out when there&apos;s room.
                 </p>
               </div>

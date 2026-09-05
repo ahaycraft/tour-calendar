@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
   const where: Prisma.ShowWhereInput = { bandId };
   if (isEventType(type)) where.type = type;
 
-  let name = "woodshed-events";
+  let name = "woodshedd-events";
 
   if (idsParam) {
     const ids = idsParam
@@ -57,13 +57,13 @@ export async function GET(request: NextRequest) {
   } else if (releaseId) {
     where.releaseId = releaseId;
     where.status = { not: "CANCELLED" };
-    name = "woodshed-sessions";
+    name = "woodshedd-sessions";
   } else if (scope === "upcoming") {
     where.date = { gte: startOfDay(new Date()) };
     where.status = { not: "CANCELLED" };
     name = isEventType(type)
-      ? `woodshed-upcoming-${eventBasePath(type).slice(1)}`
-      : "woodshed-upcoming";
+      ? `woodshedd-upcoming-${eventBasePath(type).slice(1)}`
+      : "woodshedd-upcoming";
   } else {
     return NextResponse.json(
       { error: "Specify ids, releaseId, or scope=upcoming" },
