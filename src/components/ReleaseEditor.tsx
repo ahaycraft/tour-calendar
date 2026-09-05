@@ -387,10 +387,10 @@ export default function ReleaseEditor({
                     return (
                       <SortableRow key={id} id={id}>
                         {(handleProps) => (
-                          <div className="flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-800/40 pl-2 pr-1 py-1.5">
+                          <div className="flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-800/40 pl-2 pr-1 py-2.5">
                             <button
                               type="button"
-                              className="text-zinc-600 hover:text-zinc-300 cursor-grab active:cursor-grabbing touch-none"
+                              className="p-1.5 -m-1.5 text-zinc-600 hover:text-zinc-300 cursor-grab active:cursor-grabbing touch-none"
                               aria-label="Drag to reorder"
                               {...handleProps}
                             >
@@ -443,10 +443,10 @@ export default function ReleaseEditor({
                     return (
                       <SortableRow key={id} id={id}>
                         {(handleProps) => (
-                          <div className="flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-800/40 pl-2 pr-1 py-1.5">
+                          <div className="flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-800/40 pl-2 pr-1 py-2.5">
                             <button
                               type="button"
-                              className="text-zinc-600 hover:text-zinc-300 cursor-grab active:cursor-grabbing touch-none"
+                              className="p-1.5 -m-1.5 text-zinc-600 hover:text-zinc-300 cursor-grab active:cursor-grabbing touch-none"
                               aria-label="Drag onto the tracklist"
                               {...handleProps}
                             >

@@ -346,7 +346,12 @@ export default function Nav({
             </div>
 
             <div className="p-3 border-b border-zinc-800">
-              <BandSwitcher bands={bands} activeBandId={activeBandId} variant="drawer" />
+              <BandSwitcher
+                bands={bands}
+                activeBandId={activeBandId}
+                variant="drawer"
+                onNavigate={() => setOpen(false)}
+              />
             </div>
 
             <nav className="flex-1 overflow-y-auto p-3 space-y-1">

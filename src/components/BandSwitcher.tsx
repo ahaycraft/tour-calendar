@@ -16,10 +16,14 @@ export default function BandSwitcher({
   bands,
   activeBandId,
   variant = "bar",
+  onNavigate,
 }: {
   bands: NavBand[];
   activeBandId: string;
   variant?: "bar" | "drawer";
+  // Called whenever picking a band or following a link here completes an
+  // action — lets an ancestor (e.g. the mobile nav drawer) close itself too.
+  onNavigate?: () => void;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -46,6 +50,7 @@ export default function BandSwitcher({
 
   async function pick(id: string) {
     setOpen(false);
+    onNavigate?.();
     if (id === activeBandId) return;
     setSwitching(true);
     await fetch("/api/active-band", {
@@ -107,7 +112,10 @@ export default function BandSwitcher({
           <div className="my-1 border-t border-zinc-800" />
           <Link
             href="/bands/new"
-            onClick={() => setOpen(false)}
+            onClick={() => {
+              setOpen(false);
+              onNavigate?.();
+            }}
             className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-800"
           >
             <Plus size={14} />
@@ -115,7 +123,10 @@ export default function BandSwitcher({
           </Link>
           <Link
             href="/bands/settings"
-            onClick={() => setOpen(false)}
+            onClick={() => {
+              setOpen(false);
+              onNavigate?.();
+            }}
             className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-800"
           >
             <Settings size={14} />
