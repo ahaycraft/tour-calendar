@@ -112,23 +112,23 @@ export default async function SongPage({ params }: PageProps) {
           lyrics: song.lyrics ?? "",
           notes: song.notes ?? "",
         }}
-      />
-
-      {/* Match the fields column above: comments sit in the left grid track,
-          not under the arrangement sidebar. */}
-      <div className="mt-8 lg:grid lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-8">
-        <SongComments
-          songId={song.id}
-          currentUserId={session!.user.id}
-          isAdmin={canManage(session!, song.bandId)}
-          initialComments={song.comments.map((c) => ({
-            id: c.id,
-            body: c.body,
-            createdAt: c.createdAt.toISOString(),
-            user: c.user,
-          }))}
-        />
-      </div>
+      >
+        {/* Match the fields column above: comments sit in the left grid track,
+            not under the arrangement sidebar. */}
+        <div className="mt-8 lg:grid lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-8">
+          <SongComments
+            songId={song.id}
+            currentUserId={session!.user.id}
+            isAdmin={canManage(session!, song.bandId)}
+            initialComments={song.comments.map((c) => ({
+              id: c.id,
+              body: c.body,
+              createdAt: c.createdAt.toISOString(),
+              user: c.user,
+            }))}
+          />
+        </div>
+      </SongWorkspace>
     </div>
   );
 }

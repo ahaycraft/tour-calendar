@@ -292,16 +292,6 @@ export default function ReleaseEditor({
             <ListChecks size={14} />
             Tracking plan
           </Link>
-          {canDelete && (
-            <button
-              type="button"
-              onClick={() => setConfirmingDelete(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border border-zinc-700 text-zinc-400 hover:bg-zinc-800 hover:text-red-400 font-medium transition-colors"
-            >
-              <Trash2 size={14} />
-              Delete
-            </button>
-          )}
         </div>
       </div>
 
@@ -506,6 +496,19 @@ export default function ReleaseEditor({
           placeholder="Sequencing thoughts, deadlines, who's mixing…"
         />
       </div>
+
+      {canDelete && (
+        <div className="mt-10 pt-6 border-t border-zinc-800">
+          <button
+            type="button"
+            onClick={() => setConfirmingDelete(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border border-zinc-700 text-zinc-400 hover:bg-zinc-800 hover:text-red-400 font-medium transition-colors"
+          >
+            <Trash2 size={14} />
+            Delete release
+          </button>
+        </div>
+      )}
 
       <ConfirmDialog
         open={confirmingDelete}

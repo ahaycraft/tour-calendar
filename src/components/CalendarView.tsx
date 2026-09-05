@@ -195,7 +195,7 @@ export default function CalendarView({ userId }: { userId: string }) {
 
   return (
     <div>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
+      <div className="hidden sm:flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-zinc-50">Calendar</h1>
           <p className="text-sm text-zinc-500 mt-1">

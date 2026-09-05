@@ -1,17 +1,9 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { requireActiveBandId } from "@/lib/band";
+import { canManage, requireActiveBandId } from "@/lib/band";
 import Link from "next/link";
-import { format } from "date-fns";
 import { Disc3 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import {
-  releaseKindLabel,
-  releaseStatusClass,
-  releaseStatusLabel,
-  type ReleaseKind,
-  type ReleaseStatus,
-} from "@/lib/releases";
+import ReleasesList from "@/components/ReleasesList";
 
 export default async function ReleasesPage() {
   const session = await auth();
@@ -43,37 +35,18 @@ export default async function ReleasesPage() {
           </p>
         </div>
       ) : (
-        <div className="space-y-2">
-          {releases.map((r) => (
-            <Link
-              key={r.id}
-              href={`/releases/${r.id}`}
-              className="flex items-center justify-between gap-4 bg-zinc-900 rounded-xl border border-zinc-800 p-4 hover:border-zinc-700 hover:bg-zinc-800/50 transition-all"
-            >
-              <div className="min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-semibold text-zinc-100">{r.title}</span>
-                  <span className="text-xs text-zinc-500 border border-zinc-700 rounded-full px-2 py-0.5">
-                    {releaseKindLabel[r.kind as ReleaseKind] ?? r.kind}
-                  </span>
-                  <span
-                    className={cn(
-                      "text-xs font-medium px-2 py-0.5 rounded-full",
-                      releaseStatusClass[r.status as ReleaseStatus] ?? "bg-zinc-700 text-zinc-400"
-                    )}
-                  >
-                    {releaseStatusLabel[r.status as ReleaseStatus] ?? r.status}
-                  </span>
-                </div>
-                <p className="text-xs text-zinc-500 mt-0.5">
-                  {r._count.tracks} {r._count.tracks === 1 ? "track" : "tracks"}
-                  {` · added ${format(r.createdAt, "MMM d, yyyy")}`}
-                  {r.targetDate ? ` · target ${format(r.targetDate, "MMM yyyy")}` : ""}
-                </p>
-              </div>
-            </Link>
-          ))}
-        </div>
+        <ReleasesList
+          initialReleases={releases.map((r) => ({
+            id: r.id,
+            title: r.title,
+            kind: r.kind,
+            status: r.status,
+            trackCount: r._count.tracks,
+            createdAt: r.createdAt.toISOString(),
+            targetDate: r.targetDate ? r.targetDate.toISOString() : null,
+            canDelete: canManage(session!, bandId, r.createdById),
+          }))}
+        />
       )}
     </div>
   );

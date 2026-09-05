@@ -32,6 +32,7 @@ export default function SongWorkspace({
   demosAdmin,
   meta,
   sidebar,
+  children,
 }: {
   song: SongData;
   canDelete: boolean;
@@ -42,6 +43,9 @@ export default function SongWorkspace({
   // Rendered beside the fields on desktop (top-aligned with the first card),
   // and directly below them on mobile.
   sidebar?: React.ReactNode;
+  // Rendered below the fields/sidebar, above the delete button — keeps
+  // Delete at the true bottom of the page below things like comments.
+  children?: React.ReactNode;
 }) {
   const router = useRouter();
   const [fields, setFields] = useState<SongData>(song);
@@ -114,23 +118,13 @@ export default function SongWorkspace({
 
   return (
     <div>
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4 mb-1">
+      <div className="mb-1">
         <input
           value={fields.title}
           onChange={(e) => set("title", e.target.value)}
           placeholder="Song title"
-          className="w-full min-w-0 sm:flex-1 bg-transparent text-2xl font-bold text-zinc-50 placeholder:text-zinc-600 focus:outline-none"
+          className="w-full bg-transparent text-2xl font-bold text-zinc-50 placeholder:text-zinc-600 focus:outline-none"
         />
-        {canDelete && (
-          <button
-            type="button"
-            onClick={() => setConfirmingDelete(true)}
-            className="shrink-0 self-start inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border border-zinc-700 text-zinc-400 hover:bg-zinc-800 hover:text-red-400 font-medium transition-colors"
-          >
-            <Trash2 size={14} />
-            Delete
-          </button>
-        )}
       </div>
 
       {meta && <p className="text-xs text-zinc-600 mb-4">{meta}</p>}
@@ -254,6 +248,21 @@ export default function SongWorkspace({
           <div className="mt-8 lg:mt-0 lg:col-start-2">{sidebar}</div>
         )}
       </div>
+
+      {children}
+
+      {canDelete && (
+        <div className="mt-10 pt-6 border-t border-zinc-800">
+          <button
+            type="button"
+            onClick={() => setConfirmingDelete(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border border-zinc-700 text-zinc-400 hover:bg-zinc-800 hover:text-red-400 font-medium transition-colors"
+          >
+            <Trash2 size={14} />
+            Delete song
+          </button>
+        </div>
+      )}
 
       <ConfirmDialog
         open={confirmingDelete}

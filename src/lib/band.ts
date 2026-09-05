@@ -66,6 +66,15 @@ export function canManage(
   return role === "OWNER" || role === "ADMIN" || session.user.id === createdById;
 }
 
+/** Tags each event with whether the current user can delete it, for the list pages. */
+export function withDeletePermission<T extends { createdById: string }>(
+  events: T[],
+  session: Session,
+  bandId: string
+): (T & { canDelete: boolean })[] {
+  return events.map((e) => ({ ...e, canDelete: canManage(session, bandId, e.createdById) }));
+}
+
 function baseSlug(name: string): string {
   return (
     name

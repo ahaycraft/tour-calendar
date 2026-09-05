@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { requireActiveBandId } from "@/lib/band";
+import { requireActiveBandId, withDeletePermission } from "@/lib/band";
 import Link from "next/link";
 import EventList from "@/components/EventList";
 import CalendarExportLink from "@/components/CalendarExportLink";
@@ -41,7 +41,7 @@ export default async function PracticesPage() {
       </div>
 
       <EventList
-        events={practices}
+        events={withDeletePermission(practices, session!, bandId)}
         userId={session!.user.id}
         emptyText="No upcoming practices."
       />
