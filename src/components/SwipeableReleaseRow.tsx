@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useSwipeable } from "react-swipeable";
 import { Trash2 } from "lucide-react";
 import { format } from "date-fns";
-import { cn } from "@/lib/utils";
+import { calendarDate, cn } from "@/lib/utils";
 import {
   releaseKindLabel,
   releaseStatusClass,
@@ -103,7 +103,7 @@ export default function SwipeableReleaseRow({
           {release.trackCount} {release.trackCount === 1 ? "track" : "tracks"}
           {` · added ${format(new Date(release.createdAt), "MMM d, yyyy")}`}
           {release.targetDate
-            ? ` · target ${format(new Date(release.targetDate), "MMM yyyy")}`
+            ? ` · target ${format(calendarDate(release.targetDate), "MMM yyyy")}`
             : ""}
         </p>
       </div>

@@ -1,4 +1,5 @@
 import { startOfDay } from "date-fns";
+import { calendarDate } from "@/lib/utils";
 
 /**
  * Upcoming = happening today or later, and not cancelled. This is the split
@@ -11,7 +12,7 @@ export function isUpcomingEvent(e: {
 }): boolean {
   return (
     e.status !== "CANCELLED" &&
-    startOfDay(new Date(e.date)).getTime() >= startOfDay(new Date()).getTime()
+    startOfDay(calendarDate(e.date)).getTime() >= startOfDay(new Date()).getTime()
   );
 }
 

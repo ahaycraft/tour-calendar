@@ -5,6 +5,7 @@ import { format, startOfDay } from "date-fns";
 import { Trash2 } from "lucide-react";
 import SwipeableShowRow from "./SwipeableShowRow";
 import { revalidateShell } from "@/app/(protected)/actions";
+import { calendarDate } from "@/lib/utils";
 
 interface UnavailableDate {
   id: string;
@@ -145,7 +146,7 @@ export default function MyAvailabilityManager({
 
   const today = startOfDay(new Date());
   const upcomingFiltered = shows.filter(
-    (s) => startOfDay(new Date(s.date)) >= today
+    (s) => startOfDay(calendarDate(s.date)) >= today
   );
 
   return (
@@ -155,26 +156,18 @@ export default function MyAvailabilityManager({
         <h2 className="font-semibold text-zinc-100 mb-4">Blocked Dates</h2>
 
         <form onSubmit={addDate} className="flex flex-col gap-2 mb-4 sm:flex-row sm:flex-wrap">
-          <div className="w-full sm:w-auto">
-            <label className="block text-xs text-zinc-500 mb-1">Start date</label>
-            <input
-              type="date"
-              value={newDate}
-              onChange={(e) => setNewDate(e.target.value)}
-              required
-              className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent sm:w-auto"
-            />
-          </div>
-          <div className="w-full sm:w-auto">
-            <label className="block text-xs text-zinc-500 mb-1">End date (optional)</label>
-            <input
-              type="date"
-              value={newEndDate}
-              min={newDate || undefined}
-              onChange={(e) => setNewEndDate(e.target.value)}
-              className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent sm:w-auto"
-            />
-          </div>
+          <DateField
+            label="Start date"
+            value={newDate}
+            onChange={setNewDate}
+            required
+          />
+          <DateField
+            label="End date (optional)"
+            value={newEndDate}
+            onChange={setNewEndDate}
+            min={newDate || undefined}
+          />
           <div className="w-full sm:flex-1 sm:min-w-[140px]">
             <label className="block text-xs text-zinc-500 mb-1 sm:invisible">Reason</label>
             <input
@@ -209,7 +202,7 @@ export default function MyAvailabilityManager({
               >
                 <div>
                   <span className="text-sm font-medium text-zinc-200">
-                    {format(new Date(u.date), "EEE, MMM d, yyyy")}
+                    {format(calendarDate(u.date), "EEE, MMM d, yyyy")}
                   </span>
                   {u.note && (
                     <span className="text-xs text-zinc-500 ml-2">{u.note}</span>
@@ -266,6 +259,50 @@ export default function MyAvailabilityManager({
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// Mobile Chrome and Safari (especially as an installed PWA) frequently render
+// an empty/filled <input type="date">'s internal text illegibly against a
+// custom background, regardless of `color`. Rather than fight that, hide the
+// native text below `sm:` and draw our own legible mm/dd/yyyy hint or
+// formatted value on top — the native input is still what's focused/tapped
+// and what actually opens the picker. Desktop's native rendering is fine, so
+// it keeps showing there.
+function DateField({
+  label,
+  value,
+  onChange,
+  min,
+  required,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  min?: string;
+  required?: boolean;
+}) {
+  return (
+    <div className="w-full sm:w-auto">
+      <label className="block text-xs text-zinc-500 mb-1">{label}</label>
+      <div className="relative">
+        <input
+          type="date"
+          value={value}
+          min={min}
+          required={required}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent sm:w-auto sm:text-zinc-100"
+        />
+        <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-sm sm:hidden">
+          {value ? (
+            <span className="text-zinc-100">{format(calendarDate(value), "MMM d, yyyy")}</span>
+          ) : (
+            <span className="text-zinc-500">mm/dd/yyyy</span>
+          )}
+        </span>
+      </div>
     </div>
   );
 }

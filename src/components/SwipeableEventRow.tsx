@@ -11,6 +11,7 @@ import AvailabilityBadge from "./AvailabilityBadge";
 import NeedsDetailsBadge, { needsDetails, locationLine } from "./NeedsDetailsBadge";
 import { eventHref } from "@/lib/events";
 import { useIsTouchDevice } from "@/lib/useIsTouchDevice";
+import { calendarDate } from "@/lib/utils";
 
 export interface EventListItem {
   id: string;
@@ -29,7 +30,7 @@ export interface EventListItem {
 const REVEAL_PX = 88;
 
 export function DateBlock({ date, dim }: { date: Date | string; dim?: boolean }) {
-  const d = new Date(date);
+  const d = calendarDate(date);
   return (
     <div
       className={`flex flex-col items-center justify-center shrink-0 w-14 rounded-lg border border-zinc-800 bg-zinc-800/70 py-2 leading-none ${

@@ -8,6 +8,7 @@ import { format } from "date-fns";
 import AvailabilityBadge from "./AvailabilityBadge";
 import { eventHref } from "@/lib/events";
 import { locationLine } from "./NeedsDetailsBadge";
+import { calendarDate } from "@/lib/utils";
 
 interface Show {
   id: string;
@@ -86,7 +87,7 @@ export default function SwipeableShowRow({
       <div className="min-w-0">
         <p className="text-sm font-medium text-zinc-200">{show.title}</p>
         <p className="text-xs text-zinc-500">
-          {locationLine(show)} · {format(new Date(show.date), "MMM d, yyyy")}
+          {locationLine(show)} · {format(calendarDate(show.date), "MMM d, yyyy")}
         </p>
       </div>
       <AvailabilityBadge status={show.myStatus} className="shrink-0" />
