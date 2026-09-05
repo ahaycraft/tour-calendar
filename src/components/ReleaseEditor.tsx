@@ -26,6 +26,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { Check, GripVertical, ListChecks, Loader2, Plus, Trash2, X } from "lucide-react";
 import ConfirmDialog from "./ConfirmDialog";
+import DatePicker from "./DatePicker";
 import SongStatusBadge from "./SongStatusBadge";
 import {
   RELEASE_KINDS,
@@ -318,15 +319,16 @@ export default function ReleaseEditor({
             </option>
           ))}
         </select>
-        <label className="flex items-center gap-1.5 text-zinc-500">
+        <div className="flex items-center gap-1.5 text-zinc-500">
           Target
-          <input
-            type="date"
+          <DatePicker
+            label="Target date"
+            hideLabel
             value={meta.targetDate}
-            onChange={(e) => setMetaField("targetDate", e.target.value)}
-            className={metaFieldClass}
+            onChange={(value) => setMetaField("targetDate", value)}
+            buttonClassName={metaFieldClass}
           />
-        </label>
+        </div>
         <span className="text-zinc-600">
           {titleMissing ? (
             <span className="text-amber-400">Add a title to save</span>

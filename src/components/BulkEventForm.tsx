@@ -11,6 +11,7 @@ import {
   type EventTypeStr,
 } from "@/lib/events";
 import CalendarExportLink from "@/components/CalendarExportLink";
+import DatePicker from "@/components/DatePicker";
 
 const inputClass =
   "w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent";
@@ -202,31 +203,14 @@ export default function BulkEventForm({
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="block text-sm font-medium text-zinc-300 mb-1">
-            Start date <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="date"
-            required
-            value={start}
-            onChange={(e) => setStart(e.target.value)}
-            className={inputClass}
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-zinc-300 mb-1">
-            End date <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="date"
-            required
-            value={end}
-            onChange={(e) => setEnd(e.target.value)}
-            min={start || undefined}
-            className={inputClass}
-          />
-        </div>
+        <DatePicker label="Start date" value={start} onChange={setStart} required />
+        <DatePicker
+          label="End date"
+          value={end}
+          onChange={setEnd}
+          min={start || undefined}
+          required
+        />
       </div>
 
       {rangeTooLong && (

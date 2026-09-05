@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import VenueSearch, { type VenueResult } from "./VenueSearch";
 import ConfirmDialog from "./ConfirmDialog";
+import DatePicker from "./DatePicker";
 import { eventHref, eventNoun, type EventTypeStr } from "@/lib/events";
 import { AlertTriangle } from "lucide-react";
 
@@ -145,6 +146,10 @@ export default function EventForm({ defaultType = "SHOW", event, releases = [] }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (!date) {
+      setError("Pick a date");
+      return;
+    }
     if (dateChanged) {
       setFormEl(e.currentTarget);
       setConfirmingDateChange(true);
@@ -212,17 +217,7 @@ export default function EventForm({ defaultType = "SHOW", event, releases = [] }
       )}
 
       <div>
-        <label className="block text-sm font-medium text-zinc-300 mb-1">
-          Date <span className="text-red-500">*</span>
-        </label>
-        <input
-          name="date"
-          type="date"
-          required
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          className={inputClass}
-        />
+        <DatePicker label="Date" value={date} onChange={setDate} required />
         {dateChanged && (
           <p className="mt-1.5 flex items-start gap-1.5 text-xs text-amber-400">
             <AlertTriangle size={13} className="mt-px shrink-0" />
