@@ -43,8 +43,10 @@ export default function MyAvailabilityManager({
   const [undo, setUndo] = useState<UndoState | null>(null);
   const undoTimer = useRef<number | null>(null);
   const [newDate, setNewDate] = useState("");
+  const [newEndDate, setNewEndDate] = useState("");
   const [newNote, setNewNote] = useState("");
   const [adding, setAdding] = useState(false);
+  const [addError, setAddError] = useState("");
 
   async function persistStatus(showId: string, status: string): Promise<boolean> {
     const res = await fetch(`/api/shows/${showId}/availability`, {
@@ -99,20 +101,33 @@ export default function MyAvailabilityManager({
     e.preventDefault();
     if (!newDate) return;
     setAdding(true);
+    setAddError("");
 
     const res = await fetch("/api/unavailability", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ date: newDate, note: newNote }),
+      body: JSON.stringify({
+        date: newDate,
+        endDate: newEndDate || undefined,
+        note: newNote,
+      }),
     });
 
     if (res.ok) {
-      const record = await res.json();
-      setUnavailableDates((prev) => [...prev, { ...record, date: record.date }].sort(
-        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-      ));
+      const records: UnavailableDate[] = await res.json();
+      setUnavailableDates((prev) => {
+        const byId = new Map(prev.map((u) => [u.id, u] as const));
+        for (const record of records) byId.set(record.id, record);
+        return Array.from(byId.values()).sort(
+          (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+        );
+      });
       setNewDate("");
+      setNewEndDate("");
       setNewNote("");
+    } else {
+      const body = await res.json().catch(() => ({}));
+      setAddError(body.error || "Failed to block those dates");
     }
     setAdding(false);
   }
@@ -139,29 +154,49 @@ export default function MyAvailabilityManager({
       <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-6">
         <h2 className="font-semibold text-zinc-100 mb-4">Blocked Dates</h2>
 
-        <form onSubmit={addDate} className="flex gap-2 mb-5 flex-wrap">
-          <input
-            type="date"
-            value={newDate}
-            onChange={(e) => setNewDate(e.target.value)}
-            required
-            className="px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
-          <input
-            type="text"
-            value={newNote}
-            onChange={(e) => setNewNote(e.target.value)}
-            placeholder="Reason (optional)"
-            className="flex-1 min-w-[140px] px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
-          <button
-            type="submit"
-            disabled={adding}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-500 disabled:opacity-50 transition-colors"
-          >
-            {adding ? "Adding..." : "Block Date"}
-          </button>
+        <form onSubmit={addDate} className="flex flex-col gap-2 mb-4 sm:flex-row sm:flex-wrap">
+          <div className="w-full sm:w-auto">
+            <label className="block text-xs text-zinc-500 mb-1">Start date</label>
+            <input
+              type="date"
+              value={newDate}
+              onChange={(e) => setNewDate(e.target.value)}
+              required
+              className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent sm:w-auto"
+            />
+          </div>
+          <div className="w-full sm:w-auto">
+            <label className="block text-xs text-zinc-500 mb-1">End date (optional)</label>
+            <input
+              type="date"
+              value={newEndDate}
+              min={newDate || undefined}
+              onChange={(e) => setNewEndDate(e.target.value)}
+              className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent sm:w-auto"
+            />
+          </div>
+          <div className="w-full sm:flex-1 sm:min-w-[140px]">
+            <label className="block text-xs text-zinc-500 mb-1 sm:invisible">Reason</label>
+            <input
+              type="text"
+              value={newNote}
+              onChange={(e) => setNewNote(e.target.value)}
+              placeholder="Reason (optional)"
+              className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+          <div className="w-full sm:w-auto sm:self-end">
+            <button
+              type="submit"
+              disabled={adding}
+              className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-500 disabled:opacity-50 transition-colors sm:w-auto"
+            >
+              {adding ? "Adding..." : newEndDate ? "Block Dates" : "Block Date"}
+            </button>
+          </div>
         </form>
+
+        {addError && <p className="text-sm text-red-400 mb-4">{addError}</p>}
 
         {unavailableDates.length === 0 ? (
           <p className="text-sm text-zinc-500">No blocked dates. All clear!</p>

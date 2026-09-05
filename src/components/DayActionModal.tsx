@@ -119,7 +119,8 @@ export default function DayActionModal({
       setError("Failed to block this date");
       return;
     }
-    onUnavailabilityAdded(await res.json());
+    const [record] = await res.json();
+    onUnavailabilityAdded(record);
     onClose();
   }
 
