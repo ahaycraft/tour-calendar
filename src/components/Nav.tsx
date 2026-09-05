@@ -16,6 +16,7 @@ import {
   UserX,
   LogOut,
   Menu,
+  ShieldCheck,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -143,6 +144,8 @@ export default function Nav({
   const activeRole = bands.find((b) => b.id === activeBandId)?.role;
   const roleChip =
     activeRole === "OWNER" ? "Owner" : activeRole === "ADMIN" ? "Admin" : null;
+  // Global admin (User.role), distinct from the per-band role above.
+  const isAdmin = user.role === "ADMIN";
 
   const badgeFor = (href: string) =>
     href === "/my-availability" && needsResponseCount > 0 ? needsResponseCount : 0;
@@ -290,6 +293,7 @@ export default function Nav({
               roleChip={roleChip}
               theme={theme}
               onThemeChange={setTheme}
+              isAdmin={isAdmin}
             />
           </div>
 
@@ -379,6 +383,16 @@ export default function Nav({
                   onChange={setTheme}
                 />
               </div>
+              {isAdmin && (
+                <Link
+                  href="/admin/interest"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-3 w-full px-3 py-3 rounded-lg text-sm font-medium text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors"
+                >
+                  <ShieldCheck size={18} />
+                  Interest submissions
+                </Link>
+              )}
               <button
                 onClick={() => signOut({ callbackUrl: "/login" })}
                 className="flex items-center gap-3 w-full px-3 py-3 rounded-lg text-sm font-medium text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors"

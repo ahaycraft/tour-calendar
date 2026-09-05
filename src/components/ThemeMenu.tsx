@@ -8,7 +8,8 @@ import {
   useState,
 } from "react";
 import { signOut } from "next-auth/react";
-import { ChevronDown, LogOut, Moon, Sun } from "lucide-react";
+import Link from "next/link";
+import { ChevronDown, LogOut, Moon, ShieldCheck, Sun } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type Theme = "light" | "dark";
@@ -122,11 +123,13 @@ export function ThemeMenu({
   roleChip,
   theme,
   onThemeChange,
+  isAdmin,
 }: {
   user: { name: string };
   roleChip: string | null;
   theme: Theme;
   onThemeChange: (next: Theme) => void;
+  isAdmin?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -183,6 +186,19 @@ export function ThemeMenu({
           <div className="px-3 pb-1.5">
             <ThemeToggle className="w-full" theme={theme} onChange={onThemeChange} />
           </div>
+          {isAdmin && (
+            <>
+              <div className="my-1 border-t border-zinc-800" />
+              <Link
+                href="/admin/interest"
+                role="menuitem"
+                className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-800"
+              >
+                <ShieldCheck size={14} />
+                Interest submissions
+              </Link>
+            </>
+          )}
           <div className="my-1 border-t border-zinc-800" />
           <button
             type="button"

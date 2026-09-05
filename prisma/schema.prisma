@@ -442,3 +442,26 @@ enum RecordingPartStatus {
   TRACKED
   NEEDS_REDO
 }
+
+// Pre-launch waitlist signups from the public "Express interest" form on the
+// login page. The app is invite-only for now (see the login page comment on
+// self-serve registration), so this is how prospective users get in touch.
+// Visible only to global admins (User.role), at /admin/interest.
+model InterestSubmission {
+  id        String       @id @default(cuid())
+  firstName String
+  lastName  String
+  email     String
+  role      InterestRole
+  createdAt DateTime     @default(now())
+
+  @@index([createdAt])
+}
+
+enum InterestRole {
+  ARTIST
+  BAND
+  PRODUCER
+  MANAGER
+  BOOKING_AGENT
+}
