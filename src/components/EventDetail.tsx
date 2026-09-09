@@ -2,12 +2,14 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import { formatDate, formatTime } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
+import { buildItineraryMessage } from "@/lib/itinerary";
 import ShowStatusBadge from "@/components/ShowStatusBadge";
 import EventTypeBadge from "@/components/EventTypeBadge";
 import EventTimeline from "@/components/EventTimeline";
 import ShowAvailabilityControls from "@/components/ShowAvailabilityControls";
 import ShowStatusControls from "@/components/ShowStatusControls";
+import DeleteEventButton from "@/components/DeleteEventButton";
 import VenueMap from "@/components/VenueMap";
 import AddToCalendar from "@/components/AddToCalendar";
 import TextItineraryButton from "@/components/TextItineraryButton";
@@ -76,32 +78,7 @@ export default async function EventDetail({ id, expected }: Props) {
   );
 
   const appUrl = process.env.AUTH_URL?.replace(/\/$/, "") ?? "";
-
-  const fullAddress = [
-    show.venueAddress,
-    [show.venue, show.city, show.state, show.country]
-      .filter(Boolean)
-      .join(", ")
-  ]
-    .filter(Boolean)
-    .join(", ");
-
-  const itineraryMessage = [
-    `${show.title} — ${formatDate(show.date)}`,
-    [
-      show.loadInTime && `Load-in ${formatTime(show.loadInTime)}`,
-      show.doorsTime && `Doors ${formatTime(show.doorsTime)}`,
-      show.setTime && `Set ${formatTime(show.setTime)}`
-    ]
-      .filter(Boolean)
-      .join(" · "),
-    [show.venue, show.city, show.state].filter(Boolean).join(", "),
-    fullAddress &&
-      `https://maps.google.com/?q=${encodeURIComponent(fullAddress)}`,
-    `Details: ${appUrl}${eventHref(show.type, show.id)}`
-  ]
-    .filter(Boolean)
-    .join("\n");
+  const itineraryMessage = buildItineraryMessage(show, appUrl);
 
   const myAvailability = show.availability.find(
     (a) => a.userId === session!.user.id
@@ -273,7 +250,6 @@ export default async function EventDetail({ id, expected }: Props) {
                 availableCount={availableMembers.length}
                 memberCount={memberCount}
                 noun={eventNoun(show.type)}
-                basePath={eventBasePath(show.type)}
               />
             )}
           </div>
@@ -419,6 +395,14 @@ export default async function EventDetail({ id, expected }: Props) {
           />
         </div>
       </div>
+
+      {isAdminOrCreator && (
+        <DeleteEventButton
+          showId={show.id}
+          noun={eventNoun(show.type)}
+          basePath={eventBasePath(show.type)}
+        />
+      )}
     </div>
   );
 }

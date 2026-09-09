@@ -11,8 +11,6 @@ interface Props {
   availableCount: number;
   memberCount: number;
   noun?: string;
-  /** List route to return to after a delete. */
-  basePath?: string;
 }
 
 export default function ShowStatusControls({
@@ -20,14 +18,11 @@ export default function ShowStatusControls({
   currentStatus,
   availableCount,
   memberCount,
-  noun = "show",
-  basePath = "/shows"
+  noun = "show"
 }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [pending, setPending] = useState<null | "confirm-anyway" | "delete">(
-    null
-  );
+  const [confirmingAnyway, setConfirmingAnyway] = useState(false);
 
   const Noun = noun[0].toUpperCase() + noun.slice(1);
   const everyoneAvailable = memberCount > 0 && availableCount >= memberCount;
@@ -41,24 +36,16 @@ export default function ShowStatusControls({
     });
     await revalidateShell();
     setLoading(false);
-    setPending(null);
+    setConfirmingAnyway(false);
     router.refresh();
   }
 
   function onStatusClick(status: string) {
     if (status === "CONFIRMED" && !everyoneAvailable) {
-      setPending("confirm-anyway");
+      setConfirmingAnyway(true);
       return;
     }
     doUpdateStatus(status);
-  }
-
-  async function doDelete() {
-    setLoading(true);
-    await fetch(`/api/shows/${showId}`, { method: "DELETE" });
-    await revalidateShell();
-    router.push(basePath);
-    router.refresh();
   }
 
   return (
@@ -103,17 +90,10 @@ export default function ShowStatusControls({
             Cancel {Noun}
           </button>
         )}
-        <button
-          onClick={() => setPending("delete")}
-          disabled={loading}
-          className="px-3 py-1.5 text-sm rounded-lg border border-zinc-700 text-zinc-400 hover:bg-zinc-800 hover:text-red-400 font-medium transition-colors disabled:opacity-50 sm:ml-auto"
-        >
-          Delete
-        </button>
       </div>
 
       <ConfirmDialog
-        open={pending === "confirm-anyway"}
+        open={confirmingAnyway}
         title={`Confirm ${noun} anyway?`}
         message={
           <>
@@ -126,18 +106,7 @@ export default function ShowStatusControls({
         confirmLabel={`Confirm ${Noun}`}
         busy={loading}
         onConfirm={() => doUpdateStatus("CONFIRMED")}
-        onCancel={() => setPending(null)}
-      />
-
-      <ConfirmDialog
-        open={pending === "delete"}
-        title={`Delete this ${noun}?`}
-        message="This cannot be undone. All availability responses for it will be removed too."
-        confirmLabel="Delete"
-        tone="danger"
-        busy={loading}
-        onConfirm={doDelete}
-        onCancel={() => setPending(null)}
+        onCancel={() => setConfirmingAnyway(false)}
       />
     </div>
   );
