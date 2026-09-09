@@ -5,12 +5,12 @@ import "./globals.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
-  subsets: ["latin"],
+  subsets: ["latin"]
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
-  subsets: ["latin"],
+  subsets: ["latin"]
 });
 
 export const metadata: Metadata = {
@@ -19,15 +19,15 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     title: "Woodshedd",
-    statusBarStyle: "black-translucent",
-  },
+    statusBarStyle: "black-translucent"
+  }
 };
 
 export const viewport: Viewport = {
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#f5f5f7" },
-    { media: "(prefers-color-scheme: dark)", color: "#09090b" },
-  ],
+    { media: "(prefers-color-scheme: dark)", color: "#09090b" }
+  ]
 };
 
 // The appearance choice lives in the `theme` cookie so it can be read here, on

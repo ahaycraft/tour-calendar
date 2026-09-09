@@ -9,12 +9,12 @@ import { type EventTypeStr } from "@/lib/events";
 const TYPE_TABS: { value: EventTypeStr; label: string }[] = [
   { value: "SHOW", label: "Show" },
   { value: "PRACTICE", label: "Practice" },
-  { value: "RECORDING", label: "Recording" },
+  { value: "RECORDING", label: "Recording" }
 ];
 const TITLE_NOUN: Record<EventTypeStr, string> = {
   SHOW: "Show",
   PRACTICE: "Practice",
-  RECORDING: "Session",
+  RECORDING: "Session"
 };
 
 interface UnavailableDate {
@@ -40,7 +40,11 @@ interface Show {
   state?: string;
   date: string;
   status: "PENDING" | "CONFIRMED" | "CANCELLED";
-  availability: Array<{ userId: string; status: string; user: { name: string } }>;
+  availability: Array<{
+    userId: string;
+    status: string;
+    user: { name: string };
+  }>;
 }
 
 interface Props {
@@ -56,7 +60,11 @@ interface Props {
 const inputClass =
   "w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent";
 
-const emptyMeta = { address: "", lat: null as number | null, lng: null as number | null };
+const emptyMeta = {
+  address: "",
+  lat: null as number | null,
+  lng: null as number | null
+};
 
 export default function DayActionModal({
   date,
@@ -65,7 +73,7 @@ export default function DayActionModal({
   onClose,
   onUnavailabilityAdded,
   onUnavailabilityRemoved,
-  onShowAdded,
+  onShowAdded
 }: Props) {
   const [tab, setTab] = useState<"unavailability" | "event">("unavailability");
   const [eventType, setEventType] = useState<EventTypeStr>("SHOW");
@@ -112,7 +120,7 @@ export default function DayActionModal({
     const res = await fetch("/api/unavailability", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ date, note }),
+      body: JSON.stringify({ date, note })
     });
     setBusy(false);
     if (!res.ok) {
@@ -130,7 +138,7 @@ export default function DayActionModal({
     const res = await fetch("/api/unavailability", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ date }),
+      body: JSON.stringify({ date })
     });
     setBusy(false);
     if (!res.ok) {
@@ -147,8 +155,12 @@ export default function DayActionModal({
     setBusy(true);
 
     const data = Object.fromEntries(new FormData(e.currentTarget));
-    const loadInTime = data.loadInTime ? `${date}T${data.loadInTime}:00` : undefined;
-    const doorsTime = data.doorsTime ? `${date}T${data.doorsTime}:00` : undefined;
+    const loadInTime = data.loadInTime
+      ? `${date}T${data.loadInTime}:00`
+      : undefined;
+    const doorsTime = data.doorsTime
+      ? `${date}T${data.doorsTime}:00`
+      : undefined;
     const setTime = data.setTime ? `${date}T${data.setTime}:00` : undefined;
 
     const res = await fetch("/api/shows", {
@@ -169,8 +181,8 @@ export default function DayActionModal({
         notes: data.notes || undefined,
         venueAddress: venueMeta.address || undefined,
         venueLat: venueMeta.lat ?? undefined,
-        venueLng: venueMeta.lng ?? undefined,
-      }),
+        venueLng: venueMeta.lng ?? undefined
+      })
     });
 
     setBusy(false);
@@ -188,16 +200,18 @@ export default function DayActionModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-backdrop-in"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md max-h-[90vh] overflow-y-auto bg-zinc-900 rounded-2xl border border-zinc-800 shadow-xl"
+        className="w-full max-w-md max-h-[90vh] overflow-y-auto bg-zinc-900 rounded-2xl border border-zinc-800 shadow-xl animate-modal-in"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between p-5 border-b border-zinc-800">
           <div>
-            <h2 className="text-base font-semibold text-zinc-50">{prettyDate}</h2>
+            <h2 className="text-base font-semibold text-zinc-50">
+              {prettyDate}
+            </h2>
             <p className="text-xs text-zinc-500 mt-0.5">
               Add an event or block this date.
             </p>
@@ -246,13 +260,25 @@ export default function DayActionModal({
                   </p>
                   <ul className="space-y-1">
                     {dayRoster.map((r, i) => (
-                      <li key={i} className="text-sm text-zinc-300 flex gap-1.5">
-                        <Ban size={14} className="mt-0.5 shrink-0 text-orange-500" />
+                      <li
+                        key={i}
+                        className="text-sm text-zinc-300 flex gap-1.5"
+                      >
+                        <Ban
+                          size={14}
+                          className="mt-0.5 shrink-0 text-orange-500"
+                        />
                         <span>
-                          <span className={r.isSelf ? "text-zinc-100 font-medium" : ""}>
+                          <span
+                            className={
+                              r.isSelf ? "text-zinc-100 font-medium" : ""
+                            }
+                          >
                             {r.name}
                           </span>
-                          {r.note && <span className="text-zinc-500"> — {r.note}</span>}
+                          {r.note && (
+                            <span className="text-zinc-500"> — {r.note}</span>
+                          )}
                         </span>
                       </li>
                     ))}
@@ -260,47 +286,47 @@ export default function DayActionModal({
                 </div>
               )}
               {existingUnavailability ? (
-              <div className="space-y-4">
-                <p className="text-sm text-zinc-400">
-                  You&apos;re marked unavailable on this date
-                  {existingUnavailability.note && (
-                    <span className="text-zinc-500">
-                      {" "}
-                      — &ldquo;{existingUnavailability.note}&rdquo;
-                    </span>
-                  )}
-                  .
-                </p>
-                <button
-                  onClick={unblockDate}
-                  disabled={busy}
-                  className="w-full flex items-center justify-center gap-2 py-2 px-4 bg-zinc-800 text-red-400 font-medium rounded-lg hover:bg-zinc-700 disabled:opacity-50 transition-colors"
-                >
-                  <Trash2 size={15} />
-                  {busy ? "Removing..." : "Remove unavailability"}
-                </button>
-              </div>
-            ) : (
-              <form onSubmit={blockDate} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-1">
-                    Reason <span className="text-zinc-600">(optional)</span>
-                  </label>
-                  <input
-                    value={note}
-                    onChange={(e) => setNote(e.target.value)}
-                    className={inputClass}
-                    placeholder="e.g. Out of town"
-                  />
+                <div className="space-y-4">
+                  <p className="text-sm text-zinc-400">
+                    You&apos;re marked unavailable on this date
+                    {existingUnavailability.note && (
+                      <span className="text-zinc-500">
+                        {" "}
+                        — &ldquo;{existingUnavailability.note}&rdquo;
+                      </span>
+                    )}
+                    .
+                  </p>
+                  <button
+                    onClick={unblockDate}
+                    disabled={busy}
+                    className="w-full flex items-center justify-center gap-2 py-2 px-4 bg-zinc-800 text-red-400 font-medium rounded-lg hover:bg-zinc-700 disabled:opacity-50 transition-colors"
+                  >
+                    <Trash2 size={15} />
+                    {busy ? "Removing..." : "Remove unavailability"}
+                  </button>
                 </div>
-                <button
-                  type="submit"
-                  disabled={busy}
-                  className="w-full py-2 px-4 bg-orange-600 text-white font-medium rounded-lg hover:bg-orange-500 disabled:opacity-50 transition-colors"
-                >
-                  {busy ? "Blocking..." : "Block this date"}
-                </button>
-              </form>
+              ) : (
+                <form onSubmit={blockDate} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-300 mb-1">
+                      Reason <span className="text-zinc-600">(optional)</span>
+                    </label>
+                    <input
+                      value={note}
+                      onChange={(e) => setNote(e.target.value)}
+                      className={inputClass}
+                      placeholder="e.g. Out of town"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={busy}
+                    className="w-full py-2 px-4 bg-orange-600 text-white font-medium rounded-lg hover:bg-orange-500 disabled:opacity-50 transition-colors"
+                  >
+                    {busy ? "Blocking..." : "Block this date"}
+                  </button>
+                </form>
               )}
             </div>
           ) : (
@@ -374,7 +400,9 @@ export default function DayActionModal({
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-1">State</label>
+                  <label className="block text-sm font-medium text-zinc-300 mb-1">
+                    State
+                  </label>
                   <input
                     name="state"
                     value={stateField}
@@ -391,7 +419,11 @@ export default function DayActionModal({
                     <label className="block text-sm font-medium text-zinc-300 mb-1">
                       Call Time
                     </label>
-                    <input name="loadInTime" type="time" className={inputClass} />
+                    <input
+                      name="loadInTime"
+                      type="time"
+                      className={inputClass}
+                    />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-zinc-300 mb-1">
@@ -404,15 +436,29 @@ export default function DayActionModal({
               {isShow && (
                 <div className="grid grid-cols-3 gap-2">
                   <div>
-                    <label className="block text-sm font-medium text-zinc-300 mb-1">Load In</label>
-                    <input name="loadInTime" type="time" className={inputClass} />
+                    <label className="block text-sm font-medium text-zinc-300 mb-1">
+                      Load In
+                    </label>
+                    <input
+                      name="loadInTime"
+                      type="time"
+                      className={inputClass}
+                    />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-zinc-300 mb-1">Doors</label>
-                    <input name="doorsTime" type="time" className={inputClass} />
+                    <label className="block text-sm font-medium text-zinc-300 mb-1">
+                      Doors
+                    </label>
+                    <input
+                      name="doorsTime"
+                      type="time"
+                      className={inputClass}
+                    />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-zinc-300 mb-1">Set</label>
+                    <label className="block text-sm font-medium text-zinc-300 mb-1">
+                      Set
+                    </label>
                     <input name="setTime" type="time" className={inputClass} />
                   </div>
                 </div>
@@ -433,7 +479,9 @@ export default function DayActionModal({
                 </div>
               )}
               <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-1">Notes</label>
+                <label className="block text-sm font-medium text-zinc-300 mb-1">
+                  Notes
+                </label>
                 <textarea
                   name="notes"
                   rows={2}

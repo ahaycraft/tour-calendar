@@ -133,8 +133,10 @@
 
 /* Make the date/time picker icon visible on dark inputs only; light mode
    gets the browser default dark glyph. */
-:root:not([data-theme="light"]) input[type="date"]::-webkit-calendar-picker-indicator,
-:root:not([data-theme="light"]) input[type="time"]::-webkit-calendar-picker-indicator {
+:root:not([data-theme="light"])
+  input[type="date"]::-webkit-calendar-picker-indicator,
+:root:not([data-theme="light"])
+  input[type="time"]::-webkit-calendar-picker-indicator {
   filter: invert(0.7);
 }
 input[type="date"]::-webkit-calendar-picker-indicator,
@@ -225,6 +227,13 @@ body {
 .fc .fc-button:focus {
   box-shadow: none !important;
 }
+/* --fc-button-text-color is the theme-inverted zinc ramp, so on the
+   hardcoded blue active background it goes near-black in light mode.
+   Match the app's other blue buttons (e.g. "+ Add Event") with white text. */
+.fc .fc-button-primary:not(:disabled).fc-button-active,
+.fc .fc-button-primary:not(:disabled).fc-button-active:hover {
+  color: #fff;
+}
 
 /* The week view is a single day-grid row, so with height:auto it collapses
    to almost nothing. Give its day cells real vertical space. */
@@ -280,7 +289,11 @@ body {
   background: var(--color-zinc-700);
 }
 .leaflet-control-attribution {
-  background: color-mix(in srgb, var(--color-zinc-900) 80%, transparent) !important;
+  background: color-mix(
+    in srgb,
+    var(--color-zinc-900) 80%,
+    transparent
+  ) !important;
   color: var(--color-zinc-500) !important;
 }
 .leaflet-control-attribution a {
@@ -329,4 +342,34 @@ body {
 }
 .fc-day-other .fc-unavailable-note {
   opacity: 0.3;
+}
+
+/* Entrance animations for modals that unmount immediately on close (no CSS
+   transition possible on the way out). Respects prefers-reduced-motion. */
+@keyframes backdrop-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+.animate-backdrop-in {
+  animation: backdrop-in 0.15s ease-out;
+}
+.animate-modal-in {
+  animation: modal-in 0.15s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-backdrop-in,
+  .animate-modal-in {
+    animation: none;
+  }
+  .mobile-nav-overlay,
+  .mobile-nav-overlay #mobile-nav {
+    transition: none !important;
+  }
 }

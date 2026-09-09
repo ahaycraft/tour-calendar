@@ -17,7 +17,7 @@ import {
   LogOut,
   Menu,
   ShieldCheck,
-  X,
+  X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import BandSwitcher, { type NavBand } from "./BandSwitcher";
@@ -37,7 +37,7 @@ interface NavProps {
 const EVENT_LINKS = [
   { href: "/shows", label: "Shows", icon: List },
   { href: "/practices", label: "Practices", icon: Users },
-  { href: "/recordings", label: "Recordings", icon: Mic },
+  { href: "/recordings", label: "Recordings", icon: Mic }
 ];
 
 const PRIMARY_LINK = { href: "/calendar", label: "Calendar", icon: Calendar };
@@ -45,7 +45,7 @@ const PRIMARY_LINK = { href: "/calendar", label: "Calendar", icon: Calendar };
 const SECONDARY_LINKS = [
   { href: "/songs", label: "Songs", icon: Music },
   { href: "/releases", label: "Releases", icon: Disc3 },
-  { href: "/my-availability", label: "My Availability", icon: UserX },
+  { href: "/my-availability", label: "My Availability", icon: UserX }
 ];
 
 const pathMatches = (pathname: string, href: string) =>
@@ -60,7 +60,8 @@ function EventsMenu({ pathname }: { pathname: string }) {
   useEffect(() => {
     if (!open) return;
     function onDown(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      if (ref.current && !ref.current.contains(e.target as Node))
+        setOpen(false);
     }
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") setOpen(false);
@@ -132,7 +133,7 @@ export default function Nav({
   bands,
   activeBandId,
   needsResponseCount = 0,
-  theme: initialTheme,
+  theme: initialTheme
 }: NavProps) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -148,7 +149,9 @@ export default function Nav({
   const isAdmin = user.role === "ADMIN";
 
   const badgeFor = (href: string) =>
-    href === "/my-availability" && needsResponseCount > 0 ? needsResponseCount : 0;
+    href === "/my-availability" && needsResponseCount > 0
+      ? needsResponseCount
+      : 0;
   const isActive = (href: string) => pathMatches(pathname, href);
 
   // While the drawer is open: lock scroll, trap focus, close on Escape,
@@ -198,7 +201,7 @@ export default function Nav({
   const drawerLink = ({
     href,
     label,
-    icon: Icon,
+    icon: Icon
   }: {
     href: string;
     label: string;
@@ -232,7 +235,7 @@ export default function Nav({
   const desktopLink = ({
     href,
     label,
-    icon: Icon,
+    icon: Icon
   }: {
     href: string;
     label: string;
@@ -314,96 +317,105 @@ export default function Nav({
         </div>
       </div>
 
-      {/* Mobile drawer */}
-      {open && (
-        <div className="lg:hidden fixed inset-0 z-50">
-          <div
-            className="absolute inset-0 bg-black/60"
-            onClick={() => setOpen(false)}
-            aria-hidden="true"
-          />
-          <div
-            id="mobile-nav"
-            ref={panelRef}
-            role="dialog"
-            aria-modal="true"
-            aria-label="Main menu"
-            className="absolute right-0 top-0 h-full w-72 max-w-[82vw] bg-zinc-900 border-l border-zinc-800 shadow-xl flex flex-col"
-          >
-            <div className="flex items-center justify-between h-16 px-4 border-b border-zinc-800">
-              <span className="text-sm text-zinc-300">
-                {user.name}
-                {roleChip && (
-                  <span className="ml-1.5 text-xs bg-blue-600/20 text-blue-400 px-1.5 py-0.5 rounded font-medium">
-                    {roleChip}
-                  </span>
-                )}
-              </span>
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                aria-label="Close menu"
-                className="-mr-2 p-2 text-zinc-400 hover:text-zinc-100"
-              >
-                <X size={20} />
-              </button>
-            </div>
+      {/* Mobile drawer — stays mounted (rather than open && (...)) so closing
+          slides/fades it back out instead of snapping away instantly.
+          `inert` keeps it out of the tab order and unclickable while closed. */}
+      <div
+        className={cn(
+          "mobile-nav-overlay lg:hidden fixed inset-0 z-50 transition-opacity duration-200 ease-out",
+          open ? "opacity-100" : "opacity-0 pointer-events-none"
+        )}
+      >
+        <div
+          className="absolute inset-0 bg-black/60"
+          onClick={() => setOpen(false)}
+          aria-hidden="true"
+        />
+        <div
+          id="mobile-nav"
+          ref={panelRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Main menu"
+          inert={!open}
+          className={cn(
+            "absolute right-0 top-0 h-full w-72 max-w-[82vw] bg-zinc-900 border-l border-zinc-800 shadow-xl flex flex-col transition-transform duration-200 ease-out",
+            open ? "translate-x-0" : "translate-x-full"
+          )}
+        >
+          <div className="flex items-center justify-between h-16 px-4 border-b border-zinc-800">
+            <span className="text-sm text-zinc-300">
+              {user.name}
+              {roleChip && (
+                <span className="ml-1.5 text-xs bg-blue-600/20 text-blue-400 px-1.5 py-0.5 rounded font-medium">
+                  {roleChip}
+                </span>
+              )}
+            </span>
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              aria-label="Close menu"
+              className="-mr-2 p-2 text-zinc-400 hover:text-zinc-100"
+            >
+              <X size={20} />
+            </button>
+          </div>
 
-            <div className="p-3 border-b border-zinc-800">
-              <BandSwitcher
-                bands={bands}
-                activeBandId={activeBandId}
-                variant="drawer"
-                onNavigate={() => setOpen(false)}
+          <div className="p-3 border-b border-zinc-800">
+            <BandSwitcher
+              bands={bands}
+              activeBandId={activeBandId}
+              variant="drawer"
+              onNavigate={() => setOpen(false)}
+            />
+          </div>
+
+          <nav className="flex-1 overflow-y-auto p-3 space-y-1">
+            {drawerLink(PRIMARY_LINK)}
+
+            {/* Events broken out as siblings on mobile — a nested disclosure
+                here would be more fiddly than it's worth. */}
+            <div className="px-3 pt-3 pb-1 text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
+              Events
+            </div>
+            {EVENT_LINKS.map(drawerLink)}
+
+            <div className="pt-2" />
+            {SECONDARY_LINKS.map(drawerLink)}
+          </nav>
+
+          <div className="p-3 border-t border-zinc-800 space-y-3">
+            <div className="px-1">
+              <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
+                Appearance
+              </div>
+              <ThemeToggle
+                className="w-full"
+                theme={theme}
+                onChange={setTheme}
               />
             </div>
-
-            <nav className="flex-1 overflow-y-auto p-3 space-y-1">
-              {drawerLink(PRIMARY_LINK)}
-
-              {/* Events broken out as siblings on mobile — a nested disclosure
-                  here would be more fiddly than it's worth. */}
-              <div className="px-3 pt-3 pb-1 text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
-                Events
-              </div>
-              {EVENT_LINKS.map(drawerLink)}
-
-              <div className="pt-2" />
-              {SECONDARY_LINKS.map(drawerLink)}
-            </nav>
-
-            <div className="p-3 border-t border-zinc-800 space-y-3">
-              <div className="px-1">
-                <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
-                  Appearance
-                </div>
-                <ThemeToggle
-                  className="w-full"
-                  theme={theme}
-                  onChange={setTheme}
-                />
-              </div>
-              {isAdmin && (
-                <Link
-                  href="/admin/interest"
-                  onClick={() => setOpen(false)}
-                  className="flex items-center gap-3 w-full px-3 py-3 rounded-lg text-sm font-medium text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors"
-                >
-                  <ShieldCheck size={18} />
-                  Interest submissions
-                </Link>
-              )}
-              <button
-                onClick={() => signOut({ callbackUrl: "/login" })}
+            {isAdmin && (
+              <Link
+                href="/admin/interest"
+                onClick={() => setOpen(false)}
                 className="flex items-center gap-3 w-full px-3 py-3 rounded-lg text-sm font-medium text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors"
               >
-                <LogOut size={18} />
-                Sign out
-              </button>
-            </div>
+                <ShieldCheck size={18} />
+                Interest submissions
+              </Link>
+            )}
+            <button
+              onClick={() => signOut({ callbackUrl: "/login" })}
+              className="flex items-center gap-3 w-full px-3 py-3 rounded-lg text-sm font-medium text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors"
+            >
+              <LogOut size={18} />
+              Sign out
+            </button>
           </div>
         </div>
-      )}
+      </div>
     </header>
   );
 }

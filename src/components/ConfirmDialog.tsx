@@ -24,7 +24,7 @@ export default function ConfirmDialog({
   tone = "default",
   busy = false,
   onConfirm,
-  onCancel,
+  onCancel
 }: Props) {
   useEffect(() => {
     if (!open) return;
@@ -43,13 +43,13 @@ export default function ConfirmDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-backdrop-in"
       onClick={onCancel}
     >
       <div
         role="dialog"
         aria-modal="true"
-        className="w-full max-w-sm bg-zinc-900 rounded-2xl border border-zinc-800 shadow-xl"
+        className="w-full max-w-sm bg-zinc-900 rounded-2xl border border-zinc-800 shadow-xl animate-modal-in"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between p-5 pb-3">
