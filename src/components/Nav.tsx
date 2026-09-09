@@ -141,47 +141,69 @@ function EventsMenu({ pathname }: { pathname: string }) {
   );
 }
 
-/** Mobile-only ghost "+" button (left of the header) opening a flat menu of
-    every /new route in the app. */
-function AddMenu() {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+/** Mobile-only ghost "+" trigger (left of the header) for the add menu below.
+    Just the button — the panel it opens is rendered outside <header> (see
+    AddMenuPanel) so its scrim can out-rank BottomNav the same way the account
+    drawer's does. */
+function AddMenu({
+  open,
+  setOpen
+}: {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => setOpen(!open)}
+      aria-haspopup="menu"
+      aria-expanded={open}
+      aria-label={open ? "Close add menu" : "Add"}
+      className="absolute left-0 top-1/2 -translate-y-1/2 p-2 text-zinc-300 hover:text-zinc-50"
+    >
+      <Plus
+        size={24}
+        className={cn(
+          "transition-transform duration-200 motion-reduce:transition-none",
+          open && "rotate-45"
+        )}
+      />
+    </button>
+  );
+}
 
+/** The add menu's dimmed backdrop + flat menu of every /new route. Without a
+    scrim behind them, the pills (dark border/fill, same as the page) read as
+    too low-contrast against the calendar grid; this borrows the same
+    bg-black/60 treatment as the account drawer. */
+function AddMenuPanel({
+  open,
+  setOpen
+}: {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+}) {
   useEffect(() => {
     if (!open) return;
-    function onDown(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node))
-        setOpen(false);
-    }
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") setOpen(false);
     }
-    document.addEventListener("mousedown", onDown);
     document.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("mousedown", onDown);
-      document.removeEventListener("keydown", onKey);
-    };
-  }, [open]);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open, setOpen]);
 
   return (
-    <div ref={ref} className="absolute left-0 top-1/2 -translate-y-1/2">
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        aria-haspopup="menu"
-        aria-expanded={open}
-        aria-label={open ? "Close add menu" : "Add"}
-        className="p-2 text-zinc-300 hover:text-zinc-50"
-      >
-        <Plus
-          size={24}
-          className={cn(
-            "transition-transform duration-200 motion-reduce:transition-none",
-            open && "rotate-45"
-          )}
-        />
-      </button>
+    <div
+      className={cn(
+        "lg:hidden fixed inset-0 z-50 transition-opacity duration-150 ease-out",
+        open ? "opacity-100" : "opacity-0 pointer-events-none"
+      )}
+    >
+      <div
+        className="absolute inset-0 bg-black/60"
+        onClick={() => setOpen(false)}
+        aria-hidden="true"
+      />
 
       {/* Always mounted (rather than open && (...)) so closing can animate
           back out instead of vanishing instantly; `inert` disables the pills
@@ -190,7 +212,7 @@ function AddMenu() {
         role="menu"
         aria-label="Add"
         inert={!open}
-        className="absolute left-0 z-50 mt-2 flex flex-col items-start gap-2"
+        className="absolute left-4 top-[4.5rem] flex flex-col items-start gap-2"
       >
         {ADD_LINKS.map(({ href, label, icon: Icon }, i) => (
           <Link
@@ -224,6 +246,7 @@ export default function Nav({
 }: NavProps) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [addMenuOpen, setAddMenuOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
   // Nav stays mounted for the whole session, so the theme choice is owned here
   // rather than inside the conditionally-mounted menu/drawer.
@@ -358,7 +381,7 @@ export default function Nav({
             /new route; right opens the account panel (band switching/
             settings, appearance, admin link, sign out). */}
           <div className="lg:hidden relative flex items-center justify-center h-16">
-            <AddMenu />
+            <AddMenu open={addMenuOpen} setOpen={setAddMenuOpen} />
 
             <Link
               href="/calendar"
@@ -380,6 +403,8 @@ export default function Nav({
           </div>
         </div>
       </header>
+
+      <AddMenuPanel open={addMenuOpen} setOpen={setAddMenuOpen} />
 
       {/* Mobile account panel — stays mounted (rather than open && (...)) so
           closing slides/fades it back out instead of snapping away instantly.
