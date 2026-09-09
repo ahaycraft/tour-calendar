@@ -407,7 +407,7 @@ export default function Nav({
           aria-label="Account"
           inert={!open}
           className={cn(
-            "absolute right-0 top-0 h-full w-72 max-w-[82vw] bg-zinc-900 border-l border-zinc-800 shadow-xl flex flex-col transition-transform duration-200 ease-out",
+            "absolute right-0 top-0 h-full w-full sm:w-80 sm:max-w-[82vw] bg-zinc-900 border-l border-zinc-800 shadow-xl flex flex-col transition-transform duration-200 ease-out",
             open ? "translate-x-0" : "translate-x-full"
           )}
         >
