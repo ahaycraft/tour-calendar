@@ -7,8 +7,17 @@ import interactionPlugin from "@fullcalendar/interaction";
 import { useRouter } from "next/navigation";
 import type { EventInput, DatesSetArg } from "@fullcalendar/core";
 import type { DateClickArg } from "@fullcalendar/interaction";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import DayActionModal from "./DayActionModal";
 import { eventHref, type EventTypeStr } from "@/lib/events";
+import { cn } from "@/lib/utils";
+
+type CalendarViewType = "dayGridMonth" | "dayGridWeek";
+
+const VIEW_OPTIONS: { value: CalendarViewType; label: string }[] = [
+  { value: "dayGridMonth", label: "Month" },
+  { value: "dayGridWeek", label: "Week" }
+];
 
 interface Show {
   id: string;
@@ -113,6 +122,8 @@ export default function CalendarView({ userId }: { userId: string }) {
   );
   const [loading, setLoading] = useState(true);
   const [modalDate, setModalDate] = useState<string | null>(null);
+  const [viewTitle, setViewTitle] = useState("");
+  const [viewType, setViewType] = useState<CalendarViewType>("dayGridMonth");
   // Date ranges already fetched (`${from}_${to}` on the calendar's own visible
   // range, e.g. from `datesSet`), so paging back to a month already seen
   // doesn't re-fetch it. A ref, not state — it's read/written synchronously
@@ -147,6 +158,8 @@ export default function CalendarView({ userId }: { userId: string }) {
   // the grid's full visible range (including the adjacent-month padding
   // days), so this is the only load path — no separate mount-time fetch.
   function handleDatesSet(arg: DatesSetArg) {
+    setViewTitle(arg.view.title);
+    setViewType(arg.view.type as CalendarViewType);
     loadRange(arg.start, arg.end);
   }
 
@@ -222,6 +235,18 @@ export default function CalendarView({ userId }: { userId: string }) {
     else api.prev();
   }
 
+  // Drive FullCalendar's imperative API from our own toolbar, styled to
+  // match the rest of the app instead of FullCalendar's default buttons.
+  function goToday() {
+    calRef.current?.getApi().today();
+  }
+  function goPrev() {
+    calRef.current?.getApi().prev();
+  }
+  function goNext() {
+    calRef.current?.getApi().next();
+  }
+
   // The block/unblock control acts on the current user, so the modal only cares
   // about *their* record; the full roster for the day is passed separately.
   const modalUnavailability =
@@ -267,6 +292,69 @@ export default function CalendarView({ userId }: { userId: string }) {
       </div>
 
       <div className="bg-zinc-900 border-y border-zinc-800 py-4 px-0 -mx-4 sm:mx-0 sm:rounded-2xl sm:border-x sm:p-4">
+        {/* Custom toolbar (title above, controls below) instead of
+            FullCalendar's own headerToolbar, so it's styled like the rest of
+            the app — same segmented-control recipe as the appearance
+            toggle — rather than FullCalendar's default button skin. */}
+        <div className="mb-4 flex flex-col gap-3 px-4 sm:px-0">
+          <h2 className="text-lg font-semibold text-zinc-100">{viewTitle}</h2>
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={goToday}
+                className="rounded-full border border-zinc-700 px-3 py-1.5 text-xs font-medium text-zinc-300 transition-colors hover:bg-zinc-800 hover:text-zinc-100"
+              >
+                Today
+              </button>
+              {/* Prev/next hidden on mobile — paged by swipe instead. */}
+              <button
+                type="button"
+                onClick={goPrev}
+                aria-label="Previous"
+                className="hidden h-8 w-8 items-center justify-center rounded-full border border-zinc-700 text-zinc-300 transition-colors hover:bg-zinc-800 hover:text-zinc-100 sm:inline-flex"
+              >
+                <ChevronLeft size={15} />
+              </button>
+              <button
+                type="button"
+                onClick={goNext}
+                aria-label="Next"
+                className="hidden h-8 w-8 items-center justify-center rounded-full border border-zinc-700 text-zinc-300 transition-colors hover:bg-zinc-800 hover:text-zinc-100 sm:inline-flex"
+              >
+                <ChevronRight size={15} />
+              </button>
+            </div>
+
+            <div
+              role="radiogroup"
+              aria-label="Calendar view"
+              className="inline-flex rounded-lg border border-zinc-700 bg-zinc-800/50 p-0.5"
+            >
+              {VIEW_OPTIONS.map(({ value, label }) => {
+                const active = viewType === value;
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    role="radio"
+                    aria-checked={active}
+                    onClick={() => calRef.current?.getApi().changeView(value)}
+                    className={cn(
+                      "rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
+                      active
+                        ? "bg-zinc-700 text-zinc-100"
+                        : "text-zinc-400 hover:text-zinc-100"
+                    )}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
         {/* Hidden on mobile — not enough header space to justify a color key
             users pick up from using the calendar anyway. Shown from sm up,
             wrapping once there's room to spare. */}
@@ -333,11 +421,7 @@ export default function CalendarView({ userId }: { userId: string }) {
                 setModalDate(info.event.startStr.slice(0, 10));
               }
             }}
-            headerToolbar={{
-              left: "prev,next today",
-              center: "title",
-              right: "dayGridMonth,dayGridWeek"
-            }}
+            headerToolbar={false}
             height="auto"
             eventTimeFormat={{ hour: "numeric", meridiem: "short" }}
           />
