@@ -267,10 +267,10 @@ export default function CalendarView({ userId }: { userId: string }) {
       </div>
 
       <div className="bg-zinc-900 border-y border-zinc-800 py-4 px-0 -mx-4 sm:mx-0 sm:rounded-2xl sm:border-x sm:p-4">
-        {/* A single scrollable row on mobile (six items would otherwise wrap
-            into a ragged multi-line block before the calendar even starts);
-            wraps normally once there's room to spare. */}
-        <div className="flex gap-2 overflow-x-auto pb-1 mb-4 px-4 sm:px-0 sm:flex-wrap">
+        {/* Hidden on mobile — not enough header space to justify a color key
+            users pick up from using the calendar anyway. Shown from sm up,
+            wrapping once there's room to spare. */}
+        <div className="hidden gap-2 overflow-x-auto pb-1 mb-4 px-4 sm:flex sm:px-0 sm:flex-wrap">
           {legend.map(({ label, color }) => (
             <span
               key={label}
