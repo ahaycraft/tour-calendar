@@ -9,6 +9,7 @@ import type { EventInput, DatesSetArg } from "@fullcalendar/core";
 import type { DateClickArg } from "@fullcalendar/interaction";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import DayActionModal from "./DayActionModal";
+import AddButton from "./AddButton";
 import { eventHref, type EventTypeStr } from "@/lib/events";
 import { cn } from "@/lib/utils";
 
@@ -283,12 +284,7 @@ export default function CalendarView({ userId }: { userId: string }) {
             details.
           </p>
         </div>
-        <button
-          onClick={() => router.push("/shows/new")}
-          className="shrink-0 self-start whitespace-nowrap px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-500 transition-colors text-sm"
-        >
-          + Add Event
-        </button>
+        <AddButton href="/shows/new" label="Add Event" />
       </div>
 
       <div className="bg-zinc-900 border-y border-zinc-800 py-4 px-0 -mx-4 sm:mx-0 sm:rounded-2xl sm:border-x sm:p-4">

@@ -1,9 +1,9 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { canManage, requireActiveBandId } from "@/lib/band";
-import Link from "next/link";
 import { Disc3 } from "lucide-react";
 import ReleasesList from "@/components/ReleasesList";
+import AddButton from "@/components/AddButton";
 
 export default async function ReleasesPage() {
   const session = await auth();
@@ -19,12 +19,7 @@ export default async function ReleasesPage() {
     <div className="max-w-3xl">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-zinc-50">Releases</h1>
-        <Link
-          href="/releases/new"
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-500 transition-colors text-sm"
-        >
-          + New Release
-        </Link>
+        <AddButton href="/releases/new" label="New Release" />
       </div>
 
       {releases.length === 0 ? (

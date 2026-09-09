@@ -21,15 +21,16 @@ export default function CalendarExportLink({
   return (
     <a
       href={href}
+      aria-label={label}
       className={cn(
-        "inline-flex items-center gap-1.5 whitespace-nowrap font-medium transition-colors",
+        "inline-flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full text-sm font-medium transition-colors",
         variant === "primary"
-          ? "px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-500"
-          : "px-3 py-2 text-sm rounded-lg border border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100"
+          ? "h-10 w-10 bg-blue-600 text-white hover:bg-blue-500 sm:h-auto sm:w-auto sm:rounded-lg sm:px-4 sm:py-2"
+          : "h-9 w-9 border border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100 sm:h-auto sm:w-auto sm:rounded-lg sm:px-3 sm:py-1.5"
       )}
     >
       <CalendarPlus size={15} />
-      {label}
+      <span className="hidden sm:inline">{label}</span>
     </a>
   );
 }
