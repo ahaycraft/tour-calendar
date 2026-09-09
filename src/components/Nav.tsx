@@ -15,8 +15,8 @@ import {
   Disc3,
   UserX,
   LogOut,
-  Menu,
   ShieldCheck,
+  UserCircle,
   X
 } from "lucide-react";
 import { cn, pathMatches } from "@/lib/utils";
@@ -195,40 +195,6 @@ export default function Nav({
     };
   }, [open]);
 
-  const drawerLink = ({
-    href,
-    label,
-    icon: Icon
-  }: {
-    href: string;
-    label: string;
-    icon: typeof Calendar;
-  }) => {
-    const badge = badgeFor(href);
-    return (
-      <Link
-        key={href}
-        href={href}
-        onClick={() => setOpen(false)}
-        aria-current={isActive(href) ? "page" : undefined}
-        className={cn(
-          "flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors",
-          isActive(href)
-            ? "bg-blue-600/20 text-blue-400"
-            : "text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100"
-        )}
-      >
-        <Icon size={18} />
-        <span className="flex-1">{label}</span>
-        {badge > 0 && (
-          <span className="min-w-5 px-1.5 h-5 inline-flex items-center justify-center rounded-full bg-amber-500 text-[11px] font-bold text-amber-950">
-            {badge}
-          </span>
-        )}
-      </Link>
-    );
-  };
-
   const desktopLink = ({
     href,
     label,
@@ -263,60 +229,73 @@ export default function Nav({
   };
 
   return (
-    <header className="bg-zinc-900 border-b border-zinc-800 sticky top-0 z-40">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 gap-4">
-          <div className="flex items-center gap-3 lg:gap-5 min-w-0">
+    <>
+      <header className="bg-zinc-900 border-b border-zinc-800 sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Desktop header */}
+          <div className="hidden lg:flex items-center justify-between h-16 gap-4">
+            <div className="flex items-center gap-3 lg:gap-5 min-w-0">
+              <Link
+                href="/calendar"
+                className="font-bold text-zinc-50 text-lg whitespace-nowrap shrink-0"
+              >
+                Woodshedd
+              </Link>
+
+              <BandSwitcher bands={bands} activeBandId={activeBandId} />
+
+              <nav className="flex gap-1">
+                {desktopLink(PRIMARY_LINK)}
+                <EventsMenu pathname={pathname} />
+                {SECONDARY_LINKS.map(desktopLink)}
+              </nav>
+            </div>
+
+            {/* Appearance + admin link + sign out */}
+            <div className="flex items-center shrink-0">
+              <ThemeMenu
+                user={user}
+                roleChip={roleChip}
+                theme={theme}
+                onThemeChange={setTheme}
+                isAdmin={isAdmin}
+              />
+            </div>
+          </div>
+
+          {/* Mobile header — wordmark centered; primary nav lives in the
+            floating bottom nav instead. The account button (right) opens
+            the panel below for band switching/settings, appearance, and
+            sign out. Left side is reserved, currently empty. */}
+          <div className="lg:hidden relative flex items-center justify-center h-16">
             <Link
               href="/calendar"
-              className="font-bold text-zinc-50 text-lg whitespace-nowrap shrink-0"
+              className="font-bold text-zinc-50 text-lg whitespace-nowrap"
             >
               Woodshedd
             </Link>
 
-            <div className="hidden lg:block">
-              <BandSwitcher bands={bands} activeBandId={activeBandId} />
-            </div>
-
-            {/* Desktop nav */}
-            <nav className="hidden lg:flex gap-1">
-              {desktopLink(PRIMARY_LINK)}
-              <EventsMenu pathname={pathname} />
-              {SECONDARY_LINKS.map(desktopLink)}
-            </nav>
+            <button
+              type="button"
+              onClick={() => setOpen(true)}
+              aria-label="Open account menu"
+              aria-expanded={open}
+              aria-controls="mobile-nav"
+              className="absolute right-0 top-1/2 -translate-y-1/2 p-2 text-zinc-300 hover:text-zinc-50"
+            >
+              <UserCircle size={24} />
+            </button>
           </div>
-
-          {/* Desktop account menu (appearance + sign out) */}
-          <div className="hidden lg:flex items-center shrink-0">
-            <ThemeMenu
-              user={user}
-              roleChip={roleChip}
-              theme={theme}
-              onThemeChange={setTheme}
-              isAdmin={isAdmin}
-            />
-          </div>
-
-          {/* Mobile menu trigger */}
-          <button
-            type="button"
-            onClick={() => setOpen(true)}
-            aria-label="Open menu"
-            aria-expanded={open}
-            aria-controls="mobile-nav"
-            className="lg:hidden -mr-2 p-2 text-zinc-300 hover:text-zinc-50 relative"
-          >
-            <Menu size={22} />
-            {needsResponseCount > 0 && (
-              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-amber-500" />
-            )}
-          </button>
         </div>
-      </div>
+      </header>
 
-      {/* Mobile drawer — stays mounted (rather than open && (...)) so closing
-          slides/fades it back out instead of snapping away instantly.
-          `inert` keeps it out of the tab order and unclickable while closed. */}
+      {/* Mobile account panel — stays mounted (rather than open && (...)) so
+          closing slides/fades it back out instead of snapping away instantly.
+          `inert` keeps it out of the tab order and unclickable while closed.
+          Deliberately rendered outside <header>: header is `sticky` with a
+          z-index, which makes it a stacking context, so z-50 in here would
+          only out-rank other header content — not BottomNav, which is a
+          sibling fixed element elsewhere in the tree. */}
       <div
         className={cn(
           "mobile-nav-overlay lg:hidden fixed inset-0 z-50 transition-opacity duration-200 ease-out",
@@ -333,7 +312,7 @@ export default function Nav({
           ref={panelRef}
           role="dialog"
           aria-modal="true"
-          aria-label="Main menu"
+          aria-label="Account"
           inert={!open}
           className={cn(
             "absolute right-0 top-0 h-full w-72 max-w-[82vw] bg-zinc-900 border-l border-zinc-800 shadow-xl flex flex-col transition-transform duration-200 ease-out",
@@ -352,7 +331,7 @@ export default function Nav({
             <button
               type="button"
               onClick={() => setOpen(false)}
-              aria-label="Close menu"
+              aria-label="Close account menu"
               className="-mr-2 p-2 text-zinc-400 hover:text-zinc-100"
             >
               <X size={20} />
@@ -368,21 +347,7 @@ export default function Nav({
             />
           </div>
 
-          <nav className="flex-1 overflow-y-auto p-3 space-y-1">
-            {drawerLink(PRIMARY_LINK)}
-
-            {/* Events broken out as siblings on mobile — a nested disclosure
-                here would be more fiddly than it's worth. */}
-            <div className="px-3 pt-3 pb-1 text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
-              Events
-            </div>
-            {EVENT_LINKS.map(drawerLink)}
-
-            <div className="pt-2" />
-            {SECONDARY_LINKS.map(drawerLink)}
-          </nav>
-
-          <div className="p-3 border-t border-zinc-800 space-y-3">
+          <div className="flex-1 overflow-y-auto p-3 space-y-3">
             <div className="px-1">
               <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
                 Appearance
@@ -403,6 +368,9 @@ export default function Nav({
                 Interest submissions
               </Link>
             )}
+          </div>
+
+          <div className="p-3 border-t border-zinc-800">
             <button
               onClick={() => signOut({ callbackUrl: "/login" })}
               className="flex items-center gap-3 w-full px-3 py-3 rounded-lg text-sm font-medium text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors"
@@ -413,6 +381,6 @@ export default function Nav({
           </div>
         </div>
       </div>
-    </header>
+    </>
   );
 }
