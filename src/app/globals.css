@@ -176,10 +176,14 @@ body {
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
 
-/* FullCalendar — driven by the neutral ramp so it follows the theme. */
+/* FullCalendar — driven by the neutral ramp so it follows the theme.
+   Grid lines are softened (real native calendars have faint separation, not
+   none) and the whole-cell "today" tint is dropped in favor of a filled
+   circle on just the day number — see .fc-day-today below — since a solid
+   badge on the number is the app-like affordance, not a cell-wide wash. */
 .fc {
   font-family: inherit;
-  --fc-border-color: var(--color-zinc-800);
+  --fc-border-color: color-mix(in srgb, var(--color-zinc-800) 55%, transparent);
   --fc-button-bg-color: var(--color-zinc-800);
   --fc-button-border-color: var(--color-zinc-700);
   --fc-button-hover-bg-color: var(--color-zinc-700);
@@ -187,12 +191,17 @@ body {
   --fc-button-active-bg-color: #3b82f6;
   --fc-button-active-border-color: #3b82f6;
   --fc-button-text-color: var(--color-zinc-200);
-  --fc-today-bg-color: color-mix(in srgb, #3b82f6 8%, transparent);
+  --fc-today-bg-color: transparent;
   --fc-neutral-bg-color: var(--color-zinc-900);
   --fc-list-event-hover-bg-color: var(--color-zinc-800);
   --fc-page-bg-color: var(--color-zinc-900);
   --fc-neutral-text-color: var(--color-zinc-400);
   --fc-event-text-color: #fff;
+}
+/* The wrapping card in CalendarView.tsx already frames the whole calendar,
+   so FullCalendar's own outer border would just double it up. */
+.fc .fc-scrollgrid {
+  border: 0;
 }
 .fc .fc-col-header-cell-cushion,
 .fc .fc-daygrid-day-number,
@@ -205,6 +214,22 @@ body {
 }
 .fc .fc-daygrid-day-number {
   font-size: 0.8rem;
+  padding: 6px 8px;
+}
+/* iOS/Google-Calendar-style filled circle on today's date, instead of a
+   whole-cell tint (see --fc-today-bg-color above). */
+.fc .fc-day-today .fc-daygrid-day-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.7em;
+  height: 1.7em;
+  margin: 2px;
+  padding: 0;
+  border-radius: 999px;
+  background: #3b82f6;
+  color: #fff;
+  font-weight: 700;
 }
 .fc .fc-col-header-cell-cushion {
   font-size: 0.75rem;
@@ -215,8 +240,14 @@ body {
 .fc-event {
   cursor: pointer;
 }
+/* Rounded, inset pills instead of edge-to-edge square bars — the biggest
+   single change in making events read as app "chips" rather than
+   spreadsheet cells. */
 .fc-daygrid-event {
-  border-radius: 4px !important;
+  border-radius: 8px !important;
+  margin: 1px 4px !important;
+  padding: 1px 6px !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 .fc .fc-button {
   font-size: 0.8rem !important;
@@ -267,6 +298,7 @@ body {
   }
   .fc-daygrid-event {
     font-size: 0.7rem;
+    margin: 1px 2px !important;
     padding: 1px 3px !important;
   }
   .fc .fc-col-header-cell-cushion {
@@ -306,39 +338,54 @@ body {
   white-space: normal;
 }
 
-/* Days the current user has blocked off. Striped (not blacked out) so any
-   show on that day stays visible — the conflict is the point.
+/* Days the current user has blocked off. A flat tint (not blacked out) so any
+   show on that day stays visible — the conflict is the point. Previously a
+   diagonal-stripe pattern; flattened to match the calmer circle/pill
+   language used everywhere else in the calendar now (see .fc-day-today).
    The ochre here must match UNAVAILABLE_COLOR in CalendarView.tsx. */
 .fc-day-unavailable .fc-daygrid-day-frame {
-  background-image: repeating-linear-gradient(
-    -45deg,
-    rgba(194, 137, 74, 0.16) 0 6px,
-    transparent 6px 12px
-  );
+  background-color: rgba(194, 137, 74, 0.08);
 }
+/* Hollow ring around the day number — same shape/sizing as the solid
+   "today" circle, so filled = today and ringed = unavailable read as one
+   consistent badge system rather than two unrelated treatments. */
 .fc-day-unavailable .fc-daygrid-day-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.7em;
+  height: 1.7em;
+  margin: 2px;
+  padding: 0;
+  border-radius: 999px;
+  border: 2px solid #c2894a;
   color: #c2894a;
-  font-weight: 700;
+  font-weight: 600;
 }
-/* The unavailability note renders as a dot + text annotation, not a pill. */
+/* The unavailability note renders as a dot + text annotation, not a pill —
+   opt back out of the new .fc-daygrid-event pill shadow/padding above,
+   which would otherwise draw a faint box around this plain-text row. */
+.fc-unavailable-note {
+  box-shadow: none !important;
+  padding-left: 2px !important;
+}
 .fc-unavailable-note .fc-daygrid-event-dot {
   border-color: #c2894a;
 }
+/* Quieter than a loud bold ochre line — visible at a glance without
+   competing with the day number's own ring. */
 .fc-unavailable-note .fc-event-title {
-  color: #c2894a;
-  font-weight: 600;
+  color: color-mix(in srgb, #c2894a 65%, var(--color-zinc-400));
+  font-weight: 500;
 }
 
 /* FullCalendar dims the day number to 30% opacity on adjacent-month cells
    (.fc-day-other) but doesn't touch anything else in the cell — match that
-   fade on the unavailable stripe and note so they don't stay full-strength
-   while the date itself looks faded. */
+   fade on the unavailable tint and note so they don't stay full-strength
+   while the date itself looks faded. (The ring around the day number rides
+   along automatically, since it's a property on the dimmed element itself.) */
 .fc-day-other.fc-day-unavailable .fc-daygrid-day-frame {
-  background-image: repeating-linear-gradient(
-    -45deg,
-    rgba(194, 137, 74, 0.05) 0 6px,
-    transparent 6px 12px
-  );
+  background-color: rgba(194, 137, 74, 0.03);
 }
 .fc-day-other .fc-unavailable-note {
   opacity: 0.3;
