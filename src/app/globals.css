@@ -306,21 +306,25 @@ body {
   }
 }
 
-/* Leaflet — driven by the neutral ramp so it follows the theme. */
-.leaflet-container {
-  background: var(--color-zinc-900);
-  font-family: inherit;
+/* Mapbox GL JS — dark-themed controls to match the zinc ramp (its defaults
+   are stark white, which is exactly the boxy-widget look this replaced
+   Leaflet to get away from). The zoom icons are background-image SVGs, not
+   currentColor, so `filter: invert` is the standard way to recolor them. */
+.mapboxgl-ctrl-group {
+  background: var(--color-zinc-800) !important;
+  border: 1px solid var(--color-zinc-700);
+  box-shadow: none !important;
 }
-.leaflet-bar a,
-.leaflet-bar a:hover {
-  background: var(--color-zinc-800);
-  color: var(--color-zinc-200);
-  border-bottom-color: var(--color-zinc-700);
+.mapboxgl-ctrl-group button {
+  background: transparent !important;
 }
-.leaflet-bar a:hover {
-  background: var(--color-zinc-700);
+.mapboxgl-ctrl-group button + button {
+  border-top: 1px solid var(--color-zinc-700);
 }
-.leaflet-control-attribution {
+.mapboxgl-ctrl-icon {
+  filter: invert(1) brightness(1.7);
+}
+.mapboxgl-ctrl-attrib {
   background: color-mix(
     in srgb,
     var(--color-zinc-900) 80%,
@@ -328,8 +332,11 @@ body {
   ) !important;
   color: var(--color-zinc-500) !important;
 }
-.leaflet-control-attribution a {
-  color: var(--color-zinc-400);
+.mapboxgl-ctrl-attrib a {
+  color: var(--color-zinc-400) !important;
+}
+.mapboxgl-ctrl-attrib-button {
+  filter: invert(1) brightness(1.7);
 }
 .fc-dayGridWeek-view .fc-daygrid-day-events {
   margin-bottom: 0.25rem;

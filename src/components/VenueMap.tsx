@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { MapPin } from "lucide-react";
-import type { Map as LeafletMap } from "leaflet";
-import "leaflet/dist/leaflet.css";
+import { MapPin, UtensilsCrossed, Fuel } from "lucide-react";
+import type { Map as MapboxMap, Marker as MapboxMarker } from "mapbox-gl";
+import "mapbox-gl/dist/mapbox-gl.css";
 
 interface Props {
   lat: number | null;
@@ -23,54 +23,52 @@ export default function VenueMap({
 }: Props) {
   const hasCoords = lat != null && lng != null;
   const containerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<LeafletMap | null>(null);
+  const mapRef = useRef<MapboxMap | null>(null);
+  const markerRef = useRef<MapboxMarker | null>(null);
 
   useEffect(() => {
     if (lat == null || lng == null || !containerRef.current) return;
     let cancelled = false;
 
-    import("leaflet").then((L) => {
+    import("mapbox-gl").then((mod) => {
       if (cancelled || !containerRef.current) return;
+      const mapboxgl = mod.default;
+      mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN ?? "";
 
-      const map = L.map(containerRef.current, {
-        center: [lat, lng],
+      // WebGL vector rendering — continuous smooth zoom/pan instead of
+      // Leaflet's stepped raster tiles, plus full control over the marker
+      // and (compact, collapsible-by-default) attribution.
+      const map = new mapboxgl.Map({
+        container: containerRef.current,
+        style: "mapbox://styles/mapbox/dark-v11",
+        center: [lng, lat],
         zoom: 15,
-        scrollWheelZoom: false
+        scrollZoom: false,
+        attributionControl: false
       });
       mapRef.current = map;
 
-      // Esri's Dark Gray Canvas — a real dark basemap, served without an API
-      // key. Drawn as base (land + roads) plus a reference layer for labels.
-      const esri =
-        "https://services.arcgisonline.com/ArcGIS/rest/services/Canvas";
-      L.tileLayer(`${esri}/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}`, {
-        maxZoom: 19,
-        maxNativeZoom: 16,
-        attribution:
-          'Tiles &copy; <a href="https://www.esri.com/">Esri</a> &mdash; Esri, HERE, Garmin, &copy; OpenStreetMap contributors'
-      }).addTo(map);
-      L.tileLayer(
-        `${esri}/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}`,
-        {
-          maxZoom: 19,
-          maxNativeZoom: 16
-        }
-      ).addTo(map);
+      map.addControl(
+        new mapboxgl.NavigationControl({ showCompass: false }),
+        "top-right"
+      );
+      map.addControl(
+        new mapboxgl.AttributionControl({ compact: true }),
+        "bottom-right"
+      );
 
-      const icon = L.divIcon({
-        className: "",
-        html: '<span style="display:block;width:16px;height:16px;border-radius:9999px;background:#3b82f6;border:2px solid #fafafa;box-shadow:0 0 0 2px rgba(0,0,0,.45)"></span>',
-        iconSize: [16, 16],
-        iconAnchor: [8, 8]
-      });
-      L.marker([lat, lng], { icon }).addTo(map);
-
-      // Container has just been laid out — make sure Leaflet measured it.
-      setTimeout(() => map.invalidateSize(), 0);
+      const el = document.createElement("div");
+      el.style.cssText =
+        "width:16px;height:16px;border-radius:9999px;background:#3b82f6;border:2px solid #fafafa;box-shadow:0 0 0 2px rgba(0,0,0,.45)";
+      markerRef.current = new mapboxgl.Marker({ element: el })
+        .setLngLat([lng, lat])
+        .addTo(map);
     });
 
     return () => {
       cancelled = true;
+      markerRef.current?.remove();
+      markerRef.current = null;
       mapRef.current?.remove();
       mapRef.current = null;
     };
@@ -90,23 +88,25 @@ export default function VenueMap({
         <>
           <div ref={containerRef} className="w-full h-64 lg:h-80" />
           <div className="px-5 py-3 text-xs">
-            {address && <p className="text-zinc-400 mb-1">{address}</p>}
+            {address && <p className="text-zinc-400 mb-2">{address}</p>}
             <div className="flex gap-4">
               <a
-                href={`https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=16/${lat}/${lng}`}
+                href={`https://www.google.com/maps/search/restaurants/@${lat},${lng},15z`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-400 hover:text-blue-300"
+                className="inline-flex items-center gap-1.5 text-blue-400 hover:text-blue-300"
               >
-                Larger map ↗
+                <UtensilsCrossed size={13} />
+                Food nearby ↗
               </a>
               <a
-                href={`https://www.google.com/maps/search/?api=1&query=${lat}%2C${lng}`}
+                href={`https://www.google.com/maps/search/gas+station/@${lat},${lng},15z`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-400 hover:text-blue-300"
+                className="inline-flex items-center gap-1.5 text-blue-400 hover:text-blue-300"
               >
-                Google Maps ↗
+                <Fuel size={13} />
+                Gas nearby ↗
               </a>
             </div>
           </div>

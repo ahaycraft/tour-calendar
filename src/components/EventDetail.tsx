@@ -5,7 +5,6 @@ import Link from "next/link";
 import { formatDate, formatTime } from "@/lib/utils";
 import ShowStatusBadge from "@/components/ShowStatusBadge";
 import EventTypeBadge from "@/components/EventTypeBadge";
-import AvailabilityBadge from "@/components/AvailabilityBadge";
 import ShowAvailabilityControls from "@/components/ShowAvailabilityControls";
 import ShowStatusControls from "@/components/ShowStatusControls";
 import VenueMap from "@/components/VenueMap";
@@ -100,7 +99,7 @@ export default async function EventDetail({ id, expected }: Props) {
   const mapLng = savedCoords?.lng ?? geoCoords?.lng ?? null;
 
   return (
-    <div className="max-w-5xl">
+    <div>
       <Link
         href={eventBasePath(show.type)}
         className="inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-200 mb-6 transition-colors"
@@ -109,7 +108,7 @@ export default async function EventDetail({ id, expected }: Props) {
         Back to {eventListLabel(show.type)}
       </Link>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] items-start">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_440px] items-start">
         {/* One continuous card with internal dividers instead of three
             separately bordered boxes — reads as one detail screen with
             grouped sections rather than a stack of web-dashboard panels. */}
@@ -242,15 +241,8 @@ export default async function EventDetail({ id, expected }: Props) {
             <h2 className="font-semibold text-zinc-100 mb-3">
               My Availability
             </h2>
-            <div className="flex items-center gap-3 mb-4">
-              <AvailabilityBadge status={myAvailability?.status ?? "PENDING"} />
-              {myAvailability?.note && (
-                <span className="text-sm text-zinc-500">
-                  {myAvailability.note}
-                </span>
-              )}
-            </div>
             <ShowAvailabilityControls
+              key={show.id}
               showId={show.id}
               currentStatus={myAvailability?.status ?? "PENDING"}
               currentNote={myAvailability?.note ?? ""}
