@@ -42,11 +42,13 @@ import {
   releaseKindLabel,
   releaseStatusLabel
 } from "@/lib/releases";
+import { formatDuration, formatTotalDuration } from "@/lib/utils";
 
 interface SongLite {
   id: string;
   title: string;
   status: string;
+  duration: number | null;
 }
 
 interface ReleaseData {
@@ -159,6 +161,15 @@ export default function ReleaseEditor({
   const poolIds = useMemo(
     () => songs.map((s) => s.id).filter((id) => !trackIds.includes(id)),
     [songs, trackIds]
+  );
+
+  const totalDurationSeconds = useMemo(
+    () =>
+      trackIds.reduce(
+        (sum, id) => sum + (songMap.get(id)?.duration ?? 0),
+        0
+      ),
+    [trackIds, songMap]
   );
 
   const persistTracks = useCallback(async () => {
@@ -377,6 +388,8 @@ export default function ReleaseEditor({
                 Tracklist{" "}
                 <span className="text-zinc-600 font-normal">
                   {trackIds.length}
+                  {totalDurationSeconds > 0 &&
+                    ` · ${formatTotalDuration(totalDurationSeconds)}`}
                 </span>
               </h2>
               <span className="text-xs text-zinc-600">
@@ -428,6 +441,11 @@ export default function ReleaseEditor({
                             >
                               {s.title}
                             </Link>
+                            {s.duration != null && (
+                              <span className="text-xs tabular-nums text-zinc-500">
+                                {formatDuration(s.duration)}
+                              </span>
+                            )}
                             <SongStatusBadge status={s.status} />
                             <button
                               type="button"

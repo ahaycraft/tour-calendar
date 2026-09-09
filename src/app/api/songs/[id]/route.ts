@@ -24,8 +24,17 @@ export async function PATCH(
 
   try {
     const body = await request.json();
-    const { title, status, key, tempo, timeSig, lyrics, notes, samplyUrl } =
-      body;
+    const {
+      title,
+      status,
+      key,
+      tempo,
+      timeSig,
+      duration,
+      lyrics,
+      notes,
+      samplyUrl
+    } = body;
 
     if (title !== undefined && (typeof title !== "string" || !title.trim())) {
       return NextResponse.json(
@@ -46,6 +55,15 @@ export async function PATCH(
             ? Math.round(Number(tempo))
             : null;
 
+    const durationValue =
+      duration === undefined
+        ? undefined
+        : duration === null || duration === ""
+          ? null
+          : Number.isFinite(Number(duration)) && Number(duration) >= 0
+            ? Math.round(Number(duration))
+            : null;
+
     const song = await prisma.song.update({
       where: { id },
       data: {
@@ -54,6 +72,7 @@ export async function PATCH(
         ...(key !== undefined && { key: key || null }),
         ...(tempoValue !== undefined && { tempo: tempoValue }),
         ...(timeSig !== undefined && { timeSig: timeSig || null }),
+        ...(durationValue !== undefined && { duration: durationValue }),
         ...(lyrics !== undefined && { lyrics: lyrics || null }),
         ...(notes !== undefined && { notes: notes || null }),
         ...(samplyUrl !== undefined && { samplyUrl: samplyUrl || null }),

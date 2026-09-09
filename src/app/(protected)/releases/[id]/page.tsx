@@ -27,7 +27,7 @@ export default async function ReleasePage({ params }: PageProps) {
   const songs = await prisma.song.findMany({
     where: { bandId: release.bandId },
     orderBy: { updatedAt: "desc" },
-    select: { id: true, title: true, status: true }
+    select: { id: true, title: true, status: true, duration: true }
   });
 
   const canDelete = canManage(session!, release.bandId, release.createdById);

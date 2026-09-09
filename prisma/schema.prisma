@@ -254,6 +254,7 @@ model Song {
   key         String?
   tempo       Int?
   timeSig     String?
+  duration    Int? // seconds
   lyrics      String?    @db.Text
   notes       String?    @db.Text
   /// Deprecated: superseded by the SongDemo list. Kept so existing links

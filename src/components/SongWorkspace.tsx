@@ -6,7 +6,7 @@ import { Check, Loader2, Trash2 } from "lucide-react";
 import ConfirmDialog from "./ConfirmDialog";
 import SongDemos, { type Demo } from "./SongDemos";
 import { SONG_STATUSES, songStatusLabel } from "@/lib/songs";
-import { cn } from "@/lib/utils";
+import { cn, parseDuration } from "@/lib/utils";
 
 const fieldClass =
   "w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent";
@@ -18,6 +18,8 @@ interface SongData {
   key: string;
   tempo: string;
   timeSig: string;
+  /** mm:ss text, e.g. "3:45" — parsed to seconds on save. */
+  length: string;
   lyrics: string;
   notes: string;
 }
@@ -78,6 +80,7 @@ export default function SongWorkspace({
           key: payload.key,
           tempo: payload.tempo,
           timeSig: payload.timeSig,
+          duration: parseDuration(payload.length),
           lyrics: payload.lyrics,
           notes: payload.notes
         })
@@ -185,7 +188,7 @@ export default function SongWorkspace({
       <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-8 lg:items-start">
         <div className="space-y-6 lg:col-start-1">
           <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4">
-            <div className="grid grid-cols-3 gap-2 max-w-xs">
+            <div className="grid grid-cols-4 gap-2 max-w-sm">
               <div>
                 <label className="block text-xs font-medium text-zinc-400 mb-1">
                   Key
@@ -220,6 +223,20 @@ export default function SongWorkspace({
                   onChange={(e) => set("timeSig", e.target.value)}
                   className={fieldClass}
                   placeholder="4/4"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-zinc-400 mb-1">
+                  Length
+                </label>
+                <input
+                  value={fields.length}
+                  onChange={(e) =>
+                    set("length", e.target.value.replace(/[^\d:]/g, ""))
+                  }
+                  inputMode="numeric"
+                  className={fieldClass}
+                  placeholder="3:45"
                 />
               </div>
             </div>

@@ -41,3 +41,35 @@ export function formatTime(date: Date | string | null | undefined) {
     hour12: true
   });
 }
+
+/** 225 -> "3:45". Empty string for null/undefined/negative/non-finite input. */
+export function formatDuration(seconds: number | null | undefined): string {
+  if (seconds == null || !Number.isFinite(seconds) || seconds < 0) return "";
+  const m = Math.floor(seconds / 60);
+  const s = Math.round(seconds % 60);
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
+
+/** "3:45" -> 225. Null for empty, unparsable, or an out-of-range ("3:75")
+ *  seconds part — never NaN, so callers can store the result directly. */
+export function parseDuration(value: string): number | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  const match = trimmed.match(/^(\d+):(\d{1,2})$/);
+  if (!match) return null;
+  const minutes = Number(match[1]);
+  const seconds = Number(match[2]);
+  if (seconds > 59) return null;
+  return minutes * 60 + seconds;
+}
+
+/** Total seconds -> "42 min" / "1 hr" / "1 hr 12 min", for an album/release
+ *  summary. Rounds to the nearest minute first. */
+export function formatTotalDuration(totalSeconds: number): string {
+  const totalMinutes = Math.round(totalSeconds / 60);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  if (hours === 0) return `${minutes} min`;
+  if (minutes === 0) return `${hours} hr`;
+  return `${hours} hr ${minutes} min`;
+}

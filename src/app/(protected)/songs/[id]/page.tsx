@@ -8,6 +8,7 @@ import SongWorkspace from "@/components/SongWorkspace";
 import SongArrangement from "@/components/SongArrangement";
 import SongComments from "@/components/SongComments";
 import { canManage, isBandMember } from "@/lib/band";
+import { formatDuration } from "@/lib/utils";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -109,6 +110,7 @@ export default async function SongPage({ params }: PageProps) {
           key: song.key ?? "",
           tempo: song.tempo != null ? String(song.tempo) : "",
           timeSig: song.timeSig ?? "",
+          length: formatDuration(song.duration),
           lyrics: song.lyrics ?? "",
           notes: song.notes ?? ""
         }}
