@@ -11,7 +11,7 @@ export default async function MyAvailabilityPage() {
   // Unavailability is global to the user — the same across every band.
   const unavailableDates = await prisma.memberUnavailability.findMany({
     where: { userId: session!.user.id },
-    orderBy: { date: "asc" },
+    orderBy: { date: "asc" }
   });
 
   const allShows = await prisma.show.findMany({
@@ -19,9 +19,9 @@ export default async function MyAvailabilityPage() {
     orderBy: { date: "asc" },
     include: {
       availability: {
-        where: { userId: session!.user.id },
-      },
-    },
+        where: { userId: session!.user.id }
+      }
+    }
   });
 
   return (
@@ -39,7 +39,7 @@ export default async function MyAvailabilityPage() {
         initialUnavailableDates={unavailableDates.map((u) => ({
           id: u.id,
           date: u.date.toISOString(),
-          note: u.note ?? undefined,
+          note: u.note ?? undefined
         }))}
         upcomingShows={allShows.map((s) => ({
           id: s.id,
@@ -49,7 +49,7 @@ export default async function MyAvailabilityPage() {
           city: s.city,
           state: s.state,
           date: s.date.toISOString(),
-          myStatus: s.availability[0]?.status ?? "PENDING",
+          myStatus: s.availability[0]?.status ?? "PENDING"
         }))}
       />
     </div>

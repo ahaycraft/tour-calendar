@@ -11,7 +11,8 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id: songId } = await params;
 
@@ -27,12 +28,15 @@ export async function POST(
       return NextResponse.json({ error: "Add a link" }, { status: 400 });
     }
     if (url.length > MAX_URL) {
-      return NextResponse.json({ error: "That link is too long" }, { status: 400 });
+      return NextResponse.json(
+        { error: "That link is too long" },
+        { status: 400 }
+      );
     }
 
     const song = await prisma.song.findUnique({
       where: { id: songId },
-      select: { bandId: true },
+      select: { bandId: true }
     });
     if (!song || !isBandMember(session, song.bandId)) {
       return NextResponse.json({ error: "Song not found" }, { status: 404 });
@@ -40,11 +44,14 @@ export async function POST(
 
     const demo = await prisma.songDemo.create({
       data: { songId, url, label, createdById: session.user.id },
-      include: { createdBy: { select: { name: true } } },
+      include: { createdBy: { select: { name: true } } }
     });
 
     return NextResponse.json(demo, { status: 201 });
   } catch {
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

@@ -32,12 +32,14 @@ export const calendarEventSelect = {
   state: true,
   country: true,
   venueAddress: true,
-  notes: true,
+  notes: true
 } as const;
 
 /** Absolute base URL for the links embedded in a calendar payload. */
 export function resolveAppUrl(request: Request): string {
-  return process.env.AUTH_URL?.replace(/\/$/, "") ?? new URL(request.url).origin;
+  return (
+    process.env.AUTH_URL?.replace(/\/$/, "") ?? new URL(request.url).origin
+  );
 }
 
 /** `<slug>.ics`, safe to drop straight into a Content-Disposition header. */
@@ -124,7 +126,7 @@ function eventPath(e: CalendarEventInput): string {
 const DESCRIPTION_NOUN: Record<string, string> = {
   SHOW: "Show",
   RECORDING: "Recording session",
-  PRACTICE: "Practice",
+  PRACTICE: "Practice"
 };
 
 function locationString(e: CalendarEventInput): string {
@@ -136,7 +138,7 @@ function locationString(e: CalendarEventInput): string {
 
 const STATUS_PREFIX: Record<string, string> = {
   CANCELLED: "[Cancelled] ",
-  PENDING: "[Pending] ",
+  PENDING: "[Pending] "
 };
 
 function summary(e: CalendarEventInput): string {
@@ -167,7 +169,7 @@ export function googleCalendarUrl(
     action: "TEMPLATE",
     text: summary(e),
     dates,
-    details: description(e, appUrl),
+    details: description(e, appUrl)
   });
   const loc = locationString(e);
   if (loc) params.set("location", loc);
@@ -223,7 +225,7 @@ function eventToVevent(e: CalendarEventInput, appUrl: string): string {
       : `DTEND:${floatingStamp(t.end)}`,
     `SUMMARY:${escapeText(summary(e))}`,
     `DESCRIPTION:${escapeText(description(e, appUrl))}`,
-    `STATUS:${icsStatus(e.status)}`,
+    `STATUS:${icsStatus(e.status)}`
   ];
   const loc = locationString(e);
   if (loc) rows.push(`LOCATION:${escapeText(loc)}`);
@@ -244,7 +246,7 @@ export function buildCalendar(
       "CALSCALE:GREGORIAN",
       "METHOD:PUBLISH",
       ...events.map((e) => eventToVevent(e, appUrl)),
-      "END:VCALENDAR",
+      "END:VCALENDAR"
     ].join("\r\n") + "\r\n"
   );
 }

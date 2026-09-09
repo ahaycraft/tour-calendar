@@ -8,7 +8,10 @@ import { format } from "date-fns";
 import { Trash2 } from "lucide-react";
 import ShowStatusBadge from "./ShowStatusBadge";
 import AvailabilityBadge from "./AvailabilityBadge";
-import NeedsDetailsBadge, { needsDetails, locationLine } from "./NeedsDetailsBadge";
+import NeedsDetailsBadge, {
+  needsDetails,
+  locationLine
+} from "./NeedsDetailsBadge";
 import { eventHref } from "@/lib/events";
 import { useIsTouchDevice } from "@/lib/useIsTouchDevice";
 import { calendarDate } from "@/lib/utils";
@@ -29,7 +32,13 @@ export interface EventListItem {
 // Width (px) of the delete action revealed behind the row.
 const REVEAL_PX = 88;
 
-export function DateBlock({ date, dim }: { date: Date | string; dim?: boolean }) {
+export function DateBlock({
+  date,
+  dim
+}: {
+  date: Date | string;
+  dim?: boolean;
+}) {
   const d = calendarDate(date);
   return (
     <div
@@ -57,7 +66,7 @@ export default function SwipeableEventRow({
   userId,
   isPast,
   awaitingConfirm,
-  onDeleteRequest,
+  onDeleteRequest
 }: {
   event: EventListItem;
   userId: string;
@@ -96,14 +105,15 @@ export default function SwipeableEventRow({
       const base = revealedRef.current ? -REVEAL_PX : 0;
       const next = Math.min(0, Math.max(-REVEAL_PX, base + e.deltaX));
       const open =
-        next < -REVEAL_PX / 2 || (e.dir === "Left" && e.velocity > 0.5 && next < 0);
+        next < -REVEAL_PX / 2 ||
+        (e.dir === "Left" && e.velocity > 0.5 && next < 0);
       revealedRef.current = open;
       setAnimating(true);
       setOffset(open ? -REVEAL_PX : 0);
     },
     trackMouse: false,
     // See SwipeableShowRow for why preventScrollOnSwipe is left off.
-    delta: 15,
+    delta: 15
   });
 
   const rowInner = isPast ? (
@@ -119,7 +129,9 @@ export default function SwipeableEventRow({
           </span>
           <ShowStatusBadge status={event.status} />
         </div>
-        <p className="text-sm text-zinc-500 mt-0.5 truncate">{locationLine(event)}</p>
+        <p className="text-sm text-zinc-500 mt-0.5 truncate">
+          {locationLine(event)}
+        </p>
       </div>
     </div>
   ) : (
@@ -133,14 +145,20 @@ export default function SwipeableEventRow({
           <ShowStatusBadge status={event.status} />
           {needsDetails(event) && <NeedsDetailsBadge />}
         </div>
-        <p className="text-sm text-zinc-400 mt-1 truncate">{locationLine(event)}</p>
+        <p className="text-sm text-zinc-400 mt-1 truncate">
+          {locationLine(event)}
+        </p>
       </div>
       <div className="flex flex-col items-end gap-1 shrink-0">
         <AvailabilityBadge
-          status={event.availability.find((a) => a.userId === userId)?.status ?? "PENDING"}
+          status={
+            event.availability.find((a) => a.userId === userId)?.status ??
+            "PENDING"
+          }
         />
         <span className="text-xs text-zinc-500">
-          {event.availability.filter((a) => a.status === "AVAILABLE").length} available
+          {event.availability.filter((a) => a.status === "AVAILABLE").length}{" "}
+          available
         </span>
       </div>
     </div>
@@ -172,7 +190,13 @@ export default function SwipeableEventRow({
     <div className="relative overflow-hidden rounded-xl touch-pan-y">
       <button
         type="button"
-        onClick={() => onDeleteRequest({ id: event.id, title: event.title, type: event.type })}
+        onClick={() =>
+          onDeleteRequest({
+            id: event.id,
+            title: event.title,
+            type: event.type
+          })
+        }
         aria-label={`Delete ${event.title}`}
         className="absolute inset-y-0 right-0 flex flex-col items-center justify-center gap-1 bg-red-600 text-white hover:bg-red-500 transition-colors"
         style={{ width: REVEAL_PX }}
@@ -187,7 +211,7 @@ export default function SwipeableEventRow({
         className="group block border border-zinc-800 rounded-xl"
         style={{
           transform: `translateX(${offset}px)`,
-          transition: animating ? "transform 200ms ease-out" : "none",
+          transition: animating ? "transform 200ms ease-out" : "none"
         }}
       >
         {rowInner}

@@ -12,7 +12,7 @@ import {
   releaseStatusClass,
   releaseStatusLabel,
   type ReleaseKind,
-  type ReleaseStatus,
+  type ReleaseStatus
 } from "@/lib/releases";
 import { useIsTouchDevice } from "@/lib/useIsTouchDevice";
 
@@ -33,7 +33,7 @@ export default function SwipeableReleaseRow({
   release,
   canDelete,
   awaitingConfirm,
-  onDeleteRequest,
+  onDeleteRequest
 }: {
   release: Release;
   canDelete: boolean;
@@ -71,14 +71,15 @@ export default function SwipeableReleaseRow({
       const base = revealedRef.current ? -REVEAL_PX : 0;
       const next = Math.min(0, Math.max(-REVEAL_PX, base + e.deltaX));
       const open =
-        next < -REVEAL_PX / 2 || (e.dir === "Left" && e.velocity > 0.5 && next < 0);
+        next < -REVEAL_PX / 2 ||
+        (e.dir === "Left" && e.velocity > 0.5 && next < 0);
       revealedRef.current = open;
       setAnimating(true);
       setOffset(open ? -REVEAL_PX : 0);
     },
     trackMouse: false,
     // See SwipeableShowRow for why preventScrollOnSwipe is left off.
-    delta: 15,
+    delta: 15
   });
 
   const rowInner = (
@@ -96,7 +97,8 @@ export default function SwipeableReleaseRow({
                 "bg-zinc-700 text-zinc-400"
             )}
           >
-            {releaseStatusLabel[release.status as ReleaseStatus] ?? release.status}
+            {releaseStatusLabel[release.status as ReleaseStatus] ??
+              release.status}
           </span>
         </div>
         <p className="text-xs text-zinc-500 mt-0.5">
@@ -136,7 +138,9 @@ export default function SwipeableReleaseRow({
     <div className="relative overflow-hidden rounded-xl touch-pan-y">
       <button
         type="button"
-        onClick={() => onDeleteRequest({ id: release.id, title: release.title })}
+        onClick={() =>
+          onDeleteRequest({ id: release.id, title: release.title })
+        }
         aria-label={`Delete ${release.title}`}
         className="absolute inset-y-0 right-0 flex flex-col items-center justify-center gap-1 bg-red-600 text-white hover:bg-red-500 transition-colors"
         style={{ width: REVEAL_PX }}
@@ -151,7 +155,7 @@ export default function SwipeableReleaseRow({
         className="block border border-zinc-800 rounded-xl"
         style={{
           transform: `translateX(${offset}px)`,
-          transition: animating ? "transform 200ms ease-out" : "none",
+          transition: animating ? "transform 200ms ease-out" : "none"
         }}
       >
         {rowInner}

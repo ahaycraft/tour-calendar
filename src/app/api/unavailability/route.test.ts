@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 
 vi.mock("@/auth", () => ({ auth: vi.fn() }));
 vi.mock("@/lib/prisma", () => ({
-  prisma: { memberUnavailability: { findMany: vi.fn() } },
+  prisma: { memberUnavailability: { findMany: vi.fn() } }
 }));
 vi.mock("@/lib/band", () => ({ getActiveBandId: vi.fn() }));
 
@@ -33,7 +33,9 @@ describe("GET /api/unavailability", () => {
 
   it("400 when from or to is missing", async () => {
     expect((await list("/api/unavailability")).status).toBe(400);
-    expect((await list("/api/unavailability?from=2026-06-01")).status).toBe(400);
+    expect((await list("/api/unavailability?from=2026-06-01")).status).toBe(
+      400
+    );
   });
 
   it("400 for an unparseable from or to", async () => {
@@ -50,10 +52,10 @@ describe("GET /api/unavailability", () => {
         where: {
           date: {
             gte: new Date("2026-06-01T00:00:00Z"),
-            lt: new Date("2026-07-01T00:00:00Z"),
+            lt: new Date("2026-07-01T00:00:00Z")
           },
-          user: { bandMemberships: { some: { bandId: "band1" } } },
-        },
+          user: { bandMemberships: { some: { bandId: "band1" } } }
+        }
       })
     );
   });

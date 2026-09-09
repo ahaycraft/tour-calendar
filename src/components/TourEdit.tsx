@@ -4,19 +4,21 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { format } from "date-fns";
 import { ChevronLeft } from "lucide-react";
-import TourBlockForm, { type TourBlockValues } from "@/components/TourBlockForm";
+import TourBlockForm, {
+  type TourBlockValues
+} from "@/components/TourBlockForm";
 import {
   eventBasePath,
   eventListLabel,
   tourEditHref,
-  type EventTypeStr,
+  type EventTypeStr
 } from "@/lib/events";
 import { canManage, isBandMember } from "@/lib/band";
 
 const BLOCK_NOUN: Record<EventTypeStr, string> = {
   SHOW: "tour",
   RECORDING: "recording block",
-  PRACTICE: "practice block",
+  PRACTICE: "practice block"
 };
 
 interface Props {
@@ -29,7 +31,7 @@ export default async function TourEdit({ tourGroupId, expected }: Props) {
 
   const events = await prisma.show.findMany({
     where: { tourGroupId },
-    orderBy: { date: "asc" },
+    orderBy: { date: "asc" }
   });
 
   const first = events[0];
@@ -55,7 +57,7 @@ export default async function TourEdit({ tourGroupId, expected }: Props) {
     country: first.country,
     status: first.status,
     notes: first.notes ?? "",
-    dayCount: events.length,
+    dayCount: events.length
   };
 
   return (
@@ -70,8 +72,8 @@ export default async function TourEdit({ tourGroupId, expected }: Props) {
 
       <h1 className="text-2xl font-bold text-zinc-50 mb-1">Edit {blockNoun}</h1>
       <p className="text-sm text-zinc-500 mb-6">
-        {events.length} day{events.length === 1 ? "" : "s"} · {range}. Changes here
-        apply to every day; edit a single day from its own page.
+        {events.length} day{events.length === 1 ? "" : "s"} · {range}. Changes
+        here apply to every day; edit a single day from its own page.
       </p>
 
       <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-6">

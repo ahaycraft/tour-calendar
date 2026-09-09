@@ -7,7 +7,7 @@ import { getActiveBand, userBands } from "@/lib/band";
 import Nav from "@/components/Nav";
 
 export default async function ProtectedLayout({
-  children,
+  children
 }: {
   children: React.ReactNode;
 }) {
@@ -32,11 +32,11 @@ export default async function ProtectedLayout({
         availability: {
           some: {
             userId: session.user.id,
-            status: { in: ["AVAILABLE", "UNAVAILABLE"] },
-          },
-        },
-      },
-    },
+            status: { in: ["AVAILABLE", "UNAVAILABLE"] }
+          }
+        }
+      }
+    }
   });
 
   return (
@@ -48,7 +48,9 @@ export default async function ProtectedLayout({
         needsResponseCount={needsResponseCount}
         theme={theme}
       />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">{children}</main>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {children}
+      </main>
     </div>
   );
 }

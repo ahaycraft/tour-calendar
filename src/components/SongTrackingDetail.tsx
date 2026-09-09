@@ -38,7 +38,7 @@ export default function SongTrackingDetail({
   members,
   initialSections,
   prevSong,
-  nextSong,
+  nextSong
 }: {
   releaseId: string;
   song: { id: string; title: string; status: string };
@@ -50,7 +50,8 @@ export default function SongTrackingDetail({
   nextSong: SongLink | null;
 }) {
   const [parts, setParts] = useState<TrackingPart[]>(initialParts);
-  const [instruments, setInstruments] = useState<Instrument[]>(initialInstruments);
+  const [instruments, setInstruments] =
+    useState<Instrument[]>(initialInstruments);
   const [error, setError] = useState("");
 
   const [instrumentId, setInstrumentId] = useState("");
@@ -75,10 +76,11 @@ export default function SongTrackingDetail({
                 ...(data.assigneeId !== undefined
                   ? {
                       assignee: data.assigneeId
-                        ? members.find((m) => m.id === data.assigneeId) ?? p.assignee
-                        : null,
+                        ? (members.find((m) => m.id === data.assigneeId) ??
+                          p.assignee)
+                        : null
                     }
-                  : {}),
+                  : {})
               }
             : p
         )
@@ -88,7 +90,7 @@ export default function SongTrackingDetail({
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
+          body: JSON.stringify(data)
         }
       );
       if (!res.ok) setError("A change didn't save — reload the page");
@@ -116,7 +118,7 @@ export default function SongTrackingDetail({
     const res = await fetch(`/api/bands/instruments`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name }),
+      body: JSON.stringify({ name })
     });
     if (!res.ok) {
       const json = await res.json().catch(() => ({}));
@@ -152,8 +154,8 @@ export default function SongTrackingDetail({
         body: JSON.stringify({
           songId: song.id,
           instrumentId: targetId,
-          label: label.trim() || undefined,
-        }),
+          label: label.trim() || undefined
+        })
       });
       if (!res.ok) {
         const json = await res.json().catch(() => ({}));
@@ -170,8 +172,8 @@ export default function SongTrackingDetail({
           description: created.description ?? "",
           status: created.status,
           instrument: created.instrument,
-          assignee: created.assignee,
-        },
+          assignee: created.assignee
+        }
       ]);
       setInstrumentId("");
       setNewName("");
@@ -218,7 +220,9 @@ export default function SongTrackingDetail({
           {parts.length > 0 && (
             <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4">
               <div className="flex items-center justify-between gap-3 mb-2">
-                <span className="text-sm font-medium text-zinc-300">Progress</span>
+                <span className="text-sm font-medium text-zinc-300">
+                  Progress
+                </span>
                 <span className="text-xs text-zinc-500">
                   {done} / {parts.length} tracked
                 </span>
@@ -286,7 +290,9 @@ export default function SongTrackingDetail({
             {instrumentId && (
               <button
                 type="submit"
-                disabled={adding || (instrumentId === NEW_INSTRUMENT && !newName.trim())}
+                disabled={
+                  adding || (instrumentId === NEW_INSTRUMENT && !newName.trim())
+                }
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md bg-blue-600 text-white font-medium hover:bg-blue-500 disabled:opacity-50 transition-colors"
               >
                 {adding ? (

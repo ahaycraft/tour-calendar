@@ -24,17 +24,17 @@ export default async function SongPage({ params }: PageProps) {
       updatedBy: { select: { name: true } },
       demos: {
         orderBy: { createdAt: "desc" },
-        include: { createdBy: { select: { name: true } } },
+        include: { createdBy: { select: { name: true } } }
       },
       tracks: {
-        include: { release: { select: { id: true, title: true } } },
+        include: { release: { select: { id: true, title: true } } }
       },
       comments: {
         orderBy: { createdAt: "asc" },
-        include: { user: { select: { id: true, name: true } } },
+        include: { user: { select: { id: true, name: true } } }
       },
-      sections: { orderBy: { position: "asc" } },
-    },
+      sections: { orderBy: { position: "asc" } }
+    }
   });
 
   if (!song || !isBandMember(session!, song.bandId)) notFound();
@@ -61,7 +61,7 @@ export default async function SongPage({ params }: PageProps) {
           url: d.url,
           createdAt: d.createdAt.toISOString(),
           createdById: d.createdById,
-          createdBy: d.createdBy,
+          createdBy: d.createdBy
         }))}
         meta={
           <>
@@ -98,7 +98,7 @@ export default async function SongPage({ params }: PageProps) {
               id: s.id,
               name: s.name,
               notes: s.notes ?? "",
-              lyrics: s.lyrics ?? "",
+              lyrics: s.lyrics ?? ""
             }))}
           />
         }
@@ -110,7 +110,7 @@ export default async function SongPage({ params }: PageProps) {
           tempo: song.tempo != null ? String(song.tempo) : "",
           timeSig: song.timeSig ?? "",
           lyrics: song.lyrics ?? "",
-          notes: song.notes ?? "",
+          notes: song.notes ?? ""
         }}
       >
         {/* Match the fields column above: comments sit in the left grid track,
@@ -124,7 +124,7 @@ export default async function SongPage({ params }: PageProps) {
               id: c.id,
               body: c.body,
               createdAt: c.createdAt.toISOString(),
-              user: c.user,
+              user: c.user
             }))}
           />
         </div>

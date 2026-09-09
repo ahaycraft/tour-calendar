@@ -22,15 +22,18 @@ interface Song {
 export default function SongsList({ initialSongs }: { initialSongs: Song[] }) {
   const router = useRouter();
   const [songs, setSongs] = useState(initialSongs);
-  const [pendingDelete, setPendingDelete] = useState<{ id: string; title: string } | null>(
-    null
-  );
+  const [pendingDelete, setPendingDelete] = useState<{
+    id: string;
+    title: string;
+  } | null>(null);
   const [deleting, setDeleting] = useState(false);
 
   async function doDelete() {
     if (!pendingDelete) return;
     setDeleting(true);
-    const res = await fetch(`/api/songs/${pendingDelete.id}`, { method: "DELETE" });
+    const res = await fetch(`/api/songs/${pendingDelete.id}`, {
+      method: "DELETE"
+    });
     setDeleting(false);
     if (res.ok) {
       setSongs((prev) => prev.filter((s) => s.id !== pendingDelete.id));
@@ -52,7 +55,9 @@ export default function SongsList({ initialSongs }: { initialSongs: Song[] }) {
         <section key={status}>
           <h2 className="text-xs font-semibold text-zinc-600 uppercase tracking-wide mb-3">
             {songStatusLabel[status]}
-            <span className="ml-2 text-zinc-700">{byStatus.get(status)!.length}</span>
+            <span className="ml-2 text-zinc-700">
+              {byStatus.get(status)!.length}
+            </span>
           </h2>
           <div className="space-y-2">
             {byStatus.get(status)!.map((song) => (
@@ -75,8 +80,9 @@ export default function SongsList({ initialSongs }: { initialSongs: Song[] }) {
           <>
             {pendingDelete && (
               <>
-                &ldquo;{pendingDelete.title}&rdquo; — its lyrics, notes, demos, and
-                all feedback on it will be removed. This can&apos;t be undone.
+                &ldquo;{pendingDelete.title}&rdquo; — its lyrics, notes, demos,
+                and all feedback on it will be removed. This can&apos;t be
+                undone.
               </>
             )}
           </>

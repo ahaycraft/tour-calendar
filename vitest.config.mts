@@ -14,12 +14,12 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   resolve: {
     alias: {
-      "@": fileURLToPath(new URL("./src", import.meta.url)),
-    },
+      "@": fileURLToPath(new URL("./src", import.meta.url))
+    }
   },
   test: {
     environment: "node",
     include: ["src/**/*.test.ts"],
-    env: { TZ: "UTC" },
-  },
+    env: { TZ: "UTC" }
+  }
 });

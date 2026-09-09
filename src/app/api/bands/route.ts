@@ -6,21 +6,25 @@ import { ensureBandInstruments } from "@/lib/instruments";
 
 export async function POST(request: NextRequest) {
   const session = await auth();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
     const { name } = await request.json();
     if (!name || typeof name !== "string" || !name.trim()) {
-      return NextResponse.json({ error: "A name is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "A name is required" },
+        { status: 400 }
+      );
     }
 
     const band = await prisma.band.create({
       data: {
         name: name.trim(),
         slug: await uniqueBandSlug(name),
-        memberships: { create: { userId: session.user.id, role: "OWNER" } },
+        memberships: { create: { userId: session.user.id, role: "OWNER" } }
       },
-      select: { id: true },
+      select: { id: true }
     });
 
     await ensureBandInstruments(band.id);
@@ -30,10 +34,13 @@ export async function POST(request: NextRequest) {
       httpOnly: true,
       sameSite: "lax",
       path: "/",
-      maxAge: 60 * 60 * 24 * 365,
+      maxAge: 60 * 60 * 24 * 365
     });
     return res;
   } catch {
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

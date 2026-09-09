@@ -5,7 +5,7 @@ export const releaseKindLabel: Record<ReleaseKind, string> = {
   ALBUM: "Album",
   EP: "EP",
   SINGLE: "Single",
-  GROUP: "Group",
+  GROUP: "Group"
 };
 
 export const RELEASE_STATUSES = [
@@ -13,7 +13,7 @@ export const RELEASE_STATUSES = [
   "WRITING",
   "TRACKING",
   "MIXING",
-  "RELEASED",
+  "RELEASED"
 ] as const;
 export type ReleaseStatus = (typeof RELEASE_STATUSES)[number];
 
@@ -22,7 +22,7 @@ export const releaseStatusLabel: Record<ReleaseStatus, string> = {
   WRITING: "Writing",
   TRACKING: "Tracking",
   MIXING: "Mixing",
-  RELEASED: "Released",
+  RELEASED: "Released"
 };
 
 // Muted status palette shared with the calendar and show badges (see the
@@ -32,12 +32,16 @@ export const releaseStatusClass: Record<ReleaseStatus, string> = {
   WRITING: "badge-denim",
   TRACKING: "badge-ochre",
   MIXING: "badge-mauve",
-  RELEASED: "badge-moss",
+  RELEASED: "badge-moss"
 };
 
 export function isReleaseKind(v: unknown): v is ReleaseKind {
-  return typeof v === "string" && (RELEASE_KINDS as readonly string[]).includes(v);
+  return (
+    typeof v === "string" && (RELEASE_KINDS as readonly string[]).includes(v)
+  );
 }
 export function isReleaseStatus(v: unknown): v is ReleaseStatus {
-  return typeof v === "string" && (RELEASE_STATUSES as readonly string[]).includes(v);
+  return (
+    typeof v === "string" && (RELEASE_STATUSES as readonly string[]).includes(v)
+  );
 }

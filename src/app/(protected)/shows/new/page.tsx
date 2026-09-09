@@ -12,7 +12,7 @@ export default async function NewShowPage() {
     ? await prisma.release.findMany({
         where: { bandId },
         orderBy: { updatedAt: "desc" },
-        select: { id: true, title: true },
+        select: { id: true, title: true }
       })
     : [];
 

@@ -20,10 +20,10 @@ export default async function SongTrackingPage({ params }: PageProps) {
       bandId: true,
       tracks: {
         orderBy: { position: "asc" },
-        select: { song: { select: { id: true, title: true, status: true } } },
+        select: { song: { select: { id: true, title: true, status: true } } }
       },
-      trackingPlan: { select: { id: true } },
-    },
+      trackingPlan: { select: { id: true } }
+    }
   });
 
   if (!release || !isBandMember(session!, release.bandId)) notFound();
@@ -49,24 +49,24 @@ export default async function SongTrackingPage({ params }: PageProps) {
         description: true,
         status: true,
         instrument: { select: { id: true, name: true } },
-        assignee: { select: { id: true, name: true } },
-      },
+        assignee: { select: { id: true, name: true } }
+      }
     }),
     prisma.instrument.findMany({
       where: { bandId: release.bandId, archived: false },
       orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
-      select: { id: true, name: true },
+      select: { id: true, name: true }
     }),
     prisma.bandMembership.findMany({
       where: { bandId: release.bandId },
       orderBy: { user: { name: "asc" } },
-      select: { user: { select: { id: true, name: true } } },
+      select: { user: { select: { id: true, name: true } } }
     }),
     prisma.songSection.findMany({
       where: { songId },
       orderBy: { position: "asc" },
-      select: { id: true, name: true, notes: true, lyrics: true },
-    }),
+      select: { id: true, name: true, notes: true, lyrics: true }
+    })
   ]);
 
   const song = songs[index];
@@ -84,7 +84,7 @@ export default async function SongTrackingPage({ params }: PageProps) {
           id: s.id,
           name: s.name,
           notes: s.notes ?? "",
-          lyrics: s.lyrics ?? "",
+          lyrics: s.lyrics ?? ""
         }))}
         prevSong={prevSong ? { id: prevSong.id, title: prevSong.title } : null}
         nextSong={nextSong ? { id: nextSong.id, title: nextSong.title } : null}
@@ -95,7 +95,7 @@ export default async function SongTrackingPage({ params }: PageProps) {
           description: p.description ?? "",
           status: p.status,
           instrument: p.instrument,
-          assignee: p.assignee,
+          assignee: p.assignee
         }))}
       />
     </div>

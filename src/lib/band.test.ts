@@ -11,10 +11,7 @@ import { bandRole, canManage, isBandMember, userBands } from "@/lib/band";
 
 type Role = "OWNER" | "ADMIN" | "MEMBER";
 
-function session(
-  userId: string,
-  bands: { id: string; role: Role }[]
-): Session {
+function session(userId: string, bands: { id: string; role: Role }[]): Session {
   return {
     user: {
       id: userId,
@@ -22,9 +19,9 @@ function session(
         id: b.id,
         name: b.id,
         slug: b.id,
-        role: b.role,
-      })),
-    },
+        role: b.role
+      }))
+    }
   } as unknown as Session;
 }
 

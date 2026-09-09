@@ -32,7 +32,7 @@ export default function SongWorkspace({
   demosAdmin,
   meta,
   sidebar,
-  children,
+  children
 }: {
   song: SongData;
   canDelete: boolean;
@@ -60,7 +60,9 @@ export default function SongWorkspace({
   }, [fields]);
 
   const titleMissing = !fields.title.trim();
-  const statusIndex = SONG_STATUSES.indexOf(fields.status as (typeof SONG_STATUSES)[number]);
+  const statusIndex = SONG_STATUSES.indexOf(
+    fields.status as (typeof SONG_STATUSES)[number]
+  );
 
   const flush = useCallback(async () => {
     const payload = latest.current;
@@ -77,8 +79,8 @@ export default function SongWorkspace({
           tempo: payload.tempo,
           timeSig: payload.timeSig,
           lyrics: payload.lyrics,
-          notes: payload.notes,
-        }),
+          notes: payload.notes
+        })
       });
       setSaveState(res.ok ? "saved" : "error");
       if (res.ok) router.refresh();
@@ -171,7 +173,9 @@ export default function SongWorkspace({
               <Check size={12} /> Saved
             </span>
           ) : saveState === "error" ? (
-            <span className="text-red-400">Couldn&apos;t save — retrying on next edit</span>
+            <span className="text-red-400">
+              Couldn&apos;t save — retrying on next edit
+            </span>
           ) : (
             "Autosaves"
           )}
@@ -183,7 +187,9 @@ export default function SongWorkspace({
           <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4">
             <div className="grid grid-cols-3 gap-2 max-w-xs">
               <div>
-                <label className="block text-xs font-medium text-zinc-400 mb-1">Key</label>
+                <label className="block text-xs font-medium text-zinc-400 mb-1">
+                  Key
+                </label>
                 <input
                   value={fields.key}
                   onChange={(e) => set("key", e.target.value)}
@@ -192,17 +198,23 @@ export default function SongWorkspace({
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-zinc-400 mb-1">BPM</label>
+                <label className="block text-xs font-medium text-zinc-400 mb-1">
+                  BPM
+                </label>
                 <input
                   value={fields.tempo}
-                  onChange={(e) => set("tempo", e.target.value.replace(/[^\d]/g, ""))}
+                  onChange={(e) =>
+                    set("tempo", e.target.value.replace(/[^\d]/g, ""))
+                  }
                   inputMode="numeric"
                   className={fieldClass}
                   placeholder="120"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-zinc-400 mb-1">Time</label>
+                <label className="block text-xs font-medium text-zinc-400 mb-1">
+                  Time
+                </label>
                 <input
                   value={fields.timeSig}
                   onChange={(e) => set("timeSig", e.target.value)}
@@ -221,7 +233,9 @@ export default function SongWorkspace({
           />
 
           <div>
-            <label className="block text-sm font-medium text-zinc-300 mb-1">Lyrics</label>
+            <label className="block text-sm font-medium text-zinc-300 mb-1">
+              Lyrics
+            </label>
             <textarea
               value={fields.lyrics}
               onChange={(e) => set("lyrics", e.target.value)}
@@ -233,7 +247,9 @@ export default function SongWorkspace({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-zinc-300 mb-1">Notes</label>
+            <label className="block text-sm font-medium text-zinc-300 mb-1">
+              Notes
+            </label>
             <textarea
               value={fields.notes}
               onChange={(e) => set("notes", e.target.value)}

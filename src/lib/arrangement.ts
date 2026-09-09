@@ -14,7 +14,7 @@ export const SECTION_PRESETS = [
   "Solo",
   "Instrumental",
   "Breakdown",
-  "Outro",
+  "Outro"
 ] as const;
 
 export const MAX_SECTION_NAME = 80;

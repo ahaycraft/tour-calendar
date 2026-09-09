@@ -16,9 +16,9 @@ export default async function RecordingsPage() {
     include: {
       createdBy: { select: { id: true, name: true } },
       availability: {
-        include: { user: { select: { id: true, name: true } } },
-      },
-    },
+        include: { user: { select: { id: true, name: true } } }
+      }
+    }
   });
 
   const hasUpcoming = recordings.some(isUpcomingEvent);

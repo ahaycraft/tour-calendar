@@ -17,11 +17,21 @@ import {
   eventHref,
   eventListLabel,
   eventNoun,
-  type EventTypeStr,
+  type EventTypeStr
 } from "@/lib/events";
 import { canManage, isBandMember } from "@/lib/band";
-import NeedsDetailsBadge, { needsDetails } from "@/components/NeedsDetailsBadge";
-import { ChevronLeft, MapPin, Clock, DollarSign, FileText, Pencil, Disc3 } from "lucide-react";
+import NeedsDetailsBadge, {
+  needsDetails
+} from "@/components/NeedsDetailsBadge";
+import {
+  ChevronLeft,
+  MapPin,
+  Clock,
+  DollarSign,
+  FileText,
+  Pencil,
+  Disc3
+} from "lucide-react";
 
 interface Props {
   id: string;
@@ -39,25 +49,31 @@ export default async function EventDetail({ id, expected }: Props) {
       release: { select: { id: true, title: true } },
       availability: {
         include: { user: { select: { id: true, name: true } } },
-        orderBy: { user: { name: "asc" } },
-      },
-    },
+        orderBy: { user: { name: "asc" } }
+      }
+    }
   });
 
   if (!show || !isBandMember(session!, show.bandId)) notFound();
   if (show.type !== expected) redirect(eventHref(show.type, show.id));
 
   const memberCount = await prisma.bandMembership.count({
-    where: { bandId: show.bandId },
+    where: { bandId: show.bandId }
   });
 
   const myAvailability = show.availability.find(
     (a) => a.userId === session!.user.id
   );
 
-  const availableMembers = show.availability.filter((a) => a.status === "AVAILABLE");
-  const unavailableMembers = show.availability.filter((a) => a.status === "UNAVAILABLE");
-  const pendingMembers = show.availability.filter((a) => a.status === "PENDING");
+  const availableMembers = show.availability.filter(
+    (a) => a.status === "AVAILABLE"
+  );
+  const unavailableMembers = show.availability.filter(
+    (a) => a.status === "UNAVAILABLE"
+  );
+  const pendingMembers = show.availability.filter(
+    (a) => a.status === "PENDING"
+  );
 
   const isAdminOrCreator = canManage(session!, show.bandId, show.createdById);
 
@@ -74,7 +90,12 @@ export default async function EventDetail({ id, expected }: Props) {
   const geoCoords =
     savedCoords || (!show.venue && !show.city)
       ? null
-      : await geocodeVenue(show.venue ?? "", show.city ?? "", show.state, show.country);
+      : await geocodeVenue(
+          show.venue ?? "",
+          show.city ?? "",
+          show.state,
+          show.country
+        );
   const mapLat = savedCoords?.lat ?? geoCoords?.lat ?? null;
   const mapLng = savedCoords?.lng ?? geoCoords?.lng ?? null;
 
@@ -94,12 +115,16 @@ export default async function EventDetail({ id, expected }: Props) {
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4 mb-4">
               <div className="min-w-0">
                 <div className="flex items-center gap-2 flex-wrap mb-1">
-                  <h1 className="text-2xl font-bold text-zinc-50">{show.title}</h1>
+                  <h1 className="text-2xl font-bold text-zinc-50">
+                    {show.title}
+                  </h1>
                   {show.type !== "SHOW" && <EventTypeBadge type={show.type} />}
                   <ShowStatusBadge status={show.status} />
                   {needsDetails(show) && <NeedsDetailsBadge />}
                 </div>
-                <p className="text-zinc-500 text-sm">Added by {show.createdBy.name}</p>
+                <p className="text-zinc-500 text-sm">
+                  Added by {show.createdBy.name}
+                </p>
                 {show.release && (
                   <Link
                     href={`/releases/${show.release.id}`}
@@ -133,7 +158,7 @@ export default async function EventDetail({ id, expected }: Props) {
                       show.venue,
                       show.city,
                       show.state,
-                      show.venue || show.city ? show.country : null,
+                      show.venue || show.city ? show.country : null
                     ]
                       .filter(Boolean)
                       .join(", ") || (
@@ -159,13 +184,17 @@ export default async function EventDetail({ id, expected }: Props) {
                   <div className="flex gap-4 text-zinc-400">
                     {show.loadInTime && (
                       <span>
-                        {isRecording ? "Call" : "Load in"}: {formatTime(show.loadInTime)}
+                        {isRecording ? "Call" : "Load in"}:{" "}
+                        {formatTime(show.loadInTime)}
                       </span>
                     )}
-                    {show.doorsTime && <span>Doors: {formatTime(show.doorsTime)}</span>}
+                    {show.doorsTime && (
+                      <span>Doors: {formatTime(show.doorsTime)}</span>
+                    )}
                     {show.setTime && (
                       <span>
-                        {isRecording ? "Wrap" : "Set"}: {formatTime(show.setTime)}
+                        {isRecording ? "Wrap" : "Set"}:{" "}
+                        {formatTime(show.setTime)}
                       </span>
                     )}
                   </div>
@@ -181,8 +210,13 @@ export default async function EventDetail({ id, expected }: Props) {
 
               {show.notes && (
                 <div className="flex items-start gap-2">
-                  <FileText size={15} className="text-zinc-500 shrink-0 mt-0.5" />
-                  <span className="whitespace-pre-wrap text-zinc-400">{show.notes}</span>
+                  <FileText
+                    size={15}
+                    className="text-zinc-500 shrink-0 mt-0.5"
+                  />
+                  <span className="whitespace-pre-wrap text-zinc-400">
+                    {show.notes}
+                  </span>
                 </div>
               )}
             </div>
@@ -201,11 +235,15 @@ export default async function EventDetail({ id, expected }: Props) {
 
           {/* My Availability */}
           <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-6">
-            <h2 className="font-semibold text-zinc-100 mb-3">My Availability</h2>
+            <h2 className="font-semibold text-zinc-100 mb-3">
+              My Availability
+            </h2>
             <div className="flex items-center gap-3 mb-4">
               <AvailabilityBadge status={myAvailability?.status ?? "PENDING"} />
               {myAvailability?.note && (
-                <span className="text-sm text-zinc-500">{myAvailability.note}</span>
+                <span className="text-sm text-zinc-500">
+                  {myAvailability.note}
+                </span>
               )}
             </div>
             <ShowAvailabilityControls
@@ -230,12 +268,23 @@ export default async function EventDetail({ id, expected }: Props) {
               <div className="space-y-4">
                 {availableMembers.length > 0 && (
                   <div>
-                    <p className="text-xs font-medium text-zinc-600 uppercase tracking-wide mb-2">Available</p>
+                    <p className="text-xs font-medium text-zinc-600 uppercase tracking-wide mb-2">
+                      Available
+                    </p>
                     <div className="space-y-1">
                       {availableMembers.map((a) => (
-                        <div key={a.id} className="flex items-center justify-between">
-                          <span className="text-sm text-zinc-300">{a.user.name}</span>
-                          {a.note && <span className="text-xs text-zinc-500">{a.note}</span>}
+                        <div
+                          key={a.id}
+                          className="flex items-center justify-between"
+                        >
+                          <span className="text-sm text-zinc-300">
+                            {a.user.name}
+                          </span>
+                          {a.note && (
+                            <span className="text-xs text-zinc-500">
+                              {a.note}
+                            </span>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -244,12 +293,23 @@ export default async function EventDetail({ id, expected }: Props) {
 
                 {unavailableMembers.length > 0 && (
                   <div>
-                    <p className="text-xs font-medium text-zinc-600 uppercase tracking-wide mb-2">Unavailable</p>
+                    <p className="text-xs font-medium text-zinc-600 uppercase tracking-wide mb-2">
+                      Unavailable
+                    </p>
                     <div className="space-y-1">
                       {unavailableMembers.map((a) => (
-                        <div key={a.id} className="flex items-center justify-between">
-                          <span className="text-sm text-zinc-300">{a.user.name}</span>
-                          {a.note && <span className="text-xs text-zinc-500">{a.note}</span>}
+                        <div
+                          key={a.id}
+                          className="flex items-center justify-between"
+                        >
+                          <span className="text-sm text-zinc-300">
+                            {a.user.name}
+                          </span>
+                          {a.note && (
+                            <span className="text-xs text-zinc-500">
+                              {a.note}
+                            </span>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -258,11 +318,18 @@ export default async function EventDetail({ id, expected }: Props) {
 
                 {pendingMembers.length > 0 && (
                   <div>
-                    <p className="text-xs font-medium text-zinc-600 uppercase tracking-wide mb-2">No Response</p>
+                    <p className="text-xs font-medium text-zinc-600 uppercase tracking-wide mb-2">
+                      No Response
+                    </p>
                     <div className="space-y-1">
                       {pendingMembers.map((a) => (
-                        <div key={a.id} className="flex items-center justify-between">
-                          <span className="text-sm text-zinc-500">{a.user.name}</span>
+                        <div
+                          key={a.id}
+                          className="flex items-center justify-between"
+                        >
+                          <span className="text-sm text-zinc-500">
+                            {a.user.name}
+                          </span>
                         </div>
                       ))}
                     </div>

@@ -4,8 +4,8 @@ vi.mock("@/auth", () => ({ auth: vi.fn() }));
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     show: { create: vi.fn(), findMany: vi.fn() },
-    release: { findFirst: vi.fn() },
-  },
+    release: { findFirst: vi.fn() }
+  }
 }));
 vi.mock("@/lib/band", () => ({ getActiveBandId: vi.fn() }));
 vi.mock("@/lib/push", () => ({ notifyBandMembers: vi.fn() }));
@@ -29,8 +29,7 @@ const notifyMock = vi.mocked(notifyBandMembers);
 
 const call = (body: unknown) =>
   POST(jsonRequest(body) as Parameters<typeof POST>[0]);
-const list = (url: string) =>
-  GET(urlRequest(url) as Parameters<typeof GET>[0]);
+const list = (url: string) => GET(urlRequest(url) as Parameters<typeof GET>[0]);
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -70,9 +69,9 @@ describe("GET /api/shows", () => {
           bandId: "band1",
           date: {
             gte: new Date("2026-06-01T00:00:00Z"),
-            lt: new Date("2026-07-01T00:00:00Z"),
-          },
-        },
+            lt: new Date("2026-07-01T00:00:00Z")
+          }
+        }
       })
     );
   });
@@ -116,7 +115,7 @@ describe("POST /api/shows — create + notify", () => {
       bandId: "band1",
       type: "SHOW",
       title: "The Roxy",
-      createdById: "u1",
+      createdById: "u1"
     });
     expect(data.date).toBeInstanceOf(Date);
 
@@ -124,7 +123,7 @@ describe("POST /api/shows — create + notify", () => {
       title: "New show: The Roxy",
       body: "Tap to set your availability.",
       url: "/shows/new1",
-      tag: "show:new1",
+      tag: "show:new1"
     });
   });
 
@@ -135,7 +134,7 @@ describe("POST /api/shows — create + notify", () => {
       "u1",
       expect.objectContaining({
         title: "New practice: Thursday run",
-        url: "/practices/new1",
+        url: "/practices/new1"
       })
     );
   });
@@ -146,7 +145,7 @@ describe("POST /api/shows — create + notify", () => {
       title: "Tracking",
       date: "2026-06-15",
       type: "RECORDING",
-      releaseId: "rel-x",
+      releaseId: "rel-x"
     });
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({ error: "Release not found" });
@@ -159,9 +158,11 @@ describe("POST /api/shows — create + notify", () => {
       title: "Tracking",
       date: "2026-06-15",
       type: "RECORDING",
-      releaseId: "rel1",
+      releaseId: "rel1"
     });
-    expect(createMock.mock.calls[0][0].data).toMatchObject({ releaseId: "rel1" });
+    expect(createMock.mock.calls[0][0].data).toMatchObject({
+      releaseId: "rel1"
+    });
   });
 
   it("500s if the create throws, without surfacing internals", async () => {

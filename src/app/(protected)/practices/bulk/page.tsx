@@ -15,7 +15,8 @@ export default function BulkPracticesPage() {
 
       <h1 className="text-2xl font-bold text-zinc-50 mb-1">Add a date range</h1>
       <p className="text-sm text-zinc-500 mb-6">
-        Block out a run of rehearsal dates now, then fill in the room on each one.
+        Block out a run of rehearsal dates now, then fill in the room on each
+        one.
       </p>
 
       <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-6">

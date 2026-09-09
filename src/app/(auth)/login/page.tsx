@@ -21,7 +21,7 @@ function LoginForm() {
     const result = await signIn("credentials", {
       email,
       password,
-      redirect: false,
+      redirect: false
     });
 
     setLoading(false);
@@ -72,9 +72,7 @@ function LoginForm() {
               />
             </div>
 
-            {error && (
-              <p className="text-sm text-red-400">{error}</p>
-            )}
+            {error && <p className="text-sm text-red-400">{error}</p>}
 
             <button
               type="submit"

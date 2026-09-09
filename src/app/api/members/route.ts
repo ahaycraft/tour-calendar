@@ -5,7 +5,8 @@ import { getActiveBandId } from "@/lib/band";
 
 export async function GET() {
   const session = await auth();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const bandId = await getActiveBandId(session);
   if (!bandId) return NextResponse.json([]);
@@ -21,11 +22,11 @@ export async function GET() {
           email: true,
           unavailableDates: {
             select: { date: true, note: true },
-            orderBy: { date: "asc" },
-          },
-        },
-      },
-    },
+            orderBy: { date: "asc" }
+          }
+        }
+      }
+    }
   });
 
   return NextResponse.json(

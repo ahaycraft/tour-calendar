@@ -6,13 +6,17 @@ import { isSongStatus } from "@/lib/songs";
 
 export async function POST(request: NextRequest) {
   const session = await auth();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
     const { title, status } = await request.json();
 
     if (!title || typeof title !== "string" || !title.trim()) {
-      return NextResponse.json({ error: "A title is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "A title is required" },
+        { status: 400 }
+      );
     }
     if (status !== undefined && !isSongStatus(status)) {
       return NextResponse.json({ error: "Invalid status" }, { status: 400 });
@@ -29,13 +33,16 @@ export async function POST(request: NextRequest) {
         title: title.trim(),
         status: status ?? "IDEA",
         createdById: session.user.id,
-        updatedById: session.user.id,
+        updatedById: session.user.id
       },
-      select: { id: true },
+      select: { id: true }
     });
 
     return NextResponse.json(song, { status: 201 });
   } catch {
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

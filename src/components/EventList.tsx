@@ -12,18 +12,26 @@ interface Props {
   emptyText?: string;
 }
 
-export default function EventList({ events: initialEvents, userId, emptyText = "Nothing here yet." }: Props) {
+export default function EventList({
+  events: initialEvents,
+  userId,
+  emptyText = "Nothing here yet."
+}: Props) {
   const router = useRouter();
   const [events, setEvents] = useState(initialEvents);
-  const [pendingDelete, setPendingDelete] = useState<
-    { id: string; title: string; type: string } | null
-  >(null);
+  const [pendingDelete, setPendingDelete] = useState<{
+    id: string;
+    title: string;
+    type: string;
+  } | null>(null);
   const [deleting, setDeleting] = useState(false);
 
   async function doDelete() {
     if (!pendingDelete) return;
     setDeleting(true);
-    const res = await fetch(`/api/shows/${pendingDelete.id}`, { method: "DELETE" });
+    const res = await fetch(`/api/shows/${pendingDelete.id}`, {
+      method: "DELETE"
+    });
     setDeleting(false);
     if (res.ok) {
       setEvents((prev) => prev.filter((e) => e.id !== pendingDelete.id));
@@ -61,7 +69,9 @@ export default function EventList({ events: initialEvents, userId, emptyText = "
 
       {past.length > 0 && (
         <section>
-          <h2 className="text-lg font-semibold text-zinc-600 mb-3">Past / Cancelled</h2>
+          <h2 className="text-lg font-semibold text-zinc-600 mb-3">
+            Past / Cancelled
+          </h2>
           <div className="space-y-3">
             {past.map((event) => (
               <SwipeableEventRow
@@ -84,8 +94,9 @@ export default function EventList({ events: initialEvents, userId, emptyText = "
           <>
             {pendingDelete && (
               <>
-                &ldquo;{pendingDelete.title}&rdquo; and everyone&apos;s availability
-                responses for it will be removed. This can&apos;t be undone.
+                &ldquo;{pendingDelete.title}&rdquo; and everyone&apos;s
+                availability responses for it will be removed. This can&apos;t
+                be undone.
               </>
             )}
           </>

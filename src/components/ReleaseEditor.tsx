@@ -14,17 +14,25 @@ import {
   useSensors,
   type DragEndEvent,
   type DragOverEvent,
-  type DragStartEvent,
+  type DragStartEvent
 } from "@dnd-kit/core";
 import {
   SortableContext,
   arrayMove,
   sortableKeyboardCoordinates,
   useSortable,
-  verticalListSortingStrategy,
+  verticalListSortingStrategy
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Check, GripVertical, ListChecks, Loader2, Plus, Trash2, X } from "lucide-react";
+import {
+  Check,
+  GripVertical,
+  ListChecks,
+  Loader2,
+  Plus,
+  Trash2,
+  X
+} from "lucide-react";
 import ConfirmDialog from "./ConfirmDialog";
 import DatePicker from "./DatePicker";
 import SongStatusBadge from "./SongStatusBadge";
@@ -32,7 +40,7 @@ import {
   RELEASE_KINDS,
   RELEASE_STATUSES,
   releaseKindLabel,
-  releaseStatusLabel,
+  releaseStatusLabel
 } from "@/lib/releases";
 
 interface SongLite {
@@ -61,13 +69,19 @@ type SaveState = "idle" | "saving" | "saved" | "error";
 
 function SortableRow({
   id,
-  children,
+  children
 }: {
   id: string;
   children: (handleProps: React.HTMLAttributes<HTMLElement>) => React.ReactNode;
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id });
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging
+  } = useSortable({ id });
   return (
     <li
       ref={setNodeRef}
@@ -83,7 +97,7 @@ export default function ReleaseEditor({
   release,
   initialTrackIds,
   songs,
-  canDelete,
+  canDelete
 }: {
   release: ReleaseData;
   initialTrackIds: string[];
@@ -99,7 +113,7 @@ export default function ReleaseEditor({
     kind: release.kind,
     status: release.status,
     targetDate: release.targetDate,
-    notes: release.notes,
+    notes: release.notes
   });
   const [metaSave, setMetaSave] = useState<SaveState>("idle");
   const metaTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -116,7 +130,7 @@ export default function ReleaseEditor({
       const res = await fetch(`/api/releases/${release.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(m),
+        body: JSON.stringify(m)
       });
       setMetaSave(res.ok ? "saved" : "error");
       if (res.ok) router.refresh();
@@ -155,7 +169,7 @@ export default function ReleaseEditor({
       const res = await fetch(`/api/releases/${release.id}/tracks`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ songIds: ids }),
+        body: JSON.stringify({ songIds: ids })
       });
       if (res.ok) {
         savedTrackIds.current = ids;
@@ -361,7 +375,9 @@ export default function ReleaseEditor({
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-semibold text-zinc-200">
                 Tracklist{" "}
-                <span className="text-zinc-600 font-normal">{trackIds.length}</span>
+                <span className="text-zinc-600 font-normal">
+                  {trackIds.length}
+                </span>
               </h2>
               <span className="text-xs text-zinc-600">
                 {trackSave === "saving" ? (
@@ -378,8 +394,15 @@ export default function ReleaseEditor({
               </span>
             </div>
 
-            <DroppableList id="tracklist" empty={trackIds.length === 0} emptyLabel="Drag songs here">
-              <SortableContext items={trackIds} strategy={verticalListSortingStrategy}>
+            <DroppableList
+              id="tracklist"
+              empty={trackIds.length === 0}
+              emptyLabel="Drag songs here"
+            >
+              <SortableContext
+                items={trackIds}
+                strategy={verticalListSortingStrategy}
+              >
                 <ul className="space-y-1.5">
                   {trackIds.map((id, i) => {
                     const s = songMap.get(id);
@@ -428,14 +451,19 @@ export default function ReleaseEditor({
           <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4">
             <h2 className="text-sm font-semibold text-zinc-200 mb-3">
               Songs{" "}
-              <span className="text-zinc-600 font-normal">{poolIds.length}</span>
+              <span className="text-zinc-600 font-normal">
+                {poolIds.length}
+              </span>
             </h2>
             <DroppableList
               id="pool"
               empty={poolIds.length === 0}
               emptyLabel="Every song is on this release"
             >
-              <SortableContext items={poolIds} strategy={verticalListSortingStrategy}>
+              <SortableContext
+                items={poolIds}
+                strategy={verticalListSortingStrategy}
+              >
                 <ul className="space-y-1.5">
                   {poolIds.map((id) => {
                     const s = songMap.get(id);
@@ -489,7 +517,9 @@ export default function ReleaseEditor({
       </DndContext>
 
       <div className="mt-6">
-        <label className="block text-sm font-medium text-zinc-300 mb-1">Notes</label>
+        <label className="block text-sm font-medium text-zinc-300 mb-1">
+          Notes
+        </label>
         <textarea
           value={meta.notes}
           onChange={(e) => setMetaField("notes", e.target.value)}
@@ -530,7 +560,7 @@ function DroppableList({
   id,
   empty,
   emptyLabel,
-  children,
+  children
 }: {
   id: string;
   empty: boolean;

@@ -91,7 +91,7 @@ interface PhotonFeature {
 async function searchPhoton(q: string): Promise<VenueResult[]> {
   const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=8&lang=en`;
   const res = await fetch(url, {
-    headers: { "User-Agent": "woodshedd (venue lookup)" },
+    headers: { "User-Agent": "woodshedd (venue lookup)" }
   });
   if (!res.ok) throw new Error(`Photon returned ${res.status}`);
   const data = (await res.json()) as { features?: PhotonFeature[] };
@@ -117,7 +117,7 @@ async function searchPhoton(q: string): Promise<VenueResult[]> {
       country,
       lat: coords ? coords[1] : null,
       lng: coords ? coords[0] : null,
-      source: "photon",
+      source: "photon"
     });
   }
   return results;
@@ -138,16 +138,19 @@ interface GooglePlace {
 }
 
 async function searchGooglePlaces(q: string): Promise<VenueResult[]> {
-  const res = await fetch("https://places.googleapis.com/v1/places:searchText", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Goog-Api-Key": process.env.GOOGLE_PLACES_API_KEY as string,
-      "X-Goog-FieldMask":
-        "places.id,places.displayName,places.formattedAddress,places.location,places.addressComponents",
-    },
-    body: JSON.stringify({ textQuery: q, maxResultCount: 8 }),
-  });
+  const res = await fetch(
+    "https://places.googleapis.com/v1/places:searchText",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": process.env.GOOGLE_PLACES_API_KEY as string,
+        "X-Goog-FieldMask":
+          "places.id,places.displayName,places.formattedAddress,places.location,places.addressComponents"
+      },
+      body: JSON.stringify({ textQuery: q, maxResultCount: 8 })
+    }
+  );
   if (!res.ok) throw new Error(`Google Places returned ${res.status}`);
   const data = (await res.json()) as { places?: GooglePlace[] };
 
@@ -172,7 +175,7 @@ async function searchGooglePlaces(q: string): Promise<VenueResult[]> {
       country,
       lat: place.location?.latitude ?? null,
       lng: place.location?.longitude ?? null,
-      source: "google",
+      source: "google"
     };
   });
 }

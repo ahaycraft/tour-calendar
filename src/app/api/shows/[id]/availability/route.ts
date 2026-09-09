@@ -8,7 +8,8 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id: showId } = await params;
 
@@ -21,7 +22,7 @@ export async function PUT(
 
     const show = await prisma.show.findUnique({
       where: { id: showId },
-      select: { bandId: true },
+      select: { bandId: true }
     });
     if (!show || !isBandMember(session, show.bandId)) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -31,26 +32,29 @@ export async function PUT(
       where: {
         userId_showId: {
           userId: session.user.id,
-          showId,
-        },
+          showId
+        }
       },
       create: {
         userId: session.user.id,
         showId,
         status,
-        note: note || null,
+        note: note || null
       },
       update: {
         status,
-        note: note !== undefined ? note : undefined,
+        note: note !== undefined ? note : undefined
       },
       include: {
-        user: { select: { id: true, name: true } },
-      },
+        user: { select: { id: true, name: true } }
+      }
     });
 
     return NextResponse.json(availability);
   } catch {
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

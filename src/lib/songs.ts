@@ -4,7 +4,7 @@ export const SONG_STATUSES = [
   "DEMO",
   "READY_TO_TRACK",
   "TRACKED",
-  "RELEASED",
+  "RELEASED"
 ] as const;
 
 export type SongStatus = (typeof SONG_STATUSES)[number];
@@ -15,7 +15,7 @@ export const songStatusLabel: Record<SongStatus, string> = {
   DEMO: "Demo",
   READY_TO_TRACK: "Ready to track",
   TRACKED: "Tracked",
-  RELEASED: "Released",
+  RELEASED: "Released"
 };
 
 // Muted status palette shared with the calendar and show badges (see the
@@ -26,11 +26,13 @@ export const songStatusClass: Record<SongStatus, string> = {
   DEMO: "badge-mauve",
   READY_TO_TRACK: "badge-ochre",
   TRACKED: "badge-moss",
-  RELEASED: "badge-teal",
+  RELEASED: "badge-teal"
 };
 
 export function isSongStatus(v: unknown): v is SongStatus {
-  return typeof v === "string" && (SONG_STATUSES as readonly string[]).includes(v);
+  return (
+    typeof v === "string" && (SONG_STATUSES as readonly string[]).includes(v)
+  );
 }
 
 export type TrackEmbed =

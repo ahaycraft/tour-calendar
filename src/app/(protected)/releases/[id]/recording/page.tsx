@@ -23,16 +23,16 @@ export default async function RecordingPlanPage({ params }: PageProps) {
       bandId: true,
       tracks: {
         orderBy: { position: "asc" },
-        select: { song: { select: { id: true, title: true, status: true } } },
+        select: { song: { select: { id: true, title: true, status: true } } }
       },
       trackingPlan: {
         select: {
           id: true,
           notes: true,
-          parts: { select: { songId: true, status: true } },
-        },
-      },
-    },
+          parts: { select: { songId: true, status: true } }
+        }
+      }
+    }
   });
 
   if (!release || !isBandMember(session!, release.bandId)) notFound();
@@ -42,7 +42,7 @@ export default async function RecordingPlanPage({ params }: PageProps) {
   const instruments = await prisma.instrument.findMany({
     where: { bandId: release.bandId, archived: false },
     orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
-    select: { id: true, name: true },
+    select: { id: true, name: true }
   });
 
   return (

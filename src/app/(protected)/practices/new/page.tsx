@@ -17,7 +17,10 @@ export default function NewPracticePage() {
 
       <p className="text-sm text-zinc-500 -mt-4 mb-6">
         Booking a run of rehearsals?{" "}
-        <Link href="/practices/bulk" className="text-blue-400 hover:text-blue-300">
+        <Link
+          href="/practices/bulk"
+          className="text-blue-400 hover:text-blue-300"
+        >
           Add a date range instead →
         </Link>
       </p>

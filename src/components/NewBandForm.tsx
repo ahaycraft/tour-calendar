@@ -18,7 +18,7 @@ export default function NewBandForm() {
     const res = await fetch("/api/bands", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name }),
+      body: JSON.stringify({ name })
     });
 
     if (!res.ok) {

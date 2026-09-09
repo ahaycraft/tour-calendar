@@ -12,7 +12,8 @@ export function isUpcomingEvent(e: {
 }): boolean {
   return (
     e.status !== "CANCELLED" &&
-    startOfDay(calendarDate(e.date)).getTime() >= startOfDay(new Date()).getTime()
+    startOfDay(calendarDate(e.date)).getTime() >=
+      startOfDay(new Date()).getTime()
   );
 }
 
@@ -27,40 +28,40 @@ export type EventTypeStr = "SHOW" | "RECORDING" | "PRACTICE";
 const BASE_PATH: Record<string, "/shows" | "/recordings" | "/practices"> = {
   SHOW: "/shows",
   RECORDING: "/recordings",
-  PRACTICE: "/practices",
+  PRACTICE: "/practices"
 };
 const NOUN: Record<string, string> = {
   SHOW: "show",
   RECORDING: "session",
-  PRACTICE: "practice",
+  PRACTICE: "practice"
 };
 const NOUN_PLURAL: Record<string, string> = {
   SHOW: "shows",
   RECORDING: "sessions",
-  PRACTICE: "practices",
+  PRACTICE: "practices"
 };
 /** Singular label for the type itself (badge, "Add …" buttons). */
 const TYPE_LABEL: Record<string, string> = {
   SHOW: "Show",
   RECORDING: "Recording",
-  PRACTICE: "Practice",
+  PRACTICE: "Practice"
 };
 /** Plural label for list pages and nav. */
 const LIST_LABEL: Record<string, string> = {
   SHOW: "Shows",
   RECORDING: "Recordings",
-  PRACTICE: "Practices",
+  PRACTICE: "Practices"
 };
 
 export const EVENT_TYPES: EventTypeStr[] = ["SHOW", "RECORDING", "PRACTICE"];
 
 export function isEventType(value: unknown): value is EventTypeStr {
-  return (
-    value === "SHOW" || value === "RECORDING" || value === "PRACTICE"
-  );
+  return value === "SHOW" || value === "RECORDING" || value === "PRACTICE";
 }
 
-export function eventBasePath(type: string): "/shows" | "/recordings" | "/practices" {
+export function eventBasePath(
+  type: string
+): "/shows" | "/recordings" | "/practices" {
   return BASE_PATH[type] ?? "/shows";
 }
 export function eventNoun(type: string): string {

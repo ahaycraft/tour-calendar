@@ -4,7 +4,7 @@ import {
   isPartDone,
   isRecordingPartStatus,
   recordingPartStatusClass,
-  recordingPartStatusLabel,
+  recordingPartStatusLabel
 } from "@/lib/instruments";
 
 describe("isRecordingPartStatus", () => {

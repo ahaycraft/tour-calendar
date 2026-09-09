@@ -16,8 +16,8 @@ async function main() {
       name: "Band Admin",
       email: "admin@band.com",
       password: adminPassword,
-      role: "ADMIN",
-    },
+      role: "ADMIN"
+    }
   });
 
   // Create member users
@@ -28,8 +28,8 @@ async function main() {
     create: {
       name: "Alex (Guitar)",
       email: "guitarist@band.com",
-      password: memberPassword,
-    },
+      password: memberPassword
+    }
   });
 
   const member2 = await prisma.user.upsert({
@@ -38,25 +38,25 @@ async function main() {
     create: {
       name: "Sam (Drums)",
       email: "drummer@band.com",
-      password: memberPassword,
-    },
+      password: memberPassword
+    }
   });
 
   // Band + memberships
   const band = await prisma.band.upsert({
     where: { slug: "default" },
     update: {},
-    create: { name: "My Band", slug: "default" },
+    create: { name: "My Band", slug: "default" }
   });
   for (const [user, role] of [
     [admin, "OWNER"],
     [member1, "MEMBER"],
-    [member2, "MEMBER"],
+    [member2, "MEMBER"]
   ] as const) {
     await prisma.bandMembership.upsert({
       where: { bandId_userId: { bandId: band.id, userId: user.id } },
       update: {},
-      create: { bandId: band.id, userId: user.id, role },
+      create: { bandId: band.id, userId: user.id, role }
     });
   }
 
@@ -73,12 +73,16 @@ async function main() {
       state: "CA",
       country: "US",
       date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 2 weeks from now
-      doorsTime: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000 + 20 * 60 * 60 * 1000),
-      setTime: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000 + 21 * 60 * 60 * 1000),
+      doorsTime: new Date(
+        Date.now() + 14 * 24 * 60 * 60 * 1000 + 20 * 60 * 60 * 1000
+      ),
+      setTime: new Date(
+        Date.now() + 14 * 24 * 60 * 60 * 1000 + 21 * 60 * 60 * 1000
+      ),
       guarantee: 500,
       status: "CONFIRMED",
-      createdById: admin.id,
-    },
+      createdById: admin.id
+    }
   });
 
   await prisma.show.upsert({
@@ -96,8 +100,8 @@ async function main() {
       guarantee: 300,
       status: "PENDING",
       notes: "Need to confirm PA system availability",
-      createdById: admin.id,
-    },
+      createdById: admin.id
+    }
   });
 
   // Add availability responses
@@ -107,8 +111,8 @@ async function main() {
     create: {
       userId: member1.id,
       showId: show1.id,
-      status: "AVAILABLE",
-    },
+      status: "AVAILABLE"
+    }
   });
 
   await prisma.showAvailability.upsert({
@@ -117,8 +121,8 @@ async function main() {
     create: {
       userId: member2.id,
       showId: show1.id,
-      status: "PENDING",
-    },
+      status: "PENDING"
+    }
   });
 
   console.log("✓ Seeded successfully!");

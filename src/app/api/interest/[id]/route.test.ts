@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 
 vi.mock("@/auth", () => ({ auth: vi.fn() }));
 vi.mock("@/lib/prisma", () => ({
-  prisma: { interestSubmission: { update: vi.fn() } },
+  prisma: { interestSubmission: { update: vi.fn() } }
 }));
 
 import { PATCH } from "@/app/api/interest/[id]/route";

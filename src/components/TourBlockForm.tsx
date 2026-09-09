@@ -8,7 +8,7 @@ import { revalidateShell } from "@/app/(protected)/actions";
 const BLOCK_NOUN: Record<EventTypeStr, string> = {
   SHOW: "Tour",
   RECORDING: "Recording block",
-  PRACTICE: "Practice block",
+  PRACTICE: "Practice block"
 };
 
 const inputClass =
@@ -17,7 +17,7 @@ const inputClass =
 const STATUSES = [
   { value: "PENDING", label: "Pending" },
   { value: "CONFIRMED", label: "Confirmed" },
-  { value: "CANCELLED", label: "Cancelled" },
+  { value: "CANCELLED", label: "Cancelled" }
 ] as const;
 
 export interface TourBlockValues {
@@ -32,7 +32,11 @@ export interface TourBlockValues {
   dayCount: number;
 }
 
-export default function TourBlockForm({ initial }: { initial: TourBlockValues }) {
+export default function TourBlockForm({
+  initial
+}: {
+  initial: TourBlockValues;
+}) {
   const router = useRouter();
   const blockNoun = BLOCK_NOUN[initial.type];
 
@@ -64,8 +68,8 @@ export default function TourBlockForm({ initial }: { initial: TourBlockValues })
         state: stateField,
         country,
         status,
-        notes,
-      }),
+        notes
+      })
     });
 
     const json = await res.json().catch(() => ({}));
@@ -84,8 +88,7 @@ export default function TourBlockForm({ initial }: { initial: TourBlockValues })
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <label className="block text-sm font-medium text-zinc-300 mb-1">
-          {blockNoun} name{" "}
-          <span className="text-red-500">*</span>
+          {blockNoun} name <span className="text-red-500">*</span>
         </label>
         <input
           required
@@ -95,8 +98,9 @@ export default function TourBlockForm({ initial }: { initial: TourBlockValues })
         />
         <p className="mt-1 text-xs text-zinc-600">
           Renaming re-titles all {initial.dayCount} day
-          {initial.dayCount === 1 ? "" : "s"} &mdash; &ldquo;{name.trim() || "Tour"} &mdash;
-          Day 1&rdquo;, &ldquo;Day 2&rdquo;, and so on.
+          {initial.dayCount === 1 ? "" : "s"} &mdash; &ldquo;
+          {name.trim() || "Tour"} &mdash; Day 1&rdquo;, &ldquo;Day 2&rdquo;, and
+          so on.
         </p>
       </div>
 
@@ -113,7 +117,9 @@ export default function TourBlockForm({ initial }: { initial: TourBlockValues })
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-zinc-300 mb-1">State</label>
+          <label className="block text-sm font-medium text-zinc-300 mb-1">
+            State
+          </label>
           <input
             value={stateField}
             onChange={(e) => setStateField(e.target.value)}
@@ -124,7 +130,9 @@ export default function TourBlockForm({ initial }: { initial: TourBlockValues })
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-zinc-300 mb-1">Country</label>
+        <label className="block text-sm font-medium text-zinc-300 mb-1">
+          Country
+        </label>
         <input
           value={country}
           onChange={(e) => setCountry(e.target.value)}
@@ -133,7 +141,9 @@ export default function TourBlockForm({ initial }: { initial: TourBlockValues })
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-zinc-300 mb-2">Status</label>
+        <label className="block text-sm font-medium text-zinc-300 mb-2">
+          Status
+        </label>
         <div className="flex gap-1 p-1 bg-zinc-800/60 rounded-lg">
           {STATUSES.map((s) => (
             <button

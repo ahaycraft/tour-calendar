@@ -4,7 +4,8 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Woodshedd",
     short_name: "Woodshedd",
-    description: "Band calendar, availability, songwriting, and release planning",
+    description:
+      "Band calendar, availability, songwriting, and release planning",
     start_url: "/",
     display: "standalone",
     background_color: "#09090b",
@@ -18,20 +19,20 @@ export default function manifest(): MetadataRoute.Manifest {
         src: "/icon-192.png?v=2",
         sizes: "192x192",
         type: "image/png",
-        purpose: "any",
+        purpose: "any"
       },
       {
         src: "/icon-512.png?v=2",
         sizes: "512x512",
         type: "image/png",
-        purpose: "any",
+        purpose: "any"
       },
       {
         src: "/icon-maskable-512.png?v=2",
         sizes: "512x512",
         type: "image/png",
-        purpose: "maskable",
-      },
-    ],
+        purpose: "maskable"
+      }
+    ]
   };
 }

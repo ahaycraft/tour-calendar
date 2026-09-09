@@ -11,7 +11,12 @@ const prisma = new PrismaClient();
 async function main() {
   const songs = await prisma.song.findMany({
     where: { samplyUrl: { not: null } },
-    select: { id: true, samplyUrl: true, createdById: true, _count: { select: { demos: true } } },
+    select: {
+      id: true,
+      samplyUrl: true,
+      createdById: true,
+      _count: { select: { demos: true } }
+    }
   });
 
   let created = 0;
@@ -23,13 +28,15 @@ async function main() {
         songId: song.id,
         url,
         label: "Original link",
-        createdById: song.createdById,
-      },
+        createdById: song.createdById
+      }
     });
     created++;
   }
 
-  console.log(`Backfilled ${created} demo(s) from ${songs.length} song(s) with a legacy link.`);
+  console.log(
+    `Backfilled ${created} demo(s) from ${songs.length} song(s) with a legacy link.`
+  );
 }
 
 main()

@@ -11,19 +11,23 @@ import { AlertTriangle } from "lucide-react";
 const TYPE_TABS: { value: EventTypeStr; label: string }[] = [
   { value: "SHOW", label: "Show" },
   { value: "PRACTICE", label: "Practice" },
-  { value: "RECORDING", label: "Recording" },
+  { value: "RECORDING", label: "Recording" }
 ];
 // The word for the event's own title field, per type.
 const TITLE_NOUN: Record<EventTypeStr, string> = {
   SHOW: "Show",
   PRACTICE: "Practice",
-  RECORDING: "Session",
+  RECORDING: "Session"
 };
 
 const inputClass =
   "w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent";
 
-const emptyMeta = { address: "", lat: null as number | null, lng: null as number | null };
+const emptyMeta = {
+  address: "",
+  lat: null as number | null,
+  lng: null as number | null
+};
 
 /** Plain-string shape so the server page can hand values to this client form. */
 export interface EventFormValues {
@@ -57,7 +61,11 @@ interface Props {
   releases?: { id: string; title: string }[];
 }
 
-export default function EventForm({ defaultType = "SHOW", event, releases = [] }: Props) {
+export default function EventForm({
+  defaultType = "SHOW",
+  event,
+  releases = []
+}: Props) {
   const router = useRouter();
   const isEdit = event != null;
 
@@ -76,7 +84,11 @@ export default function EventForm({ defaultType = "SHOW", event, releases = [] }
   const [releaseId, setReleaseId] = useState(event?.releaseId ?? "");
   const [venueMeta, setVenueMeta] = useState(
     event
-      ? { address: event.venueAddress, lat: event.venueLat, lng: event.venueLng }
+      ? {
+          address: event.venueAddress,
+          lat: event.venueLat,
+          lng: event.venueLng
+        }
       : emptyMeta
   );
 
@@ -118,13 +130,13 @@ export default function EventForm({ defaultType = "SHOW", event, releases = [] }
       venueAddress: venueMeta.address || null,
       venueLat: venueMeta.lat,
       venueLng: venueMeta.lng,
-      releaseId: isRecording ? releaseId || null : null,
+      releaseId: isRecording ? releaseId || null : null
     };
 
     const res = await fetch(isEdit ? `/api/shows/${event.id}` : "/api/shows", {
       method: isEdit ? "PATCH" : "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(payload)
     });
 
     setLoading(false);
@@ -248,7 +260,8 @@ export default function EventForm({ defaultType = "SHOW", event, releases = [] }
           }
         />
         <p className="mt-1 text-xs text-zinc-600">
-          Start typing to search; pick a result to auto-fill city, state, and address.
+          Start typing to search; pick a result to auto-fill city, state, and
+          address.
         </p>
       </div>
 
@@ -266,7 +279,9 @@ export default function EventForm({ defaultType = "SHOW", event, releases = [] }
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-zinc-300 mb-1">State</label>
+          <label className="block text-sm font-medium text-zinc-300 mb-1">
+            State
+          </label>
           <input
             name="state"
             value={stateField}
@@ -278,7 +293,9 @@ export default function EventForm({ defaultType = "SHOW", event, releases = [] }
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-zinc-300 mb-1">Country</label>
+        <label className="block text-sm font-medium text-zinc-300 mb-1">
+          Country
+        </label>
         <input
           name="country"
           value={country}
@@ -291,7 +308,9 @@ export default function EventForm({ defaultType = "SHOW", event, releases = [] }
       {isRecording && (
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-sm font-medium text-zinc-300 mb-1">Call Time</label>
+            <label className="block text-sm font-medium text-zinc-300 mb-1">
+              Call Time
+            </label>
             <input
               name="loadInTime"
               type="time"
@@ -300,7 +319,9 @@ export default function EventForm({ defaultType = "SHOW", event, releases = [] }
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-zinc-300 mb-1">Wrap Time</label>
+            <label className="block text-sm font-medium text-zinc-300 mb-1">
+              Wrap Time
+            </label>
             <input
               name="setTime"
               type="time"
@@ -314,7 +335,9 @@ export default function EventForm({ defaultType = "SHOW", event, releases = [] }
       {isShow && (
         <div className="grid grid-cols-3 gap-3">
           <div>
-            <label className="block text-sm font-medium text-zinc-300 mb-1">Load In</label>
+            <label className="block text-sm font-medium text-zinc-300 mb-1">
+              Load In
+            </label>
             <input
               name="loadInTime"
               type="time"
@@ -323,7 +346,9 @@ export default function EventForm({ defaultType = "SHOW", event, releases = [] }
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-zinc-300 mb-1">Doors</label>
+            <label className="block text-sm font-medium text-zinc-300 mb-1">
+              Doors
+            </label>
             <input
               name="doorsTime"
               type="time"
@@ -332,7 +357,9 @@ export default function EventForm({ defaultType = "SHOW", event, releases = [] }
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-zinc-300 mb-1">Set Time</label>
+            <label className="block text-sm font-medium text-zinc-300 mb-1">
+              Set Time
+            </label>
             <input
               name="setTime"
               type="time"
@@ -345,7 +372,9 @@ export default function EventForm({ defaultType = "SHOW", event, releases = [] }
 
       {isShow && (
         <div>
-          <label className="block text-sm font-medium text-zinc-300 mb-1">Guarantee ($)</label>
+          <label className="block text-sm font-medium text-zinc-300 mb-1">
+            Guarantee ($)
+          </label>
           <input
             name="guarantee"
             type="number"
@@ -359,7 +388,9 @@ export default function EventForm({ defaultType = "SHOW", event, releases = [] }
       )}
 
       <div>
-        <label className="block text-sm font-medium text-zinc-300 mb-1">Notes</label>
+        <label className="block text-sm font-medium text-zinc-300 mb-1">
+          Notes
+        </label>
         <textarea
           name="notes"
           rows={3}
@@ -411,8 +442,8 @@ export default function EventForm({ defaultType = "SHOW", event, releases = [] }
           <>
             Moving this {eventNoun(eventType)} to a new date clears every
             member&apos;s availability response, including your own, and sends a
-            confirmed {eventNoun(eventType)} back to pending. Everyone will
-            need to mark themselves available again.
+            confirmed {eventNoun(eventType)} back to pending. Everyone will need
+            to mark themselves available again.
           </>
         }
         confirmLabel="Save & reset"

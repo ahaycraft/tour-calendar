@@ -45,7 +45,7 @@ export async function sendPushToUsers(
   if (!configured || userIds.length === 0) return;
 
   const subs = await prisma.pushSubscription.findMany({
-    where: { userId: { in: userIds } },
+    where: { userId: { in: userIds } }
   });
   if (subs.length === 0) return;
 
@@ -57,7 +57,7 @@ export async function sendPushToUsers(
         await webpush.sendNotification(
           {
             endpoint: sub.endpoint,
-            keys: { p256dh: sub.p256dh, auth: sub.auth },
+            keys: { p256dh: sub.p256dh, auth: sub.auth }
           },
           body
         );
@@ -92,7 +92,7 @@ export async function notifyBandMembers(
 
   const members = await prisma.bandMembership.findMany({
     where: { bandId, userId: { not: exceptUserId } },
-    select: { userId: true },
+    select: { userId: true }
   });
 
   await sendPushToUsers(

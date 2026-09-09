@@ -10,19 +10,26 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id: releaseId } = await params;
 
   try {
     const { songIds } = await request.json();
-    if (!Array.isArray(songIds) || !songIds.every((s) => typeof s === "string")) {
-      return NextResponse.json({ error: "songIds must be an array" }, { status: 400 });
+    if (
+      !Array.isArray(songIds) ||
+      !songIds.every((s) => typeof s === "string")
+    ) {
+      return NextResponse.json(
+        { error: "songIds must be an array" },
+        { status: 400 }
+      );
     }
 
     const release = await prisma.release.findUnique({
       where: { id: releaseId },
-      select: { bandId: true },
+      select: { bandId: true }
     });
     if (!release || !isBandMember(session, release.bandId)) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -34,7 +41,7 @@ export async function PUT(
     // Only keep ids that are real songs in this release's band.
     const valid = await prisma.song.findMany({
       where: { id: { in: ordered }, bandId: release.bandId },
-      select: { id: true },
+      select: { id: true }
     });
     const validSet = new Set(valid.map((s) => s.id));
     const finalIds = ordered.filter((s) => validSet.has(s));
@@ -42,12 +49,15 @@ export async function PUT(
     await prisma.$transaction([
       prisma.releaseTrack.deleteMany({ where: { releaseId } }),
       prisma.releaseTrack.createMany({
-        data: finalIds.map((songId, i) => ({ releaseId, songId, position: i })),
-      }),
+        data: finalIds.map((songId, i) => ({ releaseId, songId, position: i }))
+      })
     ]);
 
     return NextResponse.json({ count: finalIds.length });
   } catch {
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

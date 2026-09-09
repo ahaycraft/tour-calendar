@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   DndContext,
   DragOverlay,
@@ -15,14 +10,14 @@ import {
   useSensor,
   useSensors,
   type DragEndEvent,
-  type DragStartEvent,
+  type DragStartEvent
 } from "@dnd-kit/core";
 import {
   SortableContext,
   arrayMove,
   sortableKeyboardCoordinates,
   useSortable,
-  verticalListSortingStrategy,
+  verticalListSortingStrategy
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
@@ -32,7 +27,7 @@ import {
   GripVertical,
   Loader2,
   Plus,
-  Trash2,
+  Trash2
 } from "lucide-react";
 import ConfirmDialog from "./ConfirmDialog";
 import { cn } from "@/lib/utils";
@@ -40,7 +35,7 @@ import {
   MAX_SECTION_NAME,
   SECTION_PRESETS,
   planPresetAdd,
-  sectionAccent,
+  sectionAccent
 } from "@/lib/arrangement";
 
 export interface ArrangementSection {
@@ -57,12 +52,13 @@ const textFieldClass =
 
 export default function SongArrangement({
   songId,
-  initialSections,
+  initialSections
 }: {
   songId: string;
   initialSections: ArrangementSection[];
 }) {
-  const [sections, setSections] = useState<ArrangementSection[]>(initialSections);
+  const [sections, setSections] =
+    useState<ArrangementSection[]>(initialSections);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [activeId, setActiveId] = useState<string | null>(null);
   const [confirming, setConfirming] = useState<ArrangementSection | null>(null);
@@ -94,7 +90,7 @@ export default function SongArrangement({
         const res = await fetch(`/api/songs/${songId}/sections`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ order: ids }),
+          body: JSON.stringify({ order: ids })
         });
         if (res.ok) {
           savedOrder.current = ids;
@@ -124,7 +120,7 @@ export default function SongArrangement({
         const res = await fetch(`/api/songs/${songId}/sections/${id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
+          body: JSON.stringify(data)
         });
         setSave(res.ok ? "saved" : "error");
       } catch {
@@ -148,8 +144,8 @@ export default function SongArrangement({
             name,
             afterId: source?.id,
             notes: source?.notes || undefined,
-            lyrics: source?.lyrics || undefined,
-          }),
+            lyrics: source?.lyrics || undefined
+          })
         });
         if (!res.ok) {
           setSave("error");
@@ -161,7 +157,7 @@ export default function SongArrangement({
           id: created.id,
           name: created.name,
           notes: created.notes ?? "",
-          lyrics: created.lyrics ?? "",
+          lyrics: created.lyrics ?? ""
         };
         setSections((prev) => {
           const next = [...prev];
@@ -212,7 +208,7 @@ export default function SongArrangement({
     savedOrder.current = next.map((s) => s.id);
     try {
       const res = await fetch(`/api/songs/${songId}/sections/${id}`, {
-        method: "DELETE",
+        method: "DELETE"
       });
       if (!res.ok) throw new Error();
     } catch {
@@ -412,13 +408,19 @@ export default function SongArrangement({
 
 function SortableSection({
   id,
-  children,
+  children
 }: {
   id: string;
   children: (handleProps: React.HTMLAttributes<HTMLElement>) => React.ReactNode;
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id });
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging
+  } = useSortable({ id });
   return (
     <li
       ref={setNodeRef}
@@ -438,17 +440,14 @@ function SectionRow({
   onToggle,
   onPatch,
   onCopy,
-  onDelete,
+  onDelete
 }: {
   section: ArrangementSection;
   index: number;
   expanded: boolean;
   handleProps: React.HTMLAttributes<HTMLElement>;
   onToggle: () => void;
-  onPatch: (
-    id: string,
-    data: Partial<Omit<ArrangementSection, "id">>
-  ) => void;
+  onPatch: (id: string, data: Partial<Omit<ArrangementSection, "id">>) => void;
   onCopy: () => void;
   onDelete: () => void;
 }) {

@@ -6,7 +6,7 @@ import {
   buildCalendar,
   calendarEventSelect,
   icsFilename,
-  resolveAppUrl,
+  resolveAppUrl
 } from "@/lib/calendar";
 
 export async function GET(
@@ -22,7 +22,7 @@ export async function GET(
 
   const show = await prisma.show.findUnique({
     where: { id },
-    select: { ...calendarEventSelect, bandId: true },
+    select: { ...calendarEventSelect, bandId: true }
   });
 
   if (!show || !isBandMember(session, show.bandId)) {
@@ -36,7 +36,7 @@ export async function GET(
     headers: {
       "Content-Type": "text/calendar; charset=utf-8",
       "Content-Disposition": `attachment; filename="${icsFilename(show.title)}"`,
-      "Cache-Control": "private, no-cache",
-    },
+      "Cache-Control": "private, no-cache"
+    }
   });
 }

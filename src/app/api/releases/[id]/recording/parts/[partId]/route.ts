@@ -11,7 +11,11 @@ const MAX_DESC = 4000;
 async function loadPart(releaseId: string, partId: string) {
   const part = await prisma.recordingPart.findUnique({
     where: { id: partId },
-    include: { plan: { select: { releaseId: true, release: { select: { bandId: true } } } } },
+    include: {
+      plan: {
+        select: { releaseId: true, release: { select: { bandId: true } } }
+      }
+    }
   });
   if (!part || part.plan.releaseId !== releaseId) return null;
   return part;
@@ -22,7 +26,8 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string; partId: string }> }
 ) {
   const session = await auth();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id, partId } = await params;
   const part = await loadPart(id, partId);
@@ -54,16 +59,24 @@ export async function PATCH(
     }
     if (body.assigneeId !== undefined) {
       const assigneeId =
-        typeof body.assigneeId === "string" && body.assigneeId ? body.assigneeId : null;
+        typeof body.assigneeId === "string" && body.assigneeId
+          ? body.assigneeId
+          : null;
       if (assigneeId) {
         const member = await prisma.bandMembership.findUnique({
           where: {
-            bandId_userId: { bandId: part.plan.release.bandId, userId: assigneeId },
+            bandId_userId: {
+              bandId: part.plan.release.bandId,
+              userId: assigneeId
+            }
           },
-          select: { id: true },
+          select: { id: true }
         });
         if (!member) {
-          return NextResponse.json({ error: "Unknown assignee" }, { status: 400 });
+          return NextResponse.json(
+            { error: "Unknown assignee" },
+            { status: 400 }
+          );
         }
       }
       data.assigneeId = assigneeId;
@@ -74,12 +87,15 @@ export async function PATCH(
       data,
       include: {
         instrument: { select: { id: true, name: true } },
-        assignee: { select: { id: true, name: true } },
-      },
+        assignee: { select: { id: true, name: true } }
+      }
     });
     return NextResponse.json(updated);
   } catch {
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
 
@@ -88,7 +104,8 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string; partId: string }> }
 ) {
   const session = await auth();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id, partId } = await params;
   const part = await loadPart(id, partId);

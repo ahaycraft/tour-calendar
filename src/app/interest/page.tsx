@@ -24,12 +24,14 @@ export default function InterestPage() {
     const res = await fetch("/api/interest", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ firstName, lastName, email, role }),
+      body: JSON.stringify({ firstName, lastName, email, role })
     });
 
     setLoading(false);
     if (!res.ok) {
-      setError((await res.json().catch(() => ({}))).error || "Something went wrong");
+      setError(
+        (await res.json().catch(() => ({}))).error || "Something went wrong"
+      );
       return;
     }
     setSubmitted(true);
@@ -43,7 +45,8 @@ export default function InterestPage() {
             <div className="text-center">
               <h1 className="text-2xl font-bold text-zinc-50 mb-2">Thanks!</h1>
               <p className="text-zinc-400">
-                We&apos;ve got your info and will reach out when Woodshedd opens up.
+                We&apos;ve got your info and will reach out when Woodshedd opens
+                up.
               </p>
               <Link
                 href="/login"
@@ -55,7 +58,9 @@ export default function InterestPage() {
           ) : (
             <>
               <div className="mb-8">
-                <h1 className="text-2xl font-bold text-zinc-50">Express interest</h1>
+                <h1 className="text-2xl font-bold text-zinc-50">
+                  Express interest
+                </h1>
                 <p className="text-zinc-500 mt-1">
                   Woodshedd is invite-only right now. Leave your info and
                   we&apos;ll reach out when there&apos;s room.

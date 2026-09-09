@@ -26,8 +26,8 @@ async function handle(request: NextRequest) {
     where: { pushSubscriptions: { some: {} } },
     select: {
       id: true,
-      bandMemberships: { select: { bandId: true } },
-    },
+      bandMemberships: { select: { bandId: true } }
+    }
   });
 
   let notified = 0;
@@ -45,11 +45,11 @@ async function handle(request: NextRequest) {
           availability: {
             some: {
               userId: user.id,
-              status: { in: ["AVAILABLE", "UNAVAILABLE"] },
-            },
-          },
-        },
-      },
+              status: { in: ["AVAILABLE", "UNAVAILABLE"] }
+            }
+          }
+        }
+      }
     });
 
     if (pending === 0) continue;
@@ -61,7 +61,7 @@ async function handle(request: NextRequest) {
           : `${pending} shows need your availability`,
       body: "Open Woodshedd to let the band know if you're in or out.",
       url: "/my-availability",
-      tag: "availability-reminder",
+      tag: "availability-reminder"
     });
     notified++;
   }

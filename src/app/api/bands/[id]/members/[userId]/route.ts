@@ -15,11 +15,15 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string; userId: string }> }
 ) {
   const session = await auth();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id: bandId, userId } = await params;
   if (bandRole(session, bandId) !== "OWNER") {
-    return NextResponse.json({ error: "Only an owner can change roles" }, { status: 403 });
+    return NextResponse.json(
+      { error: "Only an owner can change roles" },
+      { status: 403 }
+    );
   }
 
   const { role } = await request.json();
@@ -28,11 +32,16 @@ export async function PATCH(
   }
 
   const target = await prisma.bandMembership.findUnique({
-    where: { bandId_userId: { bandId, userId } },
+    where: { bandId_userId: { bandId, userId } }
   });
-  if (!target) return NextResponse.json({ error: "Not a member" }, { status: 404 });
+  if (!target)
+    return NextResponse.json({ error: "Not a member" }, { status: 404 });
 
-  if (target.role === "OWNER" && role !== "OWNER" && (await ownerCount(bandId)) <= 1) {
+  if (
+    target.role === "OWNER" &&
+    role !== "OWNER" &&
+    (await ownerCount(bandId)) <= 1
+  ) {
     return NextResponse.json(
       { error: "A band needs at least one owner" },
       { status: 400 }
@@ -41,7 +50,7 @@ export async function PATCH(
 
   await prisma.bandMembership.update({
     where: { bandId_userId: { bandId, userId } },
-    data: { role },
+    data: { role }
   });
   return NextResponse.json({ ok: true });
 }
@@ -52,7 +61,8 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string; userId: string }> }
 ) {
   const session = await auth();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id: bandId, userId } = await params;
   const myRole = bandRole(session, bandId);
@@ -66,9 +76,10 @@ export async function DELETE(
   }
 
   const target = await prisma.bandMembership.findUnique({
-    where: { bandId_userId: { bandId, userId } },
+    where: { bandId_userId: { bandId, userId } }
   });
-  if (!target) return NextResponse.json({ error: "Not a member" }, { status: 404 });
+  if (!target)
+    return NextResponse.json({ error: "Not a member" }, { status: 404 });
 
   if (target.role === "OWNER" && (await ownerCount(bandId)) <= 1) {
     return NextResponse.json(
@@ -78,7 +89,7 @@ export async function DELETE(
   }
 
   await prisma.bandMembership.delete({
-    where: { bandId_userId: { bandId, userId } },
+    where: { bandId_userId: { bandId, userId } }
   });
   return NextResponse.json({ ok: true });
 }

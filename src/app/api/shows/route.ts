@@ -10,7 +10,8 @@ import { eventHref, eventTypeLabel, isEventType } from "@/lib/events";
 // a long-running band's show count only grows.
 export async function GET(request: NextRequest) {
   const session = await auth();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const bandId = await getActiveBandId(session);
   if (!bandId) return NextResponse.json([]);
@@ -19,12 +20,18 @@ export async function GET(request: NextRequest) {
   const fromParam = searchParams.get("from");
   const toParam = searchParams.get("to");
   if (!fromParam || !toParam) {
-    return NextResponse.json({ error: "from and to are required" }, { status: 400 });
+    return NextResponse.json(
+      { error: "from and to are required" },
+      { status: 400 }
+    );
   }
   const from = new Date(`${fromParam}T00:00:00Z`);
   const to = new Date(`${toParam}T00:00:00Z`);
   if (isNaN(from.getTime()) || isNaN(to.getTime())) {
-    return NextResponse.json({ error: "Invalid from or to date" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Invalid from or to date" },
+      { status: 400 }
+    );
   }
 
   const shows = await prisma.show.findMany({
@@ -33,9 +40,9 @@ export async function GET(request: NextRequest) {
     include: {
       createdBy: { select: { id: true, name: true } },
       availability: {
-        include: { user: { select: { id: true, name: true } } },
-      },
-    },
+        include: { user: { select: { id: true, name: true } } }
+      }
+    }
   });
 
   return NextResponse.json(shows);
@@ -43,20 +50,44 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const session = await auth();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
     const body = await request.json();
-    const { type, title, venue, city, state, country, date, doorsTime, setTime, loadInTime, guarantee, notes, venueAddress, venueLat, venueLng, releaseId } = body;
+    const {
+      type,
+      title,
+      venue,
+      city,
+      state,
+      country,
+      date,
+      doorsTime,
+      setTime,
+      loadInTime,
+      guarantee,
+      notes,
+      venueAddress,
+      venueLat,
+      venueLng,
+      releaseId
+    } = body;
 
     // Venue and city are optional so skeleton events (e.g. a bulk-created tour
     // run) can be saved before the routing is booked.
     if (!title || !date) {
-      return NextResponse.json({ error: "Title and date are required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Title and date are required" },
+        { status: 400 }
+      );
     }
 
     if (type !== undefined && !isEventType(type)) {
-      return NextResponse.json({ error: "Invalid event type" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid event type" },
+        { status: 400 }
+      );
     }
 
     const bandId = await getActiveBandId(session);
@@ -71,10 +102,13 @@ export async function POST(request: NextRequest) {
     if (releaseId && effectiveType === "RECORDING") {
       const release = await prisma.release.findFirst({
         where: { id: releaseId, bandId },
-        select: { id: true },
+        select: { id: true }
       });
       if (!release) {
-        return NextResponse.json({ error: "Release not found" }, { status: 400 });
+        return NextResponse.json(
+          { error: "Release not found" },
+          { status: 400 }
+        );
       }
       resolvedReleaseId = release.id;
     }
@@ -98,12 +132,12 @@ export async function POST(request: NextRequest) {
         venueAddress: venueAddress || null,
         venueLat: typeof venueLat === "number" ? venueLat : null,
         venueLng: typeof venueLng === "number" ? venueLng : null,
-        createdById: session.user.id,
+        createdById: session.user.id
       },
       include: {
         createdBy: { select: { id: true, name: true } },
-        availability: true,
-      },
+        availability: true
+      }
     });
 
     // Notify the rest of the band. The app treats a missing/PENDING availability
@@ -112,11 +146,14 @@ export async function POST(request: NextRequest) {
       title: `New ${eventTypeLabel(effectiveType).toLowerCase()}: ${show.title}`,
       body: "Tap to set your availability.",
       url: eventHref(effectiveType, show.id),
-      tag: `show:${show.id}`,
+      tag: `show:${show.id}`
     });
 
     return NextResponse.json(show, { status: 201 });
   } catch {
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

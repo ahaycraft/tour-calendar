@@ -4,7 +4,7 @@ import {
   isSongStatus,
   resolveTrackEmbed,
   songStatusClass,
-  songStatusLabel,
+  songStatusLabel
 } from "@/lib/songs";
 
 describe("isSongStatus", () => {
@@ -41,28 +41,30 @@ describe("resolveTrackEmbed", () => {
 
   it("pulls the src out of a pasted <iframe> snippet", () => {
     expect(
-      resolveTrackEmbed('<iframe src="https://samply.app/embed/abc123" allow="autoplay"></iframe>')
+      resolveTrackEmbed(
+        '<iframe src="https://samply.app/embed/abc123" allow="autoplay"></iframe>'
+      )
     ).toEqual({ kind: "samply", src: "https://samply.app/embed/abc123" });
   });
 
   it("recognises a Samply embed link", () => {
     expect(resolveTrackEmbed("https://samply.app/embed/xyz")).toEqual({
       kind: "samply",
-      src: "https://samply.app/embed/xyz",
+      src: "https://samply.app/embed/xyz"
     });
   });
 
   it("matches Samply through a www. host (src keeps the original URL)", () => {
     expect(resolveTrackEmbed("https://www.samply.app/embed/xyz")).toEqual({
       kind: "samply",
-      src: "https://www.samply.app/embed/xyz",
+      src: "https://www.samply.app/embed/xyz"
     });
   });
 
   it("treats a non-embed Samply URL as an outbound link", () => {
     expect(resolveTrackEmbed("https://samply.app/s/shareCode")).toEqual({
       kind: "link",
-      src: "https://samply.app/s/shareCode",
+      src: "https://samply.app/s/shareCode"
     });
   });
 
@@ -83,16 +85,18 @@ describe("resolveTrackEmbed", () => {
   });
 
   it("detects a direct audio file by extension", () => {
-    expect(resolveTrackEmbed("https://cdn.example.com/demos/take3.WAV")).toEqual({
+    expect(
+      resolveTrackEmbed("https://cdn.example.com/demos/take3.WAV")
+    ).toEqual({
       kind: "audio",
-      src: "https://cdn.example.com/demos/take3.WAV",
+      src: "https://cdn.example.com/demos/take3.WAV"
     });
   });
 
   it("falls back to a plain link for anything else", () => {
     expect(resolveTrackEmbed("https://example.com/a/page")).toEqual({
       kind: "link",
-      src: "https://example.com/a/page",
+      src: "https://example.com/a/page"
     });
   });
 });

@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 export default function CalendarExportLink({
   href,
   label = "Add to calendar",
-  variant = "outline",
+  variant = "outline"
 }: {
   href: string;
   label?: string;

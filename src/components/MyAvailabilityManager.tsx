@@ -38,9 +38,11 @@ interface UndoState {
 
 export default function MyAvailabilityManager({
   initialUnavailableDates,
-  upcomingShows,
+  upcomingShows
 }: Props) {
-  const [unavailableDates, setUnavailableDates] = useState(initialUnavailableDates);
+  const [unavailableDates, setUnavailableDates] = useState(
+    initialUnavailableDates
+  );
   const [shows, setShows] = useState(upcomingShows);
   const [undo, setUndo] = useState<UndoState | null>(null);
   const undoTimer = useRef<number | null>(null);
@@ -50,11 +52,14 @@ export default function MyAvailabilityManager({
   const [adding, setAdding] = useState(false);
   const [addError, setAddError] = useState("");
 
-  async function persistStatus(showId: string, status: string): Promise<boolean> {
+  async function persistStatus(
+    showId: string,
+    status: string
+  ): Promise<boolean> {
     const res = await fetch(`/api/shows/${showId}/availability`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status }),
+      body: JSON.stringify({ status })
     });
     // Keep the nav's "needs response" count in sync.
     await revalidateShell();
@@ -79,7 +84,7 @@ export default function MyAvailabilityManager({
     setUndo({
       showId,
       prevStatus,
-      label: status === "AVAILABLE" ? "Marked available" : "Marked unavailable",
+      label: status === "AVAILABLE" ? "Marked available" : "Marked unavailable"
     });
     undoTimer.current = window.setTimeout(() => setUndo(null), 6000);
 
@@ -114,8 +119,8 @@ export default function MyAvailabilityManager({
       body: JSON.stringify({
         date: newDate,
         endDate: newEndDate || undefined,
-        note: newNote,
-      }),
+        note: newNote
+      })
     });
 
     if (res.ok) {
@@ -141,7 +146,7 @@ export default function MyAvailabilityManager({
     const res = await fetch("/api/unavailability", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ date }),
+      body: JSON.stringify({ date })
     });
     if (res.ok) {
       setUnavailableDates((prev) => prev.filter((u) => u.id !== id));
@@ -159,7 +164,10 @@ export default function MyAvailabilityManager({
       <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-6">
         <h2 className="font-semibold text-zinc-100 mb-4">Blocked Dates</h2>
 
-        <form onSubmit={addDate} className="flex flex-col gap-2 mb-4 sm:flex-row sm:flex-wrap">
+        <form
+          onSubmit={addDate}
+          className="flex flex-col gap-2 mb-4 sm:flex-row sm:flex-wrap"
+        >
           <DateRangePicker
             label="Date(s)"
             value={{ start: newDate, end: newEndDate }}
@@ -170,7 +178,9 @@ export default function MyAvailabilityManager({
             required
           />
           <div className="w-full sm:flex-1 sm:min-w-[140px]">
-            <label className="block text-xs text-zinc-500 mb-1 sm:invisible">Reason</label>
+            <label className="block text-xs text-zinc-500 mb-1 sm:invisible">
+              Reason
+            </label>
             <input
               type="text"
               value={newNote}
@@ -223,7 +233,9 @@ export default function MyAvailabilityManager({
 
       {/* Upcoming Shows */}
       <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-6">
-        <h2 className="font-semibold text-zinc-100 mb-1">Upcoming Shows — My Responses</h2>
+        <h2 className="font-semibold text-zinc-100 mb-1">
+          Upcoming Shows — My Responses
+        </h2>
         <p className="text-xs text-zinc-500 mb-4">
           Slide a show right if you&apos;re available, left if you&apos;re not.
           Tap to open it.

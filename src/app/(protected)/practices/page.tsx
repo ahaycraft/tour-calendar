@@ -16,9 +16,9 @@ export default async function PracticesPage() {
     include: {
       createdBy: { select: { id: true, name: true } },
       availability: {
-        include: { user: { select: { id: true, name: true } } },
-      },
-    },
+        include: { user: { select: { id: true, name: true } } }
+      }
+    }
   });
 
   const hasUpcoming = practices.some(isUpcomingEvent);

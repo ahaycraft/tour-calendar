@@ -21,11 +21,13 @@ export default function ShowStatusControls({
   availableCount,
   memberCount,
   noun = "show",
-  basePath = "/shows",
+  basePath = "/shows"
 }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [pending, setPending] = useState<null | "confirm-anyway" | "delete">(null);
+  const [pending, setPending] = useState<null | "confirm-anyway" | "delete">(
+    null
+  );
 
   const Noun = noun[0].toUpperCase() + noun.slice(1);
   const everyoneAvailable = memberCount > 0 && availableCount >= memberCount;
@@ -35,7 +37,7 @@ export default function ShowStatusControls({
     await fetch(`/api/shows/${showId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status }),
+      body: JSON.stringify({ status })
     });
     await revalidateShell();
     setLoading(false);
@@ -115,8 +117,10 @@ export default function ShowStatusControls({
         title={`Confirm ${noun} anyway?`}
         message={
           <>
-            Only <span className="font-medium text-zinc-200">{availableCount}</span> of{" "}
-            {memberCount} members have marked available. You can still confirm this {noun}.
+            Only{" "}
+            <span className="font-medium text-zinc-200">{availableCount}</span>{" "}
+            of {memberCount} members have marked available. You can still
+            confirm this {noun}.
           </>
         }
         confirmLabel={`Confirm ${Noun}`}

@@ -12,7 +12,7 @@ import {
   isSameMonth,
   startOfMonth,
   startOfWeek,
-  subMonths,
+  subMonths
 } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { calendarDate, cn } from "@/lib/utils";
@@ -42,7 +42,7 @@ export default function DatePicker({
   required,
   hideLabel,
   buttonClassName,
-  placeholder = "mm/dd/yyyy",
+  placeholder = "mm/dd/yyyy"
 }: {
   label: string;
   value: string; // "YYYY-MM-DD", or "" for no selection
@@ -61,7 +61,9 @@ export default function DatePicker({
   const [open, setOpen] = useState(false);
   const selected = value ? calendarDate(value) : null;
   const minDate = min ? calendarDate(min) : null;
-  const [viewMonth, setViewMonth] = useState(() => selected ?? minDate ?? new Date());
+  const [viewMonth, setViewMonth] = useState(
+    () => selected ?? minDate ?? new Date()
+  );
 
   useEffect(() => {
     if (!open) return;
@@ -108,7 +110,9 @@ export default function DatePicker({
         }
       >
         {selected ? (
-          <span className="text-zinc-100">{format(selected, "MMM d, yyyy")}</span>
+          <span className="text-zinc-100">
+            {format(selected, "MMM d, yyyy")}
+          </span>
         ) : (
           <span className="text-zinc-500">{placeholder}</span>
         )}

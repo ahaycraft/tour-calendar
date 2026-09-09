@@ -9,13 +9,14 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
 
   const existing = await prisma.release.findUnique({
     where: { id },
-    select: { bandId: true },
+    select: { bandId: true }
   });
   if (!existing || !isBandMember(session, existing.bandId)) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -26,7 +27,10 @@ export async function PATCH(
     const { title, kind, status, targetDate, notes } = body;
 
     if (title !== undefined && (typeof title !== "string" || !title.trim())) {
-      return NextResponse.json({ error: "Title can't be empty" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Title can't be empty" },
+        { status: 400 }
+      );
     }
     if (kind !== undefined && !isReleaseKind(kind)) {
       return NextResponse.json({ error: "Invalid kind" }, { status: 400 });
@@ -42,16 +46,19 @@ export async function PATCH(
         ...(kind !== undefined && { kind }),
         ...(status !== undefined && { status }),
         ...(targetDate !== undefined && {
-          targetDate: targetDate ? new Date(`${targetDate}T00:00:00Z`) : null,
+          targetDate: targetDate ? new Date(`${targetDate}T00:00:00Z`) : null
         }),
-        ...(notes !== undefined && { notes: notes || null }),
+        ...(notes !== undefined && { notes: notes || null })
       },
-      select: { id: true, updatedAt: true },
+      select: { id: true, updatedAt: true }
     });
 
     return NextResponse.json(release);
   } catch {
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
 
@@ -60,7 +67,8 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
   const release = await prisma.release.findUnique({ where: { id } });

@@ -10,7 +10,8 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
   const instrument = await prisma.instrument.findUnique({ where: { id } });
@@ -23,13 +24,19 @@ export async function PATCH(
     const data: { name?: string; archived?: boolean } = {};
 
     if (body.name !== undefined) {
-      const name = typeof body.name === "string" ? body.name.trim().slice(0, MAX_NAME) : "";
+      const name =
+        typeof body.name === "string"
+          ? body.name.trim().slice(0, MAX_NAME)
+          : "";
       if (!name) {
-        return NextResponse.json({ error: "Name can't be empty" }, { status: 400 });
+        return NextResponse.json(
+          { error: "Name can't be empty" },
+          { status: 400 }
+        );
       }
       const clash = await prisma.instrument.findFirst({
         where: { bandId: instrument.bandId, name, id: { not: id } },
-        select: { id: true },
+        select: { id: true }
       });
       if (clash) {
         return NextResponse.json(
@@ -46,11 +53,14 @@ export async function PATCH(
     const updated = await prisma.instrument.update({
       where: { id },
       data,
-      select: { id: true, name: true, sortOrder: true, archived: true },
+      select: { id: true, name: true, sortOrder: true, archived: true }
     });
     return NextResponse.json(updated);
   } catch {
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
 
@@ -59,12 +69,13 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
   const instrument = await prisma.instrument.findUnique({
     where: { id },
-    include: { _count: { select: { parts: true } } },
+    include: { _count: { select: { parts: true } } }
   });
   if (!instrument || !isBandMember(session, instrument.bandId)) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -75,7 +86,7 @@ export async function DELETE(
     const updated = await prisma.instrument.update({
       where: { id },
       data: { archived: true },
-      select: { id: true, archived: true },
+      select: { id: true, archived: true }
     });
     return NextResponse.json({ ...updated, archivedInsteadOfDeleted: true });
   }

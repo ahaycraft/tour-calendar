@@ -12,7 +12,7 @@ describe("planPresetAdd", () => {
   it("promotes the lone bare section to '<preset> 1' and numbers the new one 2", () => {
     expect(planPresetAdd("Verse", [s("Verse", "v1")])).toEqual({
       name: "Verse 2",
-      promote: { id: "v1", name: "Verse 1" },
+      promote: { id: "v1", name: "Verse 1" }
     });
   });
 
@@ -25,21 +25,21 @@ describe("planPresetAdd", () => {
   it("matches case-insensitively and against untrimmed stored names", () => {
     expect(planPresetAdd("Verse", [s("  verse ", "v1")])).toEqual({
       name: "Verse 2",
-      promote: { id: "v1", name: "Verse 1" },
+      promote: { id: "v1", name: "Verse 1" }
     });
   });
 
   it("treats a hyphenated preset name literally", () => {
     expect(planPresetAdd("Pre-Chorus", [s("Pre-Chorus", "p1")])).toEqual({
       name: "Pre-Chorus 2",
-      promote: { id: "p1", name: "Pre-Chorus 1" },
+      promote: { id: "p1", name: "Pre-Chorus 1" }
     });
   });
 
   it("does not match a different preset that shares a prefix", () => {
     // "Verse" must not match "Verse Reprise" (extra word, not a number).
     expect(planPresetAdd("Verse", [s("Verse Reprise")])).toEqual({
-      name: "Verse",
+      name: "Verse"
     });
   });
 });
@@ -53,7 +53,7 @@ describe("sectionAccent", () => {
     ["Bridge", "badge-mauve"],
     ["Solo", "badge-ochre"],
     ["Instrumental", "badge-ochre"],
-    ["Breakdown", "badge-ochre"],
+    ["Breakdown", "badge-ochre"]
   ])("keys off the leading word: %s", (name, cls) => {
     expect(sectionAccent(name)).toBe(cls);
   });

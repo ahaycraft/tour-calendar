@@ -8,19 +8,27 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string; demoId: string }> }
 ) {
   const session = await auth();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id: songId, demoId } = await params;
 
   const demo = await prisma.songDemo.findUnique({
     where: { id: demoId },
-    include: { song: { select: { bandId: true } } },
+    include: { song: { select: { bandId: true } } }
   });
 
-  if (!demo || demo.songId !== songId || !isBandMember(session, demo.song.bandId)) {
+  if (
+    !demo ||
+    demo.songId !== songId ||
+    !isBandMember(session, demo.song.bandId)
+  ) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
-  if (demo.createdById !== session.user.id && !canManage(session, demo.song.bandId)) {
+  if (
+    demo.createdById !== session.user.id &&
+    !canManage(session, demo.song.bandId)
+  ) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

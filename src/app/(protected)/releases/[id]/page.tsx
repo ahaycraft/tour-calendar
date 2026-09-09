@@ -18,8 +18,8 @@ export default async function ReleasePage({ params }: PageProps) {
   const release = await prisma.release.findUnique({
     where: { id },
     include: {
-      tracks: { orderBy: { position: "asc" }, select: { songId: true } },
-    },
+      tracks: { orderBy: { position: "asc" }, select: { songId: true } }
+    }
   });
 
   if (!release || !isBandMember(session!, release.bandId)) notFound();
@@ -27,7 +27,7 @@ export default async function ReleasePage({ params }: PageProps) {
   const songs = await prisma.song.findMany({
     where: { bandId: release.bandId },
     orderBy: { updatedAt: "desc" },
-    select: { id: true, title: true, status: true },
+    select: { id: true, title: true, status: true }
   });
 
   const canDelete = canManage(session!, release.bandId, release.createdById);
@@ -54,7 +54,7 @@ export default async function ReleasePage({ params }: PageProps) {
           targetDate: release.targetDate
             ? format(release.targetDate, "yyyy-MM-dd")
             : "",
-          notes: release.notes ?? "",
+          notes: release.notes ?? ""
         }}
       />
     </div>

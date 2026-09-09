@@ -24,14 +24,18 @@ export function userBands(session: Session): SessionBand[] {
  * Resolution: the `active_band` cookie if it names a band the user belongs to,
  * otherwise their first membership.
  */
-export async function getActiveBand(session: Session): Promise<SessionBand | null> {
+export async function getActiveBand(
+  session: Session
+): Promise<SessionBand | null> {
   const bands = userBands(session);
   if (bands.length === 0) return null;
   const selected = (await cookies()).get(ACTIVE_BAND_COOKIE)?.value;
   return bands.find((b) => b.id === selected) ?? bands[0];
 }
 
-export async function getActiveBandId(session: Session): Promise<string | null> {
+export async function getActiveBandId(
+  session: Session
+): Promise<string | null> {
   return (await getActiveBand(session))?.id ?? null;
 }
 
@@ -63,7 +67,9 @@ export function canManage(
   createdById?: string
 ): boolean {
   const role = bandRole(session, bandId);
-  return role === "OWNER" || role === "ADMIN" || session.user.id === createdById;
+  return (
+    role === "OWNER" || role === "ADMIN" || session.user.id === createdById
+  );
 }
 
 /** Tags each event with whether the current user can delete it, for the list pages. */
@@ -72,7 +78,10 @@ export function withDeletePermission<T extends { createdById: string }>(
   session: Session,
   bandId: string
 ): (T & { canDelete: boolean })[] {
-  return events.map((e) => ({ ...e, canDelete: canManage(session, bandId, e.createdById) }));
+  return events.map((e) => ({
+    ...e,
+    canDelete: canManage(session, bandId, e.createdById)
+  }));
 }
 
 function baseSlug(name: string): string {
@@ -92,7 +101,8 @@ export async function uniqueBandSlug(name: string): Promise<string> {
   const base = baseSlug(name);
   for (let i = 0; i < 50; i++) {
     const candidate = i === 0 ? base : `${base}-${i + 1}`;
-    if (!(await prisma.band.findUnique({ where: { slug: candidate } }))) return candidate;
+    if (!(await prisma.band.findUnique({ where: { slug: candidate } })))
+      return candidate;
   }
   return `${base}-${Date.now().toString(36)}`;
 }

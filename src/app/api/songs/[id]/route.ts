@@ -9,13 +9,14 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
 
   const existing = await prisma.song.findUnique({
     where: { id },
-    select: { bandId: true },
+    select: { bandId: true }
   });
   if (!existing || !isBandMember(session, existing.bandId)) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -23,10 +24,14 @@ export async function PATCH(
 
   try {
     const body = await request.json();
-    const { title, status, key, tempo, timeSig, lyrics, notes, samplyUrl } = body;
+    const { title, status, key, tempo, timeSig, lyrics, notes, samplyUrl } =
+      body;
 
     if (title !== undefined && (typeof title !== "string" || !title.trim())) {
-      return NextResponse.json({ error: "Title can't be empty" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Title can't be empty" },
+        { status: 400 }
+      );
     }
     if (status !== undefined && !isSongStatus(status)) {
       return NextResponse.json({ error: "Invalid status" }, { status: 400 });
@@ -52,14 +57,17 @@ export async function PATCH(
         ...(lyrics !== undefined && { lyrics: lyrics || null }),
         ...(notes !== undefined && { notes: notes || null }),
         ...(samplyUrl !== undefined && { samplyUrl: samplyUrl || null }),
-        updatedById: session.user.id,
+        updatedById: session.user.id
       },
-      select: { id: true, updatedAt: true },
+      select: { id: true, updatedAt: true }
     });
 
     return NextResponse.json(song);
   } catch {
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
 
@@ -68,7 +76,8 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
 

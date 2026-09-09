@@ -11,7 +11,7 @@ import { CalendarPlus, ExternalLink } from "lucide-react";
  */
 export default function AddToCalendar({
   googleUrl,
-  icsUrl,
+  icsUrl
 }: {
   googleUrl: string;
   icsUrl: string;

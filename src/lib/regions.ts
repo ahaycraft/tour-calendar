@@ -54,7 +54,7 @@ const US_STATES: Record<string, string> = {
   "west virginia": "WV",
   wisconsin: "WI",
   wyoming: "WY",
-  "puerto rico": "PR",
+  "puerto rico": "PR"
 };
 
 const CA_PROVINCES: Record<string, string> = {
@@ -69,9 +69,9 @@ const CA_PROVINCES: Record<string, string> = {
   ontario: "ON",
   "prince edward island": "PE",
   quebec: "QC",
-  "québec": "QC",
+  québec: "QC",
   saskatchewan: "SK",
-  yukon: "YT",
+  yukon: "YT"
 };
 
 export function normalizeRegion(name: string, country: string): string {

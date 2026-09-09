@@ -11,7 +11,8 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
 
@@ -21,9 +22,9 @@ export async function GET(
       createdBy: { select: { id: true, name: true } },
       release: { select: { id: true, title: true } },
       availability: {
-        include: { user: { select: { id: true, name: true } } },
-      },
-    },
+        include: { user: { select: { id: true, name: true } } }
+      }
+    }
   });
 
   if (!show || !isBandMember(session, show.bandId)) {
@@ -38,7 +39,8 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
 
@@ -53,10 +55,31 @@ export async function PATCH(
 
   try {
     const body = await request.json();
-    const { type, title, venue, city, state, country, date, doorsTime, setTime, loadInTime, guarantee, notes, status, venueAddress, venueLat, venueLng, releaseId } = body;
+    const {
+      type,
+      title,
+      venue,
+      city,
+      state,
+      country,
+      date,
+      doorsTime,
+      setTime,
+      loadInTime,
+      guarantee,
+      notes,
+      status,
+      venueAddress,
+      venueLat,
+      venueLng,
+      releaseId
+    } = body;
 
     if (type !== undefined && !isEventType(type)) {
-      return NextResponse.json({ error: "Invalid event type" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid event type" },
+        { status: 400 }
+      );
     }
 
     // Resolve the release link. It only applies to recording sessions, so an
@@ -70,10 +93,13 @@ export async function PATCH(
       } else {
         const release = await prisma.release.findFirst({
           where: { id: releaseId, bandId: existing.bandId },
-          select: { id: true },
+          select: { id: true }
         });
         if (!release) {
-          return NextResponse.json({ error: "Release not found" }, { status: 400 });
+          return NextResponse.json(
+            { error: "Release not found" },
+            { status: 400 }
+          );
         }
         releaseUpdate = { releaseId: release.id };
       }
@@ -103,31 +129,41 @@ export async function PATCH(
           ...(state !== undefined && { state }),
           ...(country && { country }),
           ...(newDate && { date: newDate }),
-          ...(doorsTime !== undefined && { doorsTime: doorsTime ? new Date(doorsTime) : null }),
-          ...(setTime !== undefined && { setTime: setTime ? new Date(setTime) : null }),
-          ...(loadInTime !== undefined && { loadInTime: loadInTime ? new Date(loadInTime) : null }),
-          ...(guarantee !== undefined && { guarantee: guarantee ? parseFloat(guarantee) : null }),
+          ...(doorsTime !== undefined && {
+            doorsTime: doorsTime ? new Date(doorsTime) : null
+          }),
+          ...(setTime !== undefined && {
+            setTime: setTime ? new Date(setTime) : null
+          }),
+          ...(loadInTime !== undefined && {
+            loadInTime: loadInTime ? new Date(loadInTime) : null
+          }),
+          ...(guarantee !== undefined && {
+            guarantee: guarantee ? parseFloat(guarantee) : null
+          }),
           ...(notes !== undefined && { notes }),
           ...(releaseUpdate ?? {}),
           ...(status && { status }),
           // Wins over any status in the request body — a moved date always
           // un-confirms the event.
           ...(revertsToPending && { status: "PENDING" as const }),
-          ...(venueAddress !== undefined && { venueAddress: venueAddress || null }),
+          ...(venueAddress !== undefined && {
+            venueAddress: venueAddress || null
+          }),
           ...(venueLat !== undefined && {
-            venueLat: typeof venueLat === "number" ? venueLat : null,
+            venueLat: typeof venueLat === "number" ? venueLat : null
           }),
           ...(venueLng !== undefined && {
-            venueLng: typeof venueLng === "number" ? venueLng : null,
-          }),
+            venueLng: typeof venueLng === "number" ? venueLng : null
+          })
         },
         include: {
           createdBy: { select: { id: true, name: true } },
           release: { select: { id: true, title: true } },
           availability: {
-            include: { user: { select: { id: true, name: true } } },
-          },
-        },
+            include: { user: { select: { id: true, name: true } } }
+          }
+        }
       });
     });
 
@@ -143,24 +179,27 @@ export async function PATCH(
         title: `${show.title} moved to ${format(show.date, "EEE, MMM d")}`,
         body: "Your availability was reset — tap to respond again.",
         url: eventHref(show.type, show.id),
-        tag: `show:${show.id}`,
+        tag: `show:${show.id}`
       });
     } else if (becamePending) {
       void notifyBandMembers(existing.bandId, session.user.id, {
         title: `${show.title} set to pending`,
         body: `${format(show.date, "EEE, MMM d")} — waiting on the band to confirm.`,
         url: eventHref(show.type, show.id),
-        tag: `show:${show.id}`,
+        tag: `show:${show.id}`
       });
     }
 
     return NextResponse.json({
       ...show,
       availabilityReset: dateChanged,
-      statusReverted: revertsToPending,
+      statusReverted: revertsToPending
     });
   } catch {
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
 
@@ -169,7 +208,8 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
 
@@ -191,7 +231,7 @@ export async function DELETE(
     title: `${show.type === "RECORDING" ? "Recording" : "Show"} deleted: ${show.title}`,
     body: `${format(show.date, "EEE, MMM d")} is off the calendar.`,
     url: "/calendar",
-    tag: `show-deleted:${show.id}`,
+    tag: `show-deleted:${show.id}`
   });
 
   return NextResponse.json({ success: true });

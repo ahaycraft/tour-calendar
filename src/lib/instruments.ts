@@ -7,7 +7,7 @@ export const DEFAULT_INSTRUMENTS = [
   "Rhythm Guitar",
   "Lead Guitar",
   "Vocals",
-  "Backing Vocals",
+  "Backing Vocals"
 ] as const;
 
 /**
@@ -18,8 +18,12 @@ export async function ensureBandInstruments(bandId: string): Promise<void> {
   const count = await prisma.instrument.count({ where: { bandId } });
   if (count > 0) return;
   await prisma.instrument.createMany({
-    data: DEFAULT_INSTRUMENTS.map((name, i) => ({ bandId, name, sortOrder: i })),
-    skipDuplicates: true,
+    data: DEFAULT_INSTRUMENTS.map((name, i) => ({
+      bandId,
+      name,
+      sortOrder: i
+    })),
+    skipDuplicates: true
   });
 }
 
@@ -27,7 +31,7 @@ export const RECORDING_PART_STATUSES = [
   "TODO",
   "TRACKING",
   "TRACKED",
-  "NEEDS_REDO",
+  "NEEDS_REDO"
 ] as const;
 
 export type RecordingPartStatus = (typeof RECORDING_PART_STATUSES)[number];
@@ -36,7 +40,7 @@ export const recordingPartStatusLabel: Record<RecordingPartStatus, string> = {
   TODO: "To do",
   TRACKING: "Tracking",
   TRACKED: "Tracked",
-  NEEDS_REDO: "Needs redo",
+  NEEDS_REDO: "Needs redo"
 };
 
 // Muted status palette shared with the calendar and show badges (see the
@@ -45,7 +49,7 @@ export const recordingPartStatusClass: Record<RecordingPartStatus, string> = {
   TODO: "bg-zinc-700 text-zinc-300",
   TRACKING: "badge-ochre",
   TRACKED: "badge-moss",
-  NEEDS_REDO: "badge-brick",
+  NEEDS_REDO: "badge-brick"
 };
 
 export function isRecordingPartStatus(v: unknown): v is RecordingPartStatus {

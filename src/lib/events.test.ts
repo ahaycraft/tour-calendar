@@ -9,7 +9,7 @@ import {
   eventTypeLabel,
   isEventType,
   isUpcomingEvent,
-  tourEditHref,
+  tourEditHref
 } from "@/lib/events";
 
 describe("isEventType", () => {
@@ -28,7 +28,7 @@ describe("isEventType", () => {
       null,
       0,
       {},
-      ["SHOW"],
+      ["SHOW"]
     ]) {
       expect(isEventType(v)).toBe(false);
     }
@@ -39,8 +39,15 @@ describe("per-type vocabulary", () => {
   // [type, basePath, noun, nounPlural, typeLabel, listLabel]
   const table = [
     ["SHOW", "/shows", "show", "shows", "Show", "Shows"],
-    ["RECORDING", "/recordings", "session", "sessions", "Recording", "Recordings"],
-    ["PRACTICE", "/practices", "practice", "practices", "Practice", "Practices"],
+    [
+      "RECORDING",
+      "/recordings",
+      "session",
+      "sessions",
+      "Recording",
+      "Recordings"
+    ],
+    ["PRACTICE", "/practices", "practice", "practices", "Practice", "Practices"]
   ] as const;
 
   it.each(table)(
@@ -117,7 +124,10 @@ describe("isUpcomingEvent", () => {
 
   it("accepts a Date as well as an ISO string", () => {
     expect(
-      isUpcomingEvent({ date: new Date("2026-06-20T00:00:00Z"), status: "PENDING" })
+      isUpcomingEvent({
+        date: new Date("2026-06-20T00:00:00Z"),
+        status: "PENDING"
+      })
     ).toBe(true);
   });
 });

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 
 export default function AcceptInvite({
   token,
-  bandName,
+  bandName
 }: {
   token: string;
   bandName: string;
@@ -19,7 +19,10 @@ export default function AcceptInvite({
     setError("");
     const res = await fetch(`/api/invites/${token}/accept`, { method: "POST" });
     if (!res.ok) {
-      setError((await res.json().catch(() => ({}))).error || "Couldn't accept the invite");
+      setError(
+        (await res.json().catch(() => ({}))).error ||
+          "Couldn't accept the invite"
+      );
       setBusy(false);
       return;
     }

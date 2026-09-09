@@ -32,7 +32,7 @@ export default function VenueSearch({
   inputClassName,
   name = "venue",
   required,
-  placeholder,
+  placeholder
 }: Props) {
   const [results, setResults] = useState<VenueResult[]>([]);
   const [open, setOpen] = useState(false);
@@ -58,7 +58,7 @@ export default function VenueSearch({
       setLoading(true);
       try {
         const res = await fetch(`/api/venues?q=${encodeURIComponent(q)}`, {
-          signal: controller.signal,
+          signal: controller.signal
         });
         if (res.ok) {
           const data: VenueResult[] = await res.json();
@@ -149,9 +149,13 @@ export default function VenueSearch({
                 >
                   <MapPin size={14} className="mt-0.5 shrink-0 text-zinc-500" />
                   <span className="min-w-0">
-                    <span className="block text-sm font-medium text-zinc-100">{r.name}</span>
+                    <span className="block text-sm font-medium text-zinc-100">
+                      {r.name}
+                    </span>
                     {r.address && (
-                      <span className="block truncate text-xs text-zinc-500">{r.address}</span>
+                      <span className="block truncate text-xs text-zinc-500">
+                        {r.address}
+                      </span>
                     )}
                   </span>
                 </button>

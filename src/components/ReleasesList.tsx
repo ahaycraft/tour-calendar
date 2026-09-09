@@ -16,18 +16,25 @@ interface Release {
   canDelete: boolean;
 }
 
-export default function ReleasesList({ initialReleases }: { initialReleases: Release[] }) {
+export default function ReleasesList({
+  initialReleases
+}: {
+  initialReleases: Release[];
+}) {
   const router = useRouter();
   const [releases, setReleases] = useState(initialReleases);
-  const [pendingDelete, setPendingDelete] = useState<{ id: string; title: string } | null>(
-    null
-  );
+  const [pendingDelete, setPendingDelete] = useState<{
+    id: string;
+    title: string;
+  } | null>(null);
   const [deleting, setDeleting] = useState(false);
 
   async function doDelete() {
     if (!pendingDelete) return;
     setDeleting(true);
-    const res = await fetch(`/api/releases/${pendingDelete.id}`, { method: "DELETE" });
+    const res = await fetch(`/api/releases/${pendingDelete.id}`, {
+      method: "DELETE"
+    });
     setDeleting(false);
     if (res.ok) {
       setReleases((prev) => prev.filter((r) => r.id !== pendingDelete.id));
@@ -55,8 +62,8 @@ export default function ReleasesList({ initialReleases }: { initialReleases: Rel
           <>
             {pendingDelete && (
               <>
-                &ldquo;{pendingDelete.title}&rdquo; and its tracklist are removed. The
-                songs themselves stay in your library.
+                &ldquo;{pendingDelete.title}&rdquo; and its tracklist are
+                removed. The songs themselves stay in your library.
               </>
             )}
           </>

@@ -24,7 +24,7 @@ export function formatDate(date: Date | string) {
     weekday: "short",
     year: "numeric",
     month: "short",
-    day: "numeric",
+    day: "numeric"
   });
 }
 
@@ -33,6 +33,6 @@ export function formatTime(date: Date | string | null | undefined) {
   return new Date(date).toLocaleTimeString("en-US", {
     hour: "numeric",
     minute: "2-digit",
-    hour12: true,
+    hour12: true
   });
 }

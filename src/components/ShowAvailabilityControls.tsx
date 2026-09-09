@@ -10,7 +10,11 @@ interface Props {
   currentNote: string;
 }
 
-export default function ShowAvailabilityControls({ showId, currentStatus, currentNote }: Props) {
+export default function ShowAvailabilityControls({
+  showId,
+  currentStatus,
+  currentNote
+}: Props) {
   const router = useRouter();
   const [note, setNote] = useState(currentNote);
   const [loading, setLoading] = useState(false);
@@ -20,7 +24,7 @@ export default function ShowAvailabilityControls({ showId, currentStatus, curren
     await fetch(`/api/shows/${showId}/availability`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status, note }),
+      body: JSON.stringify({ status, note })
     });
     await revalidateShell();
     setLoading(false);

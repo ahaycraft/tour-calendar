@@ -27,7 +27,7 @@ const COMMIT_PX = 90;
 
 export default function SwipeableShowRow({
   show,
-  onRespond,
+  onRespond
 }: {
   show: Show;
   onRespond: (showId: string, status: "AVAILABLE" | "UNAVAILABLE") => void;
@@ -76,7 +76,7 @@ export default function SwipeableShowRow({
     // tracking starts — vertical ones included — which freezes list scrolling
     // on iOS. The `touch-pan-y` class on the <li> lets the browser own vertical
     // scroll while still handing us the horizontal delta for the slide.
-    delta: 15,
+    delta: 15
   });
 
   const rowInner = (
@@ -87,7 +87,8 @@ export default function SwipeableShowRow({
       <div className="min-w-0">
         <p className="text-sm font-medium text-zinc-200">{show.title}</p>
         <p className="text-xs text-zinc-500">
-          {locationLine(show)} · {format(calendarDate(show.date), "MMM d, yyyy")}
+          {locationLine(show)} ·{" "}
+          {format(calendarDate(show.date), "MMM d, yyyy")}
         </p>
       </div>
       <AvailabilityBadge status={show.myStatus} className="shrink-0" />
@@ -110,9 +111,7 @@ export default function SwipeableShowRow({
     >
       <div
         className={`pointer-events-none absolute inset-0 flex items-center rounded-xl px-4 text-white ${
-          revealRight
-            ? "justify-start bg-green-600"
-            : "justify-end bg-red-600"
+          revealRight ? "justify-start bg-green-600" : "justify-end bg-red-600"
         }`}
         style={{ opacity: offset === 0 ? 0 : 0.4 + intensity * 0.6 }}
         aria-hidden
@@ -126,7 +125,7 @@ export default function SwipeableShowRow({
       <div
         style={{
           transform: `translateX(${offset}px)`,
-          transition: animating ? "transform 200ms ease-out" : "none",
+          transition: animating ? "transform 200ms ease-out" : "none"
         }}
       >
         {rowInner}

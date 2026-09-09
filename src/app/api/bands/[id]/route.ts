@@ -8,7 +8,8 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
   const role = bandRole(session, id);
@@ -19,17 +20,23 @@ export async function PATCH(
   try {
     const { name } = await request.json();
     if (!name || typeof name !== "string" || !name.trim()) {
-      return NextResponse.json({ error: "Name can't be empty" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Name can't be empty" },
+        { status: 400 }
+      );
     }
 
     const band = await prisma.band.update({
       where: { id },
       data: { name: name.trim() },
-      select: { id: true, name: true },
+      select: { id: true, name: true }
     });
     return NextResponse.json(band);
   } catch {
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
 
@@ -38,7 +45,8 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
   if (bandRole(session, id) !== "OWNER") {

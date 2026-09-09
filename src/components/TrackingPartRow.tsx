@@ -7,7 +7,7 @@ import {
   RECORDING_PART_STATUSES,
   recordingPartStatusClass,
   recordingPartStatusLabel,
-  type RecordingPartStatus,
+  type RecordingPartStatus
 } from "@/lib/instruments";
 
 export interface TrackingPart {
@@ -34,7 +34,7 @@ export default function TrackingPartRow({
   part,
   members,
   onPatch,
-  onDelete,
+  onDelete
 }: {
   part: TrackingPart;
   members: { id: string; name: string }[];
@@ -57,7 +57,7 @@ export default function TrackingPartRow({
   function debouncedPatch(key: "label" | "description", value: string) {
     if (timers.current[key]) clearTimeout(timers.current[key]);
     timers.current[key] = setTimeout(() => {
-      const current = key === "label" ? part.label ?? "" : part.description;
+      const current = key === "label" ? (part.label ?? "") : part.description;
       if (value === current) return;
       onPatch(part.id, { [key]: value });
     }, 700);

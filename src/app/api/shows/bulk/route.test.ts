@@ -7,8 +7,8 @@ vi.mock("@/lib/prisma", () => {
       createManyAndReturn: vi.fn(),
       findMany: vi.fn(),
       updateMany: vi.fn(),
-      update: vi.fn(),
-    },
+      update: vi.fn()
+    }
   };
   prisma.$transaction = vi.fn(async (arg: unknown) =>
     typeof arg === "function"
@@ -20,7 +20,7 @@ vi.mock("@/lib/prisma", () => {
 vi.mock("@/lib/band", () => ({
   getActiveBandId: vi.fn(),
   canManage: vi.fn(),
-  isBandMember: vi.fn(),
+  isBandMember: vi.fn()
 }));
 vi.mock("@/lib/push", () => ({ notifyBandMembers: vi.fn() }));
 
@@ -64,12 +64,27 @@ beforeEach(() => {
 
 describe("POST /api/shows/bulk — guards", () => {
   it.each([
-    ["no session", () => authMock.mockResolvedValue(null), { name: "T", dates: ["2026-06-15"] }, 401],
-    ["bad type", () => {}, { type: "TOUR", name: "T", dates: ["2026-06-15"] }, 400],
+    [
+      "no session",
+      () => authMock.mockResolvedValue(null),
+      { name: "T", dates: ["2026-06-15"] },
+      401
+    ],
+    [
+      "bad type",
+      () => {},
+      { type: "TOUR", name: "T", dates: ["2026-06-15"] },
+      400
+    ],
     ["blank name", () => {}, { name: "  ", dates: ["2026-06-15"] }, 400],
     ["no dates", () => {}, { name: "T", dates: [] }, 400],
     ["malformed date", () => {}, { name: "T", dates: ["06/15/2026"] }, 400],
-    ["too many dates", () => {}, { name: "T", dates: Array.from({ length: 91 }, () => "2026-06-15") }, 400],
+    [
+      "too many dates",
+      () => {},
+      { name: "T", dates: Array.from({ length: 91 }, () => "2026-06-15") },
+      400
+    ]
   ])("%s → %i", async (_label, arrange, body, status) => {
     arrange();
     expect((await post(body)).status).toBe(status);
@@ -85,7 +100,7 @@ describe("POST /api/shows/bulk — create + notify", () => {
   it("stamps one shared tourGroupId + tourName and titles days in order", async () => {
     const res = await post({
       name: "  Fall Tour  ",
-      dates: ["2026-09-03", "2026-09-01", "2026-09-02"],
+      dates: ["2026-09-03", "2026-09-01", "2026-09-02"]
     });
 
     expect(res.status).toBe(201);
@@ -99,7 +114,7 @@ describe("POST /api/shows/bulk — create + notify", () => {
     expect(rows.map((r) => r.title)).toEqual([
       "Fall Tour — Day 1",
       "Fall Tour — Day 2",
-      "Fall Tour — Day 3",
+      "Fall Tour — Day 3"
     ]);
     expect(new Set(rows.map((r) => r.tourGroupId)).size).toBe(1);
     expect(rows[0].tourGroupId).toMatch(UUID_RE);
@@ -111,7 +126,7 @@ describe("POST /api/shows/bulk — create + notify", () => {
       title: "New tour: Fall Tour",
       body: "3 days added — tap to set your availability.",
       url: "/calendar",
-      tag: `tour:${json.tourGroupId}`,
+      tag: `tour:${json.tourGroupId}`
     });
   });
 
@@ -122,7 +137,7 @@ describe("POST /api/shows/bulk — create + notify", () => {
       "u1",
       expect.objectContaining({
         title: "New practice block: Rehearsals",
-        body: "1 day added — tap to set your availability.",
+        body: "1 day added — tap to set your availability."
       })
     );
   });
@@ -131,8 +146,20 @@ describe("POST /api/shows/bulk — create + notify", () => {
 // --- PATCH: block-wide edit -------------------------------------------------
 
 const group = (over: Partial<ReturnType<typeof makeShow>> = {}) => [
-  makeShow({ id: "d1", tourGroupId: "grp1", tourName: "Fall Tour", date: new Date("2026-09-01T00:00:00Z"), ...over }),
-  makeShow({ id: "d2", tourGroupId: "grp1", tourName: "Fall Tour", date: new Date("2026-09-02T00:00:00Z"), ...over }),
+  makeShow({
+    id: "d1",
+    tourGroupId: "grp1",
+    tourName: "Fall Tour",
+    date: new Date("2026-09-01T00:00:00Z"),
+    ...over
+  }),
+  makeShow({
+    id: "d2",
+    tourGroupId: "grp1",
+    tourName: "Fall Tour",
+    date: new Date("2026-09-02T00:00:00Z"),
+    ...over
+  })
 ];
 
 /** The form always re-sends every field; this is "no change from current". */
@@ -143,7 +170,7 @@ const unchangedPayload = {
   state: "",
   country: "US",
   status: "PENDING",
-  notes: "",
+  notes: ""
 };
 
 describe("PATCH /api/shows/bulk — guards", () => {
@@ -153,7 +180,9 @@ describe("PATCH /api/shows/bulk — guards", () => {
     authMock.mockResolvedValue(makeSession());
 
     expect((await patch({})).status).toBe(400);
-    expect((await patch({ tourGroupId: "grp1", status: "NOPE" })).status).toBe(400);
+    expect((await patch({ tourGroupId: "grp1", status: "NOPE" })).status).toBe(
+      400
+    );
     expect((await patch({ tourGroupId: "grp1", name: "  " })).status).toBe(400);
 
     findManyMock.mockResolvedValue([]);
@@ -188,7 +217,7 @@ describe("PATCH /api/shows/bulk — diffing", () => {
     expect(updateMock).toHaveBeenCalledTimes(2);
     expect(updateMock.mock.calls[0][0]).toMatchObject({
       where: { id: "d1" },
-      data: { title: "Winter Tour — Day 1", tourName: "Winter Tour" },
+      data: { title: "Winter Tour — Day 1", tourName: "Winter Tour" }
     });
     expect(updateMock.mock.calls[1][0].data.title).toBe("Winter Tour — Day 2");
     expect(notifyMock).toHaveBeenCalledWith(
@@ -197,7 +226,7 @@ describe("PATCH /api/shows/bulk — diffing", () => {
       expect.objectContaining({
         title: "Tour updated: Winter Tour",
         body: "Renamed.",
-        tag: "tour:grp1",
+        tag: "tour:grp1"
       })
     );
   });
@@ -208,7 +237,7 @@ describe("PATCH /api/shows/bulk — diffing", () => {
 
     expect(updateManyMock).toHaveBeenCalledWith({
       where: { tourGroupId: "grp1" },
-      data: { status: "CONFIRMED" },
+      data: { status: "CONFIRMED" }
     });
     expect(notifyMock).toHaveBeenCalledWith(
       "band1",
@@ -222,7 +251,7 @@ describe("PATCH /api/shows/bulk — diffing", () => {
     await patch({
       ...unchangedPayload,
       city: "Portland",
-      notes: "Van rented",
+      notes: "Van rented"
     });
     expect(notifyMock).toHaveBeenCalledWith(
       "band1",

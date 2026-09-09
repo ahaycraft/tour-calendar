@@ -17,7 +17,7 @@ self.addEventListener("push", (event) => {
     tag: data.tag,
     icon: "/icon-192.png",
     badge: "/icon-192.png",
-    data: { url: data.url || "/" },
+    data: { url: data.url || "/" }
   };
 
   event.waitUntil(self.registration.showNotification(title, options));
@@ -25,7 +25,8 @@ self.addEventListener("push", (event) => {
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  const target = (event.notification.data && event.notification.data.url) || "/";
+  const target =
+    (event.notification.data && event.notification.data.url) || "/";
 
   event.waitUntil(
     clients

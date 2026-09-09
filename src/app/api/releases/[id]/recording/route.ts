@@ -7,7 +7,7 @@ import { ensureBandInstruments } from "@/lib/instruments";
 async function loadRelease(id: string) {
   return prisma.release.findUnique({
     where: { id },
-    select: { id: true, bandId: true, trackingPlan: { select: { id: true } } },
+    select: { id: true, bandId: true, trackingPlan: { select: { id: true } } }
   });
 }
 
@@ -17,7 +17,8 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
   const release = await loadRelease(id);
@@ -33,7 +34,7 @@ export async function POST(
 
   const plan = await prisma.recordingPlan.create({
     data: { releaseId: id, createdById: session.user.id },
-    select: { id: true },
+    select: { id: true }
   });
   return NextResponse.json(plan, { status: 201 });
 }
@@ -44,7 +45,8 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
   const release = await loadRelease(id);
@@ -63,10 +65,13 @@ export async function PATCH(
     const plan = await prisma.recordingPlan.update({
       where: { id: release.trackingPlan.id },
       data: { notes: body.notes || null },
-      select: { id: true, updatedAt: true },
+      select: { id: true, updatedAt: true }
     });
     return NextResponse.json(plan);
   } catch {
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

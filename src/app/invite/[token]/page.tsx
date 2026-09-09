@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import AcceptInvite from "@/components/AcceptInvite";
 
 export default async function InvitePage({
-  params,
+  params
 }: {
   params: Promise<{ token: string }>;
 }) {
@@ -15,8 +15,8 @@ export default async function InvitePage({
     where: { token },
     include: {
       band: { select: { name: true } },
-      invitedBy: { select: { name: true } },
-    },
+      invitedBy: { select: { name: true } }
+    }
   });
 
   const problem = !invite
@@ -52,15 +52,18 @@ export default async function InvitePage({
                 {invite!.invitedBy.name}
               </span>{" "}
               invited you to join{" "}
-              <span className="font-medium text-zinc-100">{invite!.band.name}</span> as{" "}
-              {invite!.role.toLowerCase()}.
+              <span className="font-medium text-zinc-100">
+                {invite!.band.name}
+              </span>{" "}
+              as {invite!.role.toLowerCase()}.
             </p>
 
             {!session ? (
               <div className="mt-6 space-y-2">
                 <p className="text-sm text-zinc-500">
                   Sign in or create an account for{" "}
-                  <span className="text-zinc-300">{invite!.email}</span> to accept.
+                  <span className="text-zinc-300">{invite!.email}</span> to
+                  accept.
                 </p>
                 <Link
                   href={`/login?callbackUrl=${encodeURIComponent(`/invite/${token}`)}`}
@@ -77,8 +80,8 @@ export default async function InvitePage({
               </div>
             ) : emailMismatch ? (
               <p className="text-sm text-amber-400 mt-4">
-                You&apos;re signed in as {session.user.email}, but this invite is for{" "}
-                {invite!.email}. Sign out and use that address.
+                You&apos;re signed in as {session.user.email}, but this invite
+                is for {invite!.email}. Sign out and use that address.
               </p>
             ) : (
               <AcceptInvite token={token} bandName={invite!.band.name} />

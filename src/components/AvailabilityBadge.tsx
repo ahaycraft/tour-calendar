@@ -3,18 +3,18 @@ import { cn } from "@/lib/utils";
 const variants: Record<string, string> = {
   AVAILABLE: "badge-moss",
   UNAVAILABLE: "badge-brick",
-  PENDING: "bg-zinc-700 text-zinc-400",
+  PENDING: "bg-zinc-700 text-zinc-400"
 };
 
 const labels: Record<string, string> = {
   AVAILABLE: "Available",
   UNAVAILABLE: "Unavailable",
-  PENDING: "No response",
+  PENDING: "No response"
 };
 
 export default function AvailabilityBadge({
   status,
-  className,
+  className
 }: {
   status: string;
   className?: string;

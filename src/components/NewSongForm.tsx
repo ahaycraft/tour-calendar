@@ -23,7 +23,7 @@ export default function NewSongForm() {
     const res = await fetch("/api/songs", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title, status }),
+      body: JSON.stringify({ title, status })
     });
 
     setLoading(false);
@@ -55,7 +55,9 @@ export default function NewSongForm() {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-zinc-300 mb-1">Status</label>
+        <label className="block text-sm font-medium text-zinc-300 mb-1">
+          Status
+        </label>
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value)}

@@ -12,7 +12,7 @@ export default async function ReleasesPage() {
   const releases = await prisma.release.findMany({
     where: { bandId },
     orderBy: { updatedAt: "desc" },
-    include: { _count: { select: { tracks: true } } },
+    include: { _count: { select: { tracks: true } } }
   });
 
   return (
@@ -44,7 +44,7 @@ export default async function ReleasesPage() {
             trackCount: r._count.tracks,
             createdAt: r.createdAt.toISOString(),
             targetDate: r.targetDate ? r.targetDate.toISOString() : null,
-            canDelete: canManage(session!, bandId, r.createdById),
+            canDelete: canManage(session!, bandId, r.createdById)
           }))}
         />
       )}

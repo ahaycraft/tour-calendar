@@ -8,7 +8,7 @@ import {
   eventBasePath,
   eventNoun,
   eventNounPlural,
-  type EventTypeStr,
+  type EventTypeStr
 } from "@/lib/events";
 import CalendarExportLink from "@/components/CalendarExportLink";
 import DatePicker from "@/components/DatePicker";
@@ -21,17 +21,17 @@ const MAX_EVENTS = 90;
 const TYPE_TABS: { value: EventTypeStr; label: string }[] = [
   { value: "SHOW", label: "Shows" },
   { value: "PRACTICE", label: "Practices" },
-  { value: "RECORDING", label: "Recordings" },
+  { value: "RECORDING", label: "Recordings" }
 ];
 // "<block> name" label + title-stub example, per type.
 const BLOCK_META: Record<EventTypeStr, { label: string; example: string }> = {
   SHOW: { label: "Tour", example: "Fall Tour" },
   PRACTICE: { label: "Practice block", example: "Pre-tour Rehearsals" },
-  RECORDING: { label: "Session block", example: "LP2 Tracking" },
+  RECORDING: { label: "Session block", example: "LP2 Tracking" }
 };
 
 export default function BulkEventForm({
-  defaultType = "SHOW",
+  defaultType = "SHOW"
 }: {
   defaultType?: EventTypeStr;
 }) {
@@ -46,9 +46,10 @@ export default function BulkEventForm({
   const [country, setCountry] = useState("US");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [created, setCreated] = useState<{ count: number; ids: string[] } | null>(
-    null
-  );
+  const [created, setCreated] = useState<{
+    count: number;
+    ids: string[];
+  } | null>(null);
 
   // Every day in the range; the user unchecks travel / off days.
   const rangeDays = useMemo(() => {
@@ -57,7 +58,9 @@ export default function BulkEventForm({
     const e = parseISO(end);
     if (!isValid(s) || !isValid(e) || e < s) return [];
     const days = eachDayOfInterval({ start: s, end: e });
-    return days.length > MAX_EVENTS ? [] : days.map((d) => format(d, "yyyy-MM-dd"));
+    return days.length > MAX_EVENTS
+      ? []
+      : days.map((d) => format(d, "yyyy-MM-dd"));
   }, [start, end]);
 
   const rangeTooLong =
@@ -95,8 +98,8 @@ export default function BulkEventForm({
         dates: selected,
         city: city || undefined,
         state: stateField || undefined,
-        country: country || "US",
-      }),
+        country: country || "US"
+      })
     });
 
     setLoading(false);
@@ -121,9 +124,10 @@ export default function BulkEventForm({
       <div className="space-y-4">
         <div className="rounded-lg bg-zinc-800/50 border border-zinc-800 px-4 py-3 text-sm text-zinc-300">
           Created{" "}
-          <span className="font-medium text-zinc-100">{created.count}</span> {noun}
-          {created.count === 1 ? "" : "s"}. Venues are blank — fill them in on each
-          event.
+          <span className="font-medium text-zinc-100">{created.count}</span>{" "}
+          {noun}
+          {created.count === 1 ? "" : "s"}. Venues are blank — fill them in on
+          each event.
         </div>
 
         {created.ids.length > 0 && (
@@ -197,13 +201,19 @@ export default function BulkEventForm({
           placeholder={`e.g. ${BLOCK_META[eventType].example}`}
         />
         <p className="mt-1 text-xs text-zinc-600">
-          Events are titled &ldquo;{name.trim() || BLOCK_META[eventType].example} —
-          Day 1&rdquo;, &ldquo;Day 2&rdquo;, and so on.
+          Events are titled &ldquo;
+          {name.trim() || BLOCK_META[eventType].example} — Day 1&rdquo;,
+          &ldquo;Day 2&rdquo;, and so on.
         </p>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <DatePicker label="Start date" value={start} onChange={setStart} required />
+        <DatePicker
+          label="Start date"
+          value={start}
+          onChange={setStart}
+          required
+        />
         <DatePicker
           label="End date"
           value={end}
@@ -222,7 +232,8 @@ export default function BulkEventForm({
       {rangeDays.length > 0 && (
         <div>
           <label className="block text-sm font-medium text-zinc-300 mb-2">
-            Days <span className="text-zinc-600">— uncheck travel or off days</span>
+            Days{" "}
+            <span className="text-zinc-600">— uncheck travel or off days</span>
           </label>
           <div className="flex flex-wrap gap-1.5">
             {rangeDays.map((day) => {
@@ -259,7 +270,9 @@ export default function BulkEventForm({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-zinc-300 mb-1">State</label>
+          <label className="block text-sm font-medium text-zinc-300 mb-1">
+            State
+          </label>
           <input
             value={stateField}
             onChange={(e) => setStateField(e.target.value)}
@@ -270,7 +283,9 @@ export default function BulkEventForm({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-zinc-300 mb-1">Country</label>
+        <label className="block text-sm font-medium text-zinc-300 mb-1">
+          Country
+        </label>
         <input
           value={country}
           onChange={(e) => setCountry(e.target.value)}
@@ -283,15 +298,16 @@ export default function BulkEventForm({
           "Pick a date range to see what will be created."
         ) : (
           <>
-            Creates <span className="font-medium text-zinc-200">{selected.length}</span>{" "}
+            Creates{" "}
+            <span className="font-medium text-zinc-200">{selected.length}</span>{" "}
             {eventNoun(eventType)}
             {selected.length === 1 ? "" : "s"}:{" "}
             {selected
               .slice(0, 8)
               .map((d) => format(parseISO(d), "MMM d"))
               .join(", ")}
-            {selected.length > 8 ? `, +${selected.length - 8} more` : ""}. Venues are
-            left blank — fill them in on each event afterwards.
+            {selected.length > 8 ? `, +${selected.length - 8} more` : ""}.
+            Venues are left blank — fill them in on each event afterwards.
           </>
         )}
       </div>

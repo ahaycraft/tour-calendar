@@ -48,6 +48,7 @@ npm run dev
 Open [http://localhost:3000](http://localhost:3000).
 
 **Demo credentials** (after seeding):
+
 - Admin: `admin@band.com` / `password123`
 - Members: `guitarist@band.com` or `drummer@band.com` / `password123`
 

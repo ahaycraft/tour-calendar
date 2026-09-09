@@ -6,7 +6,7 @@ import {
   isReleaseStatus,
   releaseKindLabel,
   releaseStatusClass,
-  releaseStatusLabel,
+  releaseStatusLabel
 } from "@/lib/releases";
 
 describe("release guards", () => {
@@ -27,7 +27,9 @@ describe("release guards", () => {
 
 describe("release maps", () => {
   it("labels every kind", () => {
-    expect(Object.keys(releaseKindLabel).sort()).toEqual([...RELEASE_KINDS].sort());
+    expect(Object.keys(releaseKindLabel).sort()).toEqual(
+      [...RELEASE_KINDS].sort()
+    );
   });
 
   it("labels and classes every status", () => {

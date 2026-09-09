@@ -9,14 +9,14 @@ import {
   eventHref,
   eventTypeLabel,
   tourEditHref,
-  type EventTypeStr,
+  type EventTypeStr
 } from "@/lib/events";
 import { canManage, isBandMember } from "@/lib/band";
 
 const BLOCK_NOUN: Record<EventTypeStr, string> = {
   SHOW: "tour",
   RECORDING: "recording block",
-  PRACTICE: "practice block",
+  PRACTICE: "practice block"
 };
 
 interface Props {
@@ -38,7 +38,7 @@ export default async function EventEdit({ id, expected }: Props) {
   const releases = await prisma.release.findMany({
     where: { bandId: show.bandId },
     orderBy: { updatedAt: "desc" },
-    select: { id: true, title: true },
+    select: { id: true, title: true }
   });
 
   const values: EventFormValues = {
@@ -58,7 +58,7 @@ export default async function EventEdit({ id, expected }: Props) {
     venueAddress: show.venueAddress ?? "",
     venueLat: show.venueLat,
     venueLng: show.venueLng,
-    releaseId: show.releaseId ?? "",
+    releaseId: show.releaseId ?? ""
   };
 
   const heading =

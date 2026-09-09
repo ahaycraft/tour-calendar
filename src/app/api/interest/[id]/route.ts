@@ -8,7 +8,8 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   if (session.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
@@ -16,13 +17,16 @@ export async function PATCH(
   const { id } = await params;
   const body = await request.json().catch(() => ({}));
   if (typeof body.contacted !== "boolean") {
-    return NextResponse.json({ error: "contacted must be a boolean" }, { status: 400 });
+    return NextResponse.json(
+      { error: "contacted must be a boolean" },
+      { status: 400 }
+    );
   }
 
   try {
     const submission = await prisma.interestSubmission.update({
       where: { id },
-      data: { contactedAt: body.contacted ? new Date() : null },
+      data: { contactedAt: body.contacted ? new Date() : null }
     });
     return NextResponse.json(submission);
   } catch {

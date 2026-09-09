@@ -16,7 +16,7 @@ export default function BandSwitcher({
   bands,
   activeBandId,
   variant = "bar",
-  onNavigate,
+  onNavigate
 }: {
   bands: NavBand[];
   activeBandId: string;
@@ -35,7 +35,8 @@ export default function BandSwitcher({
   useEffect(() => {
     if (!open) return;
     function onDown(e: MouseEvent) {
-      if (rootRef.current && !rootRef.current.contains(e.target as Node)) setOpen(false);
+      if (rootRef.current && !rootRef.current.contains(e.target as Node))
+        setOpen(false);
     }
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") setOpen(false);
@@ -56,7 +57,7 @@ export default function BandSwitcher({
     await fetch("/api/active-band", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ bandId: id }),
+      body: JSON.stringify({ bandId: id })
     });
     setSwitching(false);
     router.refresh();
@@ -101,11 +102,15 @@ export default function BandSwitcher({
             >
               <Check
                 size={14}
-                className={b.id === activeBandId ? "text-blue-400" : "text-transparent"}
+                className={
+                  b.id === activeBandId ? "text-blue-400" : "text-transparent"
+                }
               />
               <span className="flex-1 truncate">{b.name}</span>
               {b.role !== "MEMBER" && (
-                <span className="text-[10px] text-zinc-500">{b.role.toLowerCase()}</span>
+                <span className="text-[10px] text-zinc-500">
+                  {b.role.toLowerCase()}
+                </span>
               )}
             </button>
           ))}

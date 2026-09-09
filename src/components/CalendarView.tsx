@@ -41,21 +41,21 @@ interface UnavailableDate {
 const statusColors: Record<string, string> = {
   CONFIRMED: "#4d7c63", // muted moss
   PENDING: "#5b6f99", // dusty denim
-  CANCELLED: "#a05a52", // faded brick
+  CANCELLED: "#a05a52" // faded brick
 };
 
 // Recording sessions render plum, except cancelled ones share the brick tone.
 const recordingColors: Record<string, string> = {
   CONFIRMED: "#63548a", // deep plum
   PENDING: "#836c92", // dusty mauve
-  CANCELLED: "#a05a52",
+  CANCELLED: "#a05a52"
 };
 
 // Practices render teal, again with the shared brick tone when cancelled.
 const practiceColors: Record<string, string> = {
   CONFIRMED: "#2f7d76", // deep teal
   PENDING: "#4f8a84", // dusty teal
-  CANCELLED: "#a05a52",
+  CANCELLED: "#a05a52"
 };
 
 function paletteFor(type: string): Record<string, string> {
@@ -74,13 +74,16 @@ const legend = [
   { label: "Cancelled", color: statusColors.CANCELLED },
   { label: "Recording session", color: recordingColors.PENDING },
   { label: "Practice", color: practiceColors.PENDING },
-  { label: "Member unavailable", color: UNAVAILABLE_COLOR },
+  { label: "Member unavailable", color: UNAVAILABLE_COLOR }
 ];
 
 // Merge freshly-fetched rows into existing state by id, so re-fetching an
 // overlapping range (e.g. the shared padding days between two adjacent
 // months) de-dupes instead of appending duplicates.
-function mergeById<T extends { id: string }>(existing: T[], incoming: T[]): T[] {
+function mergeById<T extends { id: string }>(
+  existing: T[],
+  incoming: T[]
+): T[] {
   const byId = new Map(existing.map((item) => [item.id, item]));
   for (const item of incoming) byId.set(item.id, item);
   return [...byId.values()];
@@ -89,7 +92,9 @@ function mergeById<T extends { id: string }>(existing: T[], incoming: T[]): T[] 
 export default function CalendarView({ userId }: { userId: string }) {
   const router = useRouter();
   const [shows, setShows] = useState<Show[]>([]);
-  const [unavailableDates, setUnavailableDates] = useState<UnavailableDate[]>([]);
+  const [unavailableDates, setUnavailableDates] = useState<UnavailableDate[]>(
+    []
+  );
   const [loading, setLoading] = useState(true);
   const [modalDate, setModalDate] = useState<string | null>(null);
   // Date ranges already fetched (`${from}_${to}` on the calendar's own visible
@@ -109,7 +114,7 @@ export default function CalendarView({ userId }: { userId: string }) {
 
     const [showsRes, unavailRes] = await Promise.all([
       fetch(`/api/shows?from=${from}&to=${to}`),
-      fetch(`/api/unavailability?from=${from}&to=${to}`),
+      fetch(`/api/unavailability?from=${from}&to=${to}`)
     ]);
     if (showsRes.ok) {
       const fetched: Show[] = await showsRes.json();
@@ -131,7 +136,9 @@ export default function CalendarView({ userId }: { userId: string }) {
 
   const showEvents: EventInput[] = shows.map((show) => {
     const myAvailability = show.availability.find((a) => a.userId === userId);
-    const availableCount = show.availability.filter((a) => a.status === "AVAILABLE").length;
+    const availableCount = show.availability.filter(
+      (a) => a.status === "AVAILABLE"
+    ).length;
     const palette = paletteFor(show.type);
 
     return {
@@ -142,7 +149,7 @@ export default function CalendarView({ userId }: { userId: string }) {
       date: show.date.split("T")[0],
       backgroundColor: palette[show.status],
       borderColor: palette[show.status],
-      extendedProps: { type: "show", show, myAvailability, availableCount },
+      extendedProps: { type: "show", show, myAvailability, availableCount }
     };
   });
 
@@ -158,7 +165,7 @@ export default function CalendarView({ userId }: { userId: string }) {
       display: "list-item",
       color: UNAVAILABLE_COLOR,
       classNames: ["fc-unavailable-note"],
-      extendedProps: { type: "unavailable" },
+      extendedProps: { type: "unavailable" }
     };
   });
 
@@ -202,9 +209,9 @@ export default function CalendarView({ userId }: { userId: string }) {
   // about *their* record; the full roster for the day is passed separately.
   const modalUnavailability =
     modalDate != null
-      ? unavailableDates.find(
+      ? (unavailableDates.find(
           (u) => u.date.split("T")[0] === modalDate && u.userId === userId
-        ) ?? null
+        ) ?? null)
       : null;
   const modalDayRoster =
     modalDate != null
@@ -213,7 +220,7 @@ export default function CalendarView({ userId }: { userId: string }) {
           .map((u) => ({
             name: u.userId === userId ? "You" : u.user.name,
             note: u.note,
-            isSelf: u.userId === userId,
+            isSelf: u.userId === userId
           }))
       : [];
 
@@ -224,7 +231,9 @@ export default function CalendarView({ userId }: { userId: string }) {
           <h1 className="text-2xl font-bold text-zinc-50">
             Calendar
             {loading && (
-              <span className="ml-2 text-sm font-normal text-zinc-500">Loading…</span>
+              <span className="ml-2 text-sm font-normal text-zinc-500">
+                Loading…
+              </span>
             )}
           </h1>
           <p className="text-sm text-zinc-500 mt-1">
@@ -277,7 +286,7 @@ export default function CalendarView({ userId }: { userId: string }) {
             headerToolbar={{
               left: "prev,next today",
               center: "title",
-              right: "dayGridMonth,dayGridWeek",
+              right: "dayGridMonth,dayGridWeek"
             }}
             height="auto"
             eventTimeFormat={{ hour: "numeric", meridiem: "short" }}

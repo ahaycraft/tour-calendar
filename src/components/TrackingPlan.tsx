@@ -30,7 +30,7 @@ export default function TrackingPlan({
   initialNotes,
   songs,
   instruments,
-  partSummary,
+  partSummary
 }: {
   releaseId: string;
   planId: string | null;
@@ -67,7 +67,7 @@ function StartPlan({ releaseId }: { releaseId: string }) {
     setBusy(true);
     setError("");
     const res = await fetch(`/api/releases/${releaseId}/recording`, {
-      method: "POST",
+      method: "POST"
     });
     if (!res.ok) {
       setBusy(false);
@@ -89,7 +89,11 @@ function StartPlan({ releaseId }: { releaseId: string }) {
         disabled={busy}
         className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-500 disabled:opacity-50 transition-colors text-sm"
       >
-        {busy ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
+        {busy ? (
+          <Loader2 size={16} className="animate-spin" />
+        ) : (
+          <Plus size={16} />
+        )}
         Start tracking plan
       </button>
       {error && <p className="mt-3 text-sm text-red-400">{error}</p>}
@@ -103,7 +107,7 @@ function ActivePlan({
   songs,
   initialInstruments,
   partSummary,
-  onChanged,
+  onChanged
 }: {
   releaseId: string;
   initialNotes: string;
@@ -112,7 +116,8 @@ function ActivePlan({
   partSummary: PartSummary[];
   onChanged: () => void;
 }) {
-  const [instruments, setInstruments] = useState<Instrument[]>(initialInstruments);
+  const [instruments, setInstruments] =
+    useState<Instrument[]>(initialInstruments);
   const [notes, setNotes] = useState(initialNotes);
   const [notesSave, setNotesSave] = useState<SaveState>("idle");
   const [error, setError] = useState("");
@@ -147,7 +152,7 @@ function ActivePlan({
       const res = await fetch(`/api/releases/${releaseId}/recording`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ notes: value }),
+        body: JSON.stringify({ notes: value })
       });
       setNotesSave(res.ok ? "saved" : "error");
     }, 800);
@@ -219,7 +224,9 @@ function ActivePlan({
                   </span>
                   <SongStatusBadge status={song.status} />
                   <span className="ml-auto shrink-0 text-xs text-zinc-500">
-                    {!c || c.total === 0 ? "no parts" : `${c.done}/${c.total} tracked`}
+                    {!c || c.total === 0
+                      ? "no parts"
+                      : `${c.done}/${c.total} tracked`}
                   </span>
                   <ChevronRight size={16} className="shrink-0 text-zinc-600" />
                 </Link>
@@ -243,7 +250,7 @@ function InstrumentManager({
   instruments,
   setInstruments,
   onError,
-  onChanged,
+  onChanged
 }: {
   instruments: Instrument[];
   setInstruments: React.Dispatch<React.SetStateAction<Instrument[]>>;
@@ -262,7 +269,7 @@ function InstrumentManager({
     const res = await fetch(`/api/bands/instruments`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name }),
+      body: JSON.stringify({ name })
     });
     setBusy(false);
     if (!res.ok) {
@@ -286,7 +293,7 @@ function InstrumentManager({
     const res = await fetch(`/api/bands/instruments/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: trimmed }),
+      body: JSON.stringify({ name: trimmed })
     });
     if (!res.ok) {
       const json = await res.json().catch(() => ({}));
@@ -297,7 +304,9 @@ function InstrumentManager({
   async function archive(id: string) {
     setConfirmingId(null);
     setInstruments((prev) => prev.filter((i) => i.id !== id));
-    const res = await fetch(`/api/bands/instruments/${id}`, { method: "DELETE" });
+    const res = await fetch(`/api/bands/instruments/${id}`, {
+      method: "DELETE"
+    });
     if (!res.ok) {
       onError("Couldn't remove that instrument");
       return;

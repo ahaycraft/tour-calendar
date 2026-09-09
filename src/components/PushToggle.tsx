@@ -23,7 +23,8 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
   return output;
 }
 
-type State = "loading" | "unsupported" | "ios-install" | "subscribed" | "unsubscribed";
+type State =
+  "loading" | "unsupported" | "ios-install" | "subscribed" | "unsubscribed";
 
 export default function PushToggle() {
   const [state, setState] = useState<State>("loading");
@@ -46,7 +47,8 @@ export default function PushToggle() {
         const isStandalone =
           window.matchMedia("(display-mode: standalone)").matches ||
           // iOS-only flag
-          (navigator as unknown as { standalone?: boolean }).standalone === true;
+          (navigator as unknown as { standalone?: boolean }).standalone ===
+            true;
         if (!cancelled) {
           setState(isIOS && !isStandalone ? "ios-install" : "unsupported");
         }
@@ -86,13 +88,13 @@ export default function PushToggle() {
       const reg = await navigator.serviceWorker.ready;
       const sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY as string),
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY as string)
       });
 
       const res = await fetch("/api/push/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(sub.toJSON()),
+        body: JSON.stringify(sub.toJSON())
       });
       if (!res.ok) throw new Error("save failed");
 
@@ -114,7 +116,7 @@ export default function PushToggle() {
         await fetch("/api/push/subscribe", {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ endpoint: sub.endpoint }),
+          body: JSON.stringify({ endpoint: sub.endpoint })
         });
         await sub.unsubscribe();
       }

@@ -8,7 +8,8 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string; inviteId: string }> }
 ) {
   const session = await auth();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id: bandId, inviteId } = await params;
   const role = bandRole(session, bandId);
@@ -16,7 +17,9 @@ export async function DELETE(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const invite = await prisma.bandInvite.findUnique({ where: { id: inviteId } });
+  const invite = await prisma.bandInvite.findUnique({
+    where: { id: inviteId }
+  });
   if (!invite || invite.bandId !== bandId) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }

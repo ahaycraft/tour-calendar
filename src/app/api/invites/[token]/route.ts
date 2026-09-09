@@ -9,7 +9,7 @@ export async function GET(
   const { token } = await params;
   const invite = await prisma.bandInvite.findUnique({
     where: { token },
-    include: { band: { select: { name: true } } },
+    include: { band: { select: { name: true } } }
   });
 
   if (!invite || invite.acceptedAt || invite.expiresAt < new Date()) {
@@ -20,6 +20,6 @@ export async function GET(
     valid: true,
     email: invite.email,
     role: invite.role,
-    bandName: invite.band.name,
+    bandName: invite.band.name
   });
 }

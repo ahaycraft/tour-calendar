@@ -13,25 +13,35 @@ const STATUSES = ["PENDING", "CONFIRMED", "CANCELLED"] as const;
 const BLOCK_LABEL: Record<string, string> = {
   SHOW: "tour",
   RECORDING: "recording block",
-  PRACTICE: "practice block",
+  PRACTICE: "practice block"
 };
 const blockLabel = (type: string) => BLOCK_LABEL[type] ?? "tour";
 
 export async function POST(request: NextRequest) {
   const session = await auth();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
     const { type, name, dates, city, state, country } = await request.json();
 
     if (type !== undefined && !isEventType(type)) {
-      return NextResponse.json({ error: "Invalid event type" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid event type" },
+        { status: 400 }
+      );
     }
     if (!name || typeof name !== "string" || !name.trim()) {
-      return NextResponse.json({ error: "A name is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "A name is required" },
+        { status: 400 }
+      );
     }
     if (!Array.isArray(dates) || dates.length === 0) {
-      return NextResponse.json({ error: "Pick at least one date" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Pick at least one date" },
+        { status: 400 }
+      );
     }
     if (dates.length > MAX_EVENTS) {
       return NextResponse.json(
@@ -39,8 +49,13 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    if (!dates.every((d: unknown) => typeof d === "string" && DATE_RE.test(d))) {
-      return NextResponse.json({ error: "Invalid date in range" }, { status: 400 });
+    if (
+      !dates.every((d: unknown) => typeof d === "string" && DATE_RE.test(d))
+    ) {
+      return NextResponse.json(
+        { error: "Invalid date in range" },
+        { status: 400 }
+      );
     }
 
     const bandId = await getActiveBandId(session);
@@ -67,9 +82,9 @@ export async function POST(request: NextRequest) {
         date: new Date(`${d}T00:00:00`),
         createdById: session.user.id,
         tourGroupId,
-        tourName: label,
+        tourName: label
       })),
-      select: { id: true },
+      select: { id: true }
     });
 
     // One summary push for the whole batch — a per-day notification would be a
@@ -79,7 +94,7 @@ export async function POST(request: NextRequest) {
       title: `New ${blockLabel(effectiveType)}: ${label}`,
       body: `${created.length} ${created.length === 1 ? "day" : "days"} added — tap to set your availability.`,
       url: "/calendar",
-      tag: `tour:${tourGroupId}`,
+      tag: `tour:${tourGroupId}`
     });
 
     return NextResponse.json(
@@ -87,7 +102,10 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch {
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
 
@@ -98,28 +116,32 @@ export async function POST(request: NextRequest) {
  */
 export async function PATCH(request: NextRequest) {
   const session = await auth();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
     const body = await request.json();
     const { tourGroupId, name, city, state, country, status, notes } = body;
 
     if (!tourGroupId || typeof tourGroupId !== "string") {
-      return NextResponse.json({ error: "tourGroupId is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "tourGroupId is required" },
+        { status: 400 }
+      );
     }
     if (status !== undefined && !STATUSES.includes(status)) {
       return NextResponse.json({ error: "Invalid status" }, { status: 400 });
     }
-    if (
-      name !== undefined &&
-      (typeof name !== "string" || !name.trim())
-    ) {
-      return NextResponse.json({ error: "A name is required" }, { status: 400 });
+    if (name !== undefined && (typeof name !== "string" || !name.trim())) {
+      return NextResponse.json(
+        { error: "A name is required" },
+        { status: 400 }
+      );
     }
 
     const events = await prisma.show.findMany({
       where: { tourGroupId },
-      orderBy: { date: "asc" },
+      orderBy: { date: "asc" }
     });
     if (events.length === 0) {
       return NextResponse.json({ error: "Tour not found" }, { status: 404 });
@@ -159,11 +181,7 @@ export async function PATCH(request: NextRequest) {
     if (country !== undefined && (country.trim() || "US") !== current.country) {
       shared.country = country.trim() || "US";
     }
-    if (
-      "city" in shared ||
-      "state" in shared ||
-      "country" in shared
-    ) {
+    if ("city" in shared || "state" in shared || "country" in shared) {
       changes.push("location updated");
     }
     if (status !== undefined && status !== current.status) {
@@ -176,7 +194,11 @@ export async function PATCH(request: NextRequest) {
     }
 
     if (changes.length === 0) {
-      return NextResponse.json({ count: events.length, tourGroupId, changed: false });
+      return NextResponse.json({
+        count: events.length,
+        tourGroupId,
+        changed: false
+      });
     }
 
     await prisma.$transaction([
@@ -189,13 +211,13 @@ export async function PATCH(request: NextRequest) {
         ? events.map((e, i) =>
             prisma.show.update({
               where: { id: e.id },
-              data: { title: `${label} — Day ${i + 1}`, tourName: label },
+              data: { title: `${label} — Day ${i + 1}`, tourName: label }
             })
           )
-        : []),
+        : [])
     ]);
 
-    const finalName = renamed ? label! : current.tourName ?? "tour";
+    const finalName = renamed ? label! : (current.tourName ?? "tour");
     const noun = blockLabel(current.type);
     const summary = `${changes.join(", ")}.`;
 
@@ -203,11 +225,18 @@ export async function PATCH(request: NextRequest) {
       title: `${noun[0].toUpperCase() + noun.slice(1)} updated: ${finalName}`,
       body: summary[0].toUpperCase() + summary.slice(1),
       url: "/calendar",
-      tag: `tour:${tourGroupId}`,
+      tag: `tour:${tourGroupId}`
     });
 
-    return NextResponse.json({ count: events.length, tourGroupId, changed: true });
+    return NextResponse.json({
+      count: events.length,
+      tourGroupId,
+      changed: true
+    });
   } catch {
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

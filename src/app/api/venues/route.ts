@@ -9,7 +9,8 @@ const cache = new Map<string, { at: number; results: VenueResult[] }>();
 
 export async function GET(request: NextRequest) {
   const session = await auth();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const q = (request.nextUrl.searchParams.get("q") || "").trim();
   if (q.length < 2) return NextResponse.json([]);
@@ -26,6 +27,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(results);
   } catch (err) {
     console.error("Venue search failed:", err);
-    return NextResponse.json({ error: "Venue search unavailable" }, { status: 502 });
+    return NextResponse.json(
+      { error: "Venue search unavailable" },
+      { status: 502 }
+    );
   }
 }

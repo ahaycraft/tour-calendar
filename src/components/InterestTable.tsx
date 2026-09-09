@@ -15,7 +15,7 @@ interface Submission {
 }
 
 export default function InterestTable({
-  initialSubmissions,
+  initialSubmissions
 }: {
   initialSubmissions: Submission[];
 }) {
@@ -26,7 +26,9 @@ export default function InterestTable({
     // Optimistic — flip immediately, roll back if the request fails.
     setSubmissions((prev) =>
       prev.map((s) =>
-        s.id === id ? { ...s, contactedAt: contacted ? new Date().toISOString() : null } : s
+        s.id === id
+          ? { ...s, contactedAt: contacted ? new Date().toISOString() : null }
+          : s
       )
     );
     setPending((prev) => new Set(prev).add(id));
@@ -34,7 +36,7 @@ export default function InterestTable({
     const res = await fetch(`/api/interest/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ contacted }),
+      body: JSON.stringify({ contacted })
     });
 
     setPending((prev) => {
@@ -46,7 +48,9 @@ export default function InterestTable({
     if (!res.ok) {
       setSubmissions((prev) =>
         prev.map((s) =>
-          s.id === id ? { ...s, contactedAt: contacted ? null : new Date().toISOString() } : s
+          s.id === id
+            ? { ...s, contactedAt: contacted ? null : new Date().toISOString() }
+            : s
         )
       );
     }
@@ -86,7 +90,10 @@ export default function InterestTable({
                   {s.firstName} {s.lastName}
                 </td>
                 <td className="px-4 py-3 text-zinc-300">
-                  <a href={`mailto:${s.email}`} className="hover:text-blue-400 hover:underline">
+                  <a
+                    href={`mailto:${s.email}`}
+                    className="hover:text-blue-400 hover:underline"
+                  >
                     {s.email}
                   </a>
                 </td>

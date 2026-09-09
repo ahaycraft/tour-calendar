@@ -10,16 +10,18 @@ export default async function AdminInterestPage() {
   if (!session || session.user.role !== "ADMIN") notFound();
 
   const submissions = await prisma.interestSubmission.findMany({
-    orderBy: { createdAt: "desc" },
+    orderBy: { createdAt: "desc" }
   });
 
   return (
     <div className="max-w-4xl">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-zinc-50">Interest submissions</h1>
+        <h1 className="text-2xl font-bold text-zinc-50">
+          Interest submissions
+        </h1>
         <p className="text-sm text-zinc-500 mt-1">
-          Waitlist signups from the public &ldquo;Express interest&rdquo; form. Check
-          a row off once you&apos;ve followed up with them.
+          Waitlist signups from the public &ldquo;Express interest&rdquo; form.
+          Check a row off once you&apos;ve followed up with them.
         </p>
       </div>
 
@@ -36,7 +38,7 @@ export default async function AdminInterestPage() {
             email: s.email,
             role: s.role,
             createdAt: s.createdAt.toISOString(),
-            contactedAt: s.contactedAt ? s.contactedAt.toISOString() : null,
+            contactedAt: s.contactedAt ? s.contactedAt.toISOString() : null
           }))}
         />
       )}

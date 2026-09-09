@@ -32,7 +32,7 @@ export default function BandSettings({
   myRole,
   myUserId,
   members,
-  pendingInvites,
+  pendingInvites
 }: {
   bandId: string;
   bandName: string;
@@ -60,7 +60,9 @@ export default function BandSettings({
   const [copied, setCopied] = useState<string | null>(null);
 
   const inviteUrl = (token: string) =>
-    typeof window === "undefined" ? "" : `${window.location.origin}/invite/${token}`;
+    typeof window === "undefined"
+      ? ""
+      : `${window.location.origin}/invite/${token}`;
 
   async function copyLink(token: string) {
     try {
@@ -80,11 +82,13 @@ export default function BandSettings({
     const res = await fetch(`/api/bands/${bandId}/invites`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: inviteEmail, role: inviteRole }),
+      body: JSON.stringify({ email: inviteEmail, role: inviteRole })
     });
     setInviteBusy(false);
     if (!res.ok) {
-      setError((await res.json().catch(() => ({}))).error || "Couldn't create invite");
+      setError(
+        (await res.json().catch(() => ({}))).error || "Couldn't create invite"
+      );
       return;
     }
     const { token } = await res.json();
@@ -96,7 +100,7 @@ export default function BandSettings({
   async function revokeInvite(inviteId: string) {
     setError("");
     const res = await fetch(`/api/bands/${bandId}/invites/${inviteId}`, {
-      method: "DELETE",
+      method: "DELETE"
     });
     if (!res.ok) {
       setError((await res.json().catch(() => ({}))).error || "Couldn't revoke");
@@ -113,7 +117,7 @@ export default function BandSettings({
     const res = await fetch(`/api/bands/${bandId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name }),
+      body: JSON.stringify({ name })
     });
     setBusy(false);
     if (!res.ok) {
@@ -130,10 +134,12 @@ export default function BandSettings({
     const res = await fetch(`/api/bands/${bandId}/members/${userId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ role }),
+      body: JSON.stringify({ role })
     });
     if (!res.ok) {
-      setError((await res.json().catch(() => ({}))).error || "Couldn't change role");
+      setError(
+        (await res.json().catch(() => ({}))).error || "Couldn't change role"
+      );
       return;
     }
     router.refresh();
@@ -142,10 +148,12 @@ export default function BandSettings({
   async function removeMember(userId: string) {
     setError("");
     const res = await fetch(`/api/bands/${bandId}/members/${userId}`, {
-      method: "DELETE",
+      method: "DELETE"
     });
     if (!res.ok) {
-      setError((await res.json().catch(() => ({}))).error || "Couldn't remove member");
+      setError(
+        (await res.json().catch(() => ({}))).error || "Couldn't remove member"
+      );
       return;
     }
     router.refresh();
@@ -155,7 +163,7 @@ export default function BandSettings({
     setError("");
     setBusy(true);
     const res = await fetch(`/api/bands/${bandId}/members/${myUserId}`, {
-      method: "DELETE",
+      method: "DELETE"
     });
     setBusy(false);
     setLeaving(false);
@@ -174,7 +182,9 @@ export default function BandSettings({
     setBusy(false);
     setDeleting(false);
     if (!res.ok) {
-      setError((await res.json().catch(() => ({}))).error || "Couldn't delete band");
+      setError(
+        (await res.json().catch(() => ({}))).error || "Couldn't delete band"
+      );
       return;
     }
     router.push("/calendar");
@@ -200,7 +210,13 @@ export default function BandSettings({
               disabled={busy || !name.trim() || name.trim() === bandName}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-500 disabled:opacity-50 transition-colors"
             >
-              {busy ? <Loader2 size={15} className="animate-spin" /> : nameSaved ? <Check size={15} /> : "Save"}
+              {busy ? (
+                <Loader2 size={15} className="animate-spin" />
+              ) : nameSaved ? (
+                <Check size={15} />
+              ) : (
+                "Save"
+              )}
             </button>
           </form>
         ) : (
@@ -212,7 +228,9 @@ export default function BandSettings({
       <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-6 mb-6">
         <h2 className="font-semibold text-zinc-100 mb-4">
           Members
-          <span className="text-sm font-normal text-zinc-500 ml-2">{members.length}</span>
+          <span className="text-sm font-normal text-zinc-500 ml-2">
+            {members.length}
+          </span>
         </h2>
         <ul className="divide-y divide-zinc-800">
           {members.map((m) => {
@@ -231,7 +249,9 @@ export default function BandSettings({
                 {isOwner && !isMe ? (
                   <select
                     value={m.role}
-                    onChange={(e) => changeRole(m.userId, e.target.value as Role)}
+                    onChange={(e) =>
+                      changeRole(m.userId, e.target.value as Role)
+                    }
                     className="px-2 py-1 bg-zinc-800 border border-zinc-700 rounded-md text-xs text-zinc-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="OWNER">Owner</option>
@@ -264,7 +284,8 @@ export default function BandSettings({
         <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-6 mb-6">
           <h2 className="font-semibold text-zinc-100 mb-1">Invite people</h2>
           <p className="text-xs text-zinc-500 mb-4">
-            Creates a link to send them. It works for 14 days and only for that email.
+            Creates a link to send them. It works for 14 days and only for that
+            email.
           </p>
 
           <form onSubmit={sendInvite} className="flex flex-wrap gap-2 mb-4">
@@ -277,7 +298,9 @@ export default function BandSettings({
             />
             <select
               value={inviteRole}
-              onChange={(e) => setInviteRole(e.target.value as "ADMIN" | "MEMBER")}
+              onChange={(e) =>
+                setInviteRole(e.target.value as "ADMIN" | "MEMBER")
+              }
               className={fieldClass}
             >
               <option value="MEMBER">Member</option>
@@ -288,7 +311,11 @@ export default function BandSettings({
               disabled={inviteBusy || !inviteEmail.trim()}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-500 disabled:opacity-50 transition-colors"
             >
-              {inviteBusy ? <Loader2 size={15} className="animate-spin" /> : "Create link"}
+              {inviteBusy ? (
+                <Loader2 size={15} className="animate-spin" />
+              ) : (
+                "Create link"
+              )}
             </button>
           </form>
 
@@ -297,7 +324,9 @@ export default function BandSettings({
               {pendingInvites.map((inv) => (
                 <li key={inv.id} className="flex items-center gap-3 py-3">
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm text-zinc-200 truncate">{inv.email}</p>
+                    <p className="text-sm text-zinc-200 truncate">
+                      {inv.email}
+                    </p>
                     <p className="text-xs text-zinc-500">
                       {inv.role.toLowerCase()} · expires{" "}
                       {format(new Date(inv.expiresAt), "MMM d, yyyy")}
@@ -308,7 +337,11 @@ export default function BandSettings({
                     onClick={() => copyLink(inv.token)}
                     className="inline-flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300"
                   >
-                    {copied === inv.token ? <Check size={13} /> : <Copy size={13} />}
+                    {copied === inv.token ? (
+                      <Check size={13} />
+                    ) : (
+                      <Copy size={13} />
+                    )}
                     {copied === inv.token ? "Copied" : "Copy link"}
                   </button>
                   <button
@@ -363,8 +396,9 @@ export default function BandSettings({
         title={`Delete ${bandName}?`}
         message={
           <>
-            This permanently deletes <span className="font-medium text-zinc-200">{bandName}</span>{" "}
-            and every show, recording, song, and release in it, for everyone. This
+            This permanently deletes{" "}
+            <span className="font-medium text-zinc-200">{bandName}</span> and
+            every show, recording, song, and release in it, for everyone. This
             can&apos;t be undone.
           </>
         }

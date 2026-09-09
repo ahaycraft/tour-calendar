@@ -15,8 +15,8 @@ export default function NewSongPage() {
 
       <h1 className="text-2xl font-bold text-zinc-50 mb-1">New Song</h1>
       <p className="text-sm text-zinc-500 mb-6">
-        Just a title to start — add lyrics, key, a demo link, and the rest on the
-        next screen.
+        Just a title to start — add lyrics, key, a demo link, and the rest on
+        the next screen.
       </p>
 
       <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-6">

@@ -16,9 +16,9 @@ export default async function SongsPage() {
       createdBy: { select: { name: true } },
       _count: { select: { comments: true } },
       tracks: {
-        include: { release: { select: { id: true, title: true } } },
-      },
-    },
+        include: { release: { select: { id: true, title: true } } }
+      }
+    }
   });
 
   return (
@@ -37,7 +37,8 @@ export default async function SongsPage() {
         <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-10 text-center">
           <Music size={28} className="mx-auto text-zinc-600 mb-3" />
           <p className="text-zinc-400 text-sm">
-            No songs yet. Start one to capture lyrics, a demo link, and feedback.
+            No songs yet. Start one to capture lyrics, a demo link, and
+            feedback.
           </p>
         </div>
       ) : (
@@ -53,8 +54,8 @@ export default async function SongsPage() {
             commentCount: song._count.comments,
             canDelete: canManage(session!, bandId, song.createdById),
             tracks: song.tracks.map((t) => ({
-              release: { id: t.release.id, title: t.release.title },
-            })),
+              release: { id: t.release.id, title: t.release.title }
+            }))
           }))}
         />
       )}

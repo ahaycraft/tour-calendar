@@ -22,7 +22,7 @@ export default function SongComments({
   songId,
   currentUserId,
   isAdmin,
-  initialComments,
+  initialComments
 }: Props) {
   const [comments, setComments] = useState(initialComments);
   const [body, setBody] = useState("");
@@ -39,7 +39,7 @@ export default function SongComments({
     const res = await fetch(`/api/songs/${songId}/comments`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ body: text }),
+      body: JSON.stringify({ body: text })
     });
 
     setBusy(false);
@@ -60,7 +60,7 @@ export default function SongComments({
     const res = await fetch(`/api/songs/${songId}/comments`, {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ commentId: id }),
+      body: JSON.stringify({ commentId: id })
     });
     if (!res.ok) setComments(snapshot); // put it back
   }
@@ -69,22 +69,28 @@ export default function SongComments({
     <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-6">
       <h2 className="font-semibold text-zinc-100 mb-4">
         Feedback
-        <span className="text-sm font-normal text-zinc-500 ml-2">{comments.length}</span>
+        <span className="text-sm font-normal text-zinc-500 ml-2">
+          {comments.length}
+        </span>
       </h2>
 
       {comments.length === 0 ? (
         <p className="text-sm text-zinc-500 mb-4">
-          No notes yet. Leave one so there&apos;s a record of what worked and what
-          didn&apos;t.
+          No notes yet. Leave one so there&apos;s a record of what worked and
+          what didn&apos;t.
         </p>
       ) : (
         <ul className="space-y-4 mb-5">
           {comments.map((c) => (
             <li key={c.id} className="group">
               <div className="flex items-baseline gap-2">
-                <span className="text-sm font-medium text-zinc-200">{c.user.name}</span>
+                <span className="text-sm font-medium text-zinc-200">
+                  {c.user.name}
+                </span>
                 <span className="text-xs text-zinc-600">
-                  {formatDistanceToNow(new Date(c.createdAt), { addSuffix: true })}
+                  {formatDistanceToNow(new Date(c.createdAt), {
+                    addSuffix: true
+                  })}
                 </span>
                 {(isAdmin || c.user.id === currentUserId) && (
                   <button
@@ -97,7 +103,9 @@ export default function SongComments({
                   </button>
                 )}
               </div>
-              <p className="text-sm text-zinc-300 whitespace-pre-wrap mt-0.5">{c.body}</p>
+              <p className="text-sm text-zinc-300 whitespace-pre-wrap mt-0.5">
+                {c.body}
+              </p>
             </li>
           ))}
         </ul>

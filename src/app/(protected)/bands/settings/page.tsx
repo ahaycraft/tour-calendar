@@ -14,13 +14,13 @@ export default async function BandSettingsPage() {
     include: {
       memberships: {
         orderBy: [{ role: "asc" }, { user: { name: "asc" } }],
-        include: { user: { select: { id: true, name: true, email: true } } },
+        include: { user: { select: { id: true, name: true, email: true } } }
       },
       invites: {
         where: { acceptedAt: null, expiresAt: { gt: new Date() } },
-        orderBy: { createdAt: "desc" },
-      },
-    },
+        orderBy: { createdAt: "desc" }
+      }
+    }
   });
   if (!band) redirect("/bands/new");
 
@@ -34,14 +34,14 @@ export default async function BandSettingsPage() {
         userId: m.user.id,
         name: m.user.name,
         email: m.user.email,
-        role: m.role,
+        role: m.role
       }))}
       pendingInvites={band.invites.map((i) => ({
         id: i.id,
         email: i.email,
         role: i.role as "ADMIN" | "MEMBER",
         token: i.token,
-        expiresAt: i.expiresAt.toISOString(),
+        expiresAt: i.expiresAt.toISOString()
       }))}
     />
   );

@@ -20,9 +20,9 @@ export function makeSession(
         id: b.id,
         name: b.id,
         slug: b.id,
-        role: b.role,
-      })),
-    },
+        role: b.role
+      }))
+    }
   } as unknown as Session;
 }
 
@@ -57,7 +57,7 @@ export function makeShow(overrides: Partial<FakeShow> = {}): FakeShow {
     state: null,
     country: "US",
     notes: null,
-    ...overrides,
+    ...overrides
   };
 }
 

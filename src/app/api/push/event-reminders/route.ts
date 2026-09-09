@@ -29,7 +29,7 @@ async function handle(request: NextRequest) {
     where: {
       status: { not: "CANCELLED" },
       date: { gte: tomorrowStart, lt: dayAfterStart },
-      remindedAt: null,
+      remindedAt: null
     },
     select: {
       id: true,
@@ -37,8 +37,8 @@ async function handle(request: NextRequest) {
       title: true,
       venue: true,
       city: true,
-      bandId: true,
-    },
+      bandId: true
+    }
   });
 
   let notified = 0;
@@ -46,7 +46,7 @@ async function handle(request: NextRequest) {
   for (const event of events) {
     const members = await prisma.bandMembership.findMany({
       where: { bandId: event.bandId },
-      select: { userId: true },
+      select: { userId: true }
     });
     const userIds = members.map((m) => m.userId);
 
@@ -57,14 +57,14 @@ async function handle(request: NextRequest) {
         title: `${eventTypeLabel(event.type)} tomorrow: ${event.title}`,
         body: location || "Details are in Woodshedd.",
         url: eventHref(event.type, event.id),
-        tag: `event-reminder-${event.id}`,
+        tag: `event-reminder-${event.id}`
       });
       notified++;
     }
 
     await prisma.show.update({
       where: { id: event.id },
-      data: { remindedAt: new Date() },
+      data: { remindedAt: new Date() }
     });
   }
 

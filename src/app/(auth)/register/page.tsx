@@ -14,9 +14,12 @@ function RegisterForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [invite, setInvite] = useState<
-    { valid: boolean; email?: string; bandName?: string; role?: string } | null
-  >(null);
+  const [invite, setInvite] = useState<{
+    valid: boolean;
+    email?: string;
+    bandName?: string;
+    role?: string;
+  } | null>(null);
 
   useEffect(() => {
     if (!inviteToken) return;
@@ -44,8 +47,8 @@ function RegisterForm() {
         email,
         password,
         bandName: joining ? undefined : bandName,
-        inviteToken: joining ? inviteToken : undefined,
-      }),
+        inviteToken: joining ? inviteToken : undefined
+      })
     });
 
     setLoading(false);
@@ -74,14 +77,16 @@ function RegisterForm() {
 
           {inviteToken && invite && !invite.valid && (
             <p className="text-sm text-amber-400 mb-4">
-              That invite link is invalid or expired — you can still create your own band
-              below.
+              That invite link is invalid or expired — you can still create your
+              own band below.
             </p>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-1">Name</label>
+              <label className="block text-sm font-medium text-zinc-300 mb-1">
+                Name
+              </label>
               <input
                 type="text"
                 value={name}
@@ -109,7 +114,9 @@ function RegisterForm() {
             )}
 
             <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-1">Email</label>
+              <label className="block text-sm font-medium text-zinc-300 mb-1">
+                Email
+              </label>
               <input
                 type="email"
                 value={email}

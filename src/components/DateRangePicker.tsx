@@ -13,7 +13,7 @@ import {
   isWithinInterval,
   startOfMonth,
   startOfWeek,
-  subMonths,
+  subMonths
 } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { calendarDate, cn } from "@/lib/utils";
@@ -43,7 +43,7 @@ export default function DateRangePicker({
   label,
   value,
   onChange,
-  required,
+  required
 }: {
   label: string;
   value: DateRange;
@@ -185,11 +185,15 @@ export default function DateRangePicker({
                       "aspect-square text-sm flex items-center justify-center transition-colors",
                       inMonth ? "text-zinc-300" : "text-zinc-700",
                       inRange && "bg-blue-600/20",
-                      !inRange && !isStart && !isEnd && "hover:bg-zinc-800 rounded-lg",
+                      !inRange &&
+                        !isStart &&
+                        !isEnd &&
+                        "hover:bg-zinc-800 rounded-lg",
                       isStart && "rounded-l-lg",
                       isEnd && "rounded-r-lg",
                       isStart && !endDate && "rounded-lg",
-                      (isStart || isEnd) && "bg-blue-600 text-white font-semibold"
+                      (isStart || isEnd) &&
+                        "bg-blue-600 text-white font-semibold"
                     )}
                   >
                     {format(day, "d")}

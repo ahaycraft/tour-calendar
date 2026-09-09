@@ -23,7 +23,7 @@ export default function NewReleaseForm() {
     const res = await fetch("/api/releases", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title, kind }),
+      body: JSON.stringify({ title, kind })
     });
 
     setLoading(false);
@@ -55,7 +55,9 @@ export default function NewReleaseForm() {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-zinc-300 mb-1">Kind</label>
+        <label className="block text-sm font-medium text-zinc-300 mb-1">
+          Kind
+        </label>
         <select
           value={kind}
           onChange={(e) => setKind(e.target.value)}

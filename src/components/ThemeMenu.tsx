@@ -5,7 +5,7 @@ import {
   useEffect,
   useLayoutEffect,
   useRef,
-  useState,
+  useState
 } from "react";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
@@ -67,14 +67,14 @@ export function useTheme(initial: Theme): [Theme, (next: Theme) => void] {
 
 const OPTIONS: { value: Theme; label: string; icon: typeof Sun }[] = [
   { value: "light", label: "Light", icon: Sun },
-  { value: "dark", label: "Dark", icon: Moon },
+  { value: "dark", label: "Dark", icon: Moon }
 ];
 
 /** Segmented Light / Dark control. Used in the desktop menu and mobile drawer. */
 export function ThemeToggle({
   className,
   theme,
-  onChange,
+  onChange
 }: {
   className?: string;
   theme: Theme;
@@ -123,7 +123,7 @@ export function ThemeMenu({
   roleChip,
   theme,
   onThemeChange,
-  isAdmin,
+  isAdmin
 }: {
   user: { name: string };
   roleChip: string | null;
@@ -184,7 +184,11 @@ export function ThemeMenu({
             Appearance
           </div>
           <div className="px-3 pb-1.5">
-            <ThemeToggle className="w-full" theme={theme} onChange={onThemeChange} />
+            <ThemeToggle
+              className="w-full"
+              theme={theme}
+              onChange={onThemeChange}
+            />
           </div>
           {isAdmin && (
             <>

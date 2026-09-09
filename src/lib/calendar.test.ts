@@ -3,7 +3,7 @@ import {
   buildCalendar,
   googleCalendarUrl,
   icsFilename,
-  type CalendarEventInput,
+  type CalendarEventInput
 } from "@/lib/calendar";
 
 const APP_URL = "https://woodshedd.test";
@@ -26,7 +26,7 @@ function makeEvent(
     country: "US",
     venueAddress: null,
     notes: null,
-    ...overrides,
+    ...overrides
   };
 }
 
@@ -100,8 +100,8 @@ describe("buildCalendar — timing", () => {
       [
         makeEvent({
           loadInTime: new Date("2026-06-15T19:00:00Z"),
-          setTime: new Date("2026-06-15T22:30:00Z"),
-        }),
+          setTime: new Date("2026-06-15T22:30:00Z")
+        })
       ],
       APP_URL
     );
@@ -160,8 +160,8 @@ describe("buildCalendar — location", () => {
         makeEvent({
           venue: "The Roxy",
           venueAddress: "9009 Sunset Blvd, West Hollywood, CA",
-          city: "West Hollywood",
-        }),
+          city: "West Hollywood"
+        })
       ],
       APP_URL
     );
@@ -177,8 +177,8 @@ describe("buildCalendar — location", () => {
           venue: "The Roxy",
           city: "West Hollywood",
           state: "CA",
-          country: "US",
-        }),
+          country: "US"
+        })
       ],
       APP_URL
     );
@@ -206,13 +206,16 @@ describe("buildCalendar — identity and description per type", () => {
   it.each([
     ["SHOW", "/shows", "Show"],
     ["RECORDING", "/recordings", "Recording session"],
-    ["PRACTICE", "/practices", "Practice"],
-  ] as const)("%s description names the type and links the route", (type, base, noun) => {
-    const ics = buildCalendar([makeEvent({ id: "x1", type })], APP_URL);
-    const desc = line(ics, "DESCRIPTION")!;
-    expect(desc).toContain(`${noun} in Woodshedd:`);
-    expect(desc).toContain(`${APP_URL}${base}/x1`);
-  });
+    ["PRACTICE", "/practices", "Practice"]
+  ] as const)(
+    "%s description names the type and links the route",
+    (type, base, noun) => {
+      const ics = buildCalendar([makeEvent({ id: "x1", type })], APP_URL);
+      const desc = line(ics, "DESCRIPTION")!;
+      expect(desc).toContain(`${noun} in Woodshedd:`);
+      expect(desc).toContain(`${APP_URL}${base}/x1`);
+    }
+  );
 
   it("prepends notes (trimmed) before the standard description block", () => {
     const ics = buildCalendar(
@@ -220,16 +223,15 @@ describe("buildCalendar — identity and description per type", () => {
       APP_URL
     );
     const desc = line(ics, "DESCRIPTION")!;
-    expect(desc.startsWith("DESCRIPTION:Park in the back lot.\\n\\n")).toBe(true);
+    expect(desc.startsWith("DESCRIPTION:Park in the back lot.\\n\\n")).toBe(
+      true
+    );
   });
 });
 
 describe("buildCalendar — text escaping and folding", () => {
   it("escapes backslash, comma and semicolon in SUMMARY", () => {
-    const ics = buildCalendar(
-      [makeEvent({ title: "A; B, C \\ D" })],
-      APP_URL
-    );
+    const ics = buildCalendar([makeEvent({ title: "A; B, C \\ D" })], APP_URL);
     expect(line(ics, "SUMMARY")).toBe("SUMMARY:A\\; B\\, C \\\\ D");
   });
 
@@ -276,7 +278,7 @@ describe("googleCalendarUrl", () => {
       googleCalendarUrl(
         makeEvent({
           loadInTime: new Date("2026-06-15T19:00:00Z"),
-          setTime: new Date("2026-06-15T22:00:00Z"),
+          setTime: new Date("2026-06-15T22:00:00Z")
         }),
         APP_URL
       )
@@ -289,7 +291,11 @@ describe("googleCalendarUrl", () => {
   it("carries the status prefix in text and the venue in location", () => {
     const url = new URL(
       googleCalendarUrl(
-        makeEvent({ status: "PENDING", venue: "The Roxy", city: "West Hollywood" }),
+        makeEvent({
+          status: "PENDING",
+          venue: "The Roxy",
+          city: "West Hollywood"
+        }),
         APP_URL
       )
     );

@@ -10,7 +10,7 @@ const MAX_TEXT = 20_000;
 async function guard(songId: string, sectionId: string, session: Session) {
   const section = await prisma.songSection.findUnique({
     where: { id: sectionId },
-    select: { songId: true, song: { select: { bandId: true } } },
+    select: { songId: true, song: { select: { bandId: true } } }
   });
   if (
     !section ||
@@ -27,7 +27,8 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string; sectionId: string }> }
 ) {
   const session = await auth();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id: songId, sectionId } = await params;
   if (!(await guard(songId, sectionId, session))) {
@@ -39,25 +40,37 @@ export async function PATCH(
     const { name, notes, lyrics } = body;
 
     if (name !== undefined && (typeof name !== "string" || !name.trim())) {
-      return NextResponse.json({ error: "Name can't be empty" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Name can't be empty" },
+        { status: 400 }
+      );
     }
 
     const updated = await prisma.songSection.update({
       where: { id: sectionId },
       data: {
-        ...(name !== undefined && { name: name.trim().slice(0, MAX_SECTION_NAME) }),
+        ...(name !== undefined && {
+          name: name.trim().slice(0, MAX_SECTION_NAME)
+        }),
         ...(notes !== undefined && {
-          notes: typeof notes === "string" && notes ? notes.slice(0, MAX_TEXT) : null,
+          notes:
+            typeof notes === "string" && notes ? notes.slice(0, MAX_TEXT) : null
         }),
         ...(lyrics !== undefined && {
-          lyrics: typeof lyrics === "string" && lyrics ? lyrics.slice(0, MAX_TEXT) : null,
-        }),
-      },
+          lyrics:
+            typeof lyrics === "string" && lyrics
+              ? lyrics.slice(0, MAX_TEXT)
+              : null
+        })
+      }
     });
 
     return NextResponse.json(updated);
   } catch {
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
 
@@ -66,7 +79,8 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string; sectionId: string }> }
 ) {
   const session = await auth();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id: songId, sectionId } = await params;
   if (!(await guard(songId, sectionId, session))) {
@@ -75,12 +89,12 @@ export async function DELETE(
 
   const { position } = await prisma.songSection.delete({
     where: { id: sectionId },
-    select: { position: true },
+    select: { position: true }
   });
   // Close the gap so positions stay contiguous.
   await prisma.songSection.updateMany({
     where: { songId, position: { gt: position } },
-    data: { position: { decrement: 1 } },
+    data: { position: { decrement: 1 } }
   });
 
   return NextResponse.json({ success: true });

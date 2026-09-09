@@ -8,7 +8,7 @@ import {
   buildCalendar,
   calendarEventSelect,
   icsFilename,
-  resolveAppUrl,
+  resolveAppUrl
 } from "@/lib/calendar";
 import { isEventType, eventBasePath } from "@/lib/events";
 
@@ -51,7 +51,10 @@ export async function GET(request: NextRequest) {
       .filter(Boolean)
       .slice(0, MAX_EVENTS);
     if (ids.length === 0) {
-      return NextResponse.json({ error: "No events specified" }, { status: 400 });
+      return NextResponse.json(
+        { error: "No events specified" },
+        { status: 400 }
+      );
     }
     where.id = { in: ids };
   } else if (releaseId) {
@@ -75,7 +78,7 @@ export async function GET(request: NextRequest) {
     where,
     orderBy: { date: "asc" },
     take: MAX_EVENTS,
-    select: { ...calendarEventSelect },
+    select: { ...calendarEventSelect }
   });
 
   if (shows.length === 0) {
@@ -89,7 +92,7 @@ export async function GET(request: NextRequest) {
     headers: {
       "Content-Type": "text/calendar; charset=utf-8",
       "Content-Disposition": `attachment; filename="${icsFilename(name)}"`,
-      "Cache-Control": "private, no-cache",
-    },
+      "Cache-Control": "private, no-cache"
+    }
   });
 }

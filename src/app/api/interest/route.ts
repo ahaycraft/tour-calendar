@@ -8,21 +8,29 @@ import { isEmail, normalizeEmail } from "@/lib/invites";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const firstName = typeof body.firstName === "string" ? body.firstName.trim() : "";
-    const lastName = typeof body.lastName === "string" ? body.lastName.trim() : "";
+    const firstName =
+      typeof body.firstName === "string" ? body.firstName.trim() : "";
+    const lastName =
+      typeof body.lastName === "string" ? body.lastName.trim() : "";
     const email = normalizeEmail(body.email);
     const role = body.role;
 
     if (!firstName || !lastName || !isEmail(email) || !isInterestRole(role)) {
-      return NextResponse.json({ error: "Missing or invalid fields" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing or invalid fields" },
+        { status: 400 }
+      );
     }
 
     await prisma.interestSubmission.create({
-      data: { firstName, lastName, email, role },
+      data: { firstName, lastName, email, role }
     });
 
     return NextResponse.json({ success: true }, { status: 201 });
   } catch {
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

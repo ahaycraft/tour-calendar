@@ -12,7 +12,7 @@ export default async function NewRecordingPage() {
     ? await prisma.release.findMany({
         where: { bandId },
         orderBy: { updatedAt: "desc" },
-        select: { id: true, title: true },
+        select: { id: true, title: true }
       })
     : [];
 
@@ -26,11 +26,16 @@ export default async function NewRecordingPage() {
         Back to Recordings
       </Link>
 
-      <h1 className="text-2xl font-bold text-zinc-50 mb-6">Add Recording Session</h1>
+      <h1 className="text-2xl font-bold text-zinc-50 mb-6">
+        Add Recording Session
+      </h1>
 
       <p className="text-sm text-zinc-500 -mt-4 mb-6">
         Booking a block of sessions?{" "}
-        <Link href="/recordings/bulk" className="text-blue-400 hover:text-blue-300">
+        <Link
+          href="/recordings/bulk"
+          className="text-blue-400 hover:text-blue-300"
+        >
           Add a date range instead →
         </Link>
       </p>

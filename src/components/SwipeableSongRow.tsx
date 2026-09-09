@@ -28,7 +28,7 @@ export default function SwipeableSongRow({
   song,
   canDelete,
   awaitingConfirm,
-  onDeleteRequest,
+  onDeleteRequest
 }: {
   song: Song;
   canDelete: boolean;
@@ -66,14 +66,15 @@ export default function SwipeableSongRow({
       const base = revealedRef.current ? -REVEAL_PX : 0;
       const next = Math.min(0, Math.max(-REVEAL_PX, base + e.deltaX));
       const open =
-        next < -REVEAL_PX / 2 || (e.dir === "Left" && e.velocity > 0.5 && next < 0);
+        next < -REVEAL_PX / 2 ||
+        (e.dir === "Left" && e.velocity > 0.5 && next < 0);
       revealedRef.current = open;
       setAnimating(true);
       setOffset(open ? -REVEAL_PX : 0);
     },
     trackMouse: false,
     // See SwipeableShowRow for why preventScrollOnSwipe is left off.
-    delta: 15,
+    delta: 15
   });
 
   const rowInner = (
@@ -150,7 +151,7 @@ export default function SwipeableSongRow({
         className="block border border-zinc-800 rounded-xl"
         style={{
           transform: `translateX(${offset}px)`,
-          transition: animating ? "transform 200ms ease-out" : "none",
+          transition: animating ? "transform 200ms ease-out" : "none"
         }}
       >
         {rowInner}

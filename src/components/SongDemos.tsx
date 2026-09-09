@@ -23,7 +23,7 @@ export default function SongDemos({
   songId,
   currentUserId,
   isAdmin,
-  initialDemos,
+  initialDemos
 }: {
   songId: string;
   currentUserId: string;
@@ -52,7 +52,7 @@ export default function SongDemos({
     const res = await fetch(`/api/songs/${songId}/demos`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url: link, label: label.trim() || undefined }),
+      body: JSON.stringify({ url: link, label: label.trim() || undefined })
     });
 
     setAdding(false);
@@ -77,7 +77,7 @@ export default function SongDemos({
     if (selectedId === id) setSelectedId(next[0]?.id ?? null);
 
     const res = await fetch(`/api/songs/${songId}/demos/${id}`, {
-      method: "DELETE",
+      method: "DELETE"
     });
     if (!res.ok) {
       setDemos(snapshot);
@@ -129,7 +129,9 @@ export default function SongDemos({
                   </span>
                   <span className="block truncate text-[11px] text-zinc-600">
                     {d.createdBy.name} ·{" "}
-                    {formatDistanceToNow(new Date(d.createdAt), { addSuffix: true })}
+                    {formatDistanceToNow(new Date(d.createdAt), {
+                      addSuffix: true
+                    })}
                   </span>
                 </button>
                 {active && (
@@ -171,7 +173,11 @@ export default function SongDemos({
           disabled={adding || !url.trim()}
           className="shrink-0 inline-flex items-center gap-1.5 px-3 py-2 text-sm rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
-          {adding ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
+          {adding ? (
+            <Loader2 size={14} className="animate-spin" />
+          ) : (
+            <Plus size={14} />
+          )}
           Add
         </button>
       </form>

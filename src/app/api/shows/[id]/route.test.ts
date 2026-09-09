@@ -5,7 +5,7 @@ vi.mock("@/auth", () => ({ auth: vi.fn() }));
 vi.mock("@/lib/prisma", () => {
   const prisma: Record<string, unknown> = {
     show: { findUnique: vi.fn(), update: vi.fn(), delete: vi.fn() },
-    showAvailability: { deleteMany: vi.fn() },
+    showAvailability: { deleteMany: vi.fn() }
   };
   // The [id] route always calls $transaction with a callback; run it against
   // the same mock so tx.show.update === prisma.show.update for assertions.
@@ -18,7 +18,7 @@ vi.mock("@/lib/prisma", () => {
 });
 vi.mock("@/lib/band", () => ({
   canManage: vi.fn(),
-  isBandMember: vi.fn(),
+  isBandMember: vi.fn()
 }));
 vi.mock("@/lib/push", () => ({ notifyBandMembers: vi.fn() }));
 
@@ -104,15 +104,20 @@ describe("PATCH /api/shows/[id] — date change", () => {
     const body = await res.json();
 
     expect(deleteManyMock).toHaveBeenCalledWith({ where: { showId: "show1" } });
-    expect(updateMock.mock.calls[0][0].data).toMatchObject({ status: "PENDING" });
-    expect(body).toMatchObject({ availabilityReset: true, statusReverted: true });
+    expect(updateMock.mock.calls[0][0].data).toMatchObject({
+      status: "PENDING"
+    });
+    expect(body).toMatchObject({
+      availabilityReset: true,
+      statusReverted: true
+    });
 
     expect(notifyMock).toHaveBeenCalledOnce();
     expect(notifyMock).toHaveBeenCalledWith("band1", "u1", {
       title: `The Roxy moved to ${format(new Date(newDate), "EEE, MMM d")}`,
       body: "Your availability was reset — tap to respond again.",
       url: "/shows/show1",
-      tag: "show:show1",
+      tag: "show:show1"
     });
   });
 
@@ -136,7 +141,7 @@ describe("PATCH /api/shows/[id] — status → pending", () => {
       "u1",
       expect.objectContaining({
         title: "The Roxy set to pending",
-        tag: "show:show1",
+        tag: "show:show1"
       })
     );
     expect(await res.json()).toMatchObject({ statusReverted: false });
@@ -184,7 +189,7 @@ describe("DELETE /api/shows/[id]", () => {
       title: "Show deleted: The Roxy",
       body: `${format(new Date("2026-06-20T00:00:00Z"), "EEE, MMM d")} is off the calendar.`,
       url: "/calendar",
-      tag: "show-deleted:show1",
+      tag: "show-deleted:show1"
     });
   });
 
