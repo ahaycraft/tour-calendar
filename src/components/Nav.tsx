@@ -49,10 +49,13 @@ const SECONDARY_LINKS = [
   { href: "/my-availability", label: "My Availability", icon: UserX }
 ];
 
-// Every /new route in the app — flat, since five items is small enough that
-// grouping Show/Practice/Recording under an extra "Event" step would just
-// cost a tap without reducing the choice.
+// Flat, since these are few enough that grouping Show/Practice/Recording
+// under an extra "Event" step would just cost a tap without reducing the
+// choice. Availability leads since it's the most-used action; unlike the
+// others it has no dedicated /new route — the "Block Date(s)" form is
+// always the first thing on /my-availability, so linking there is enough.
 const ADD_LINKS = [
+  { href: "/my-availability", label: "Add Availability", icon: UserX },
   { href: "/shows/new", label: "Add Show", icon: List },
   { href: "/practices/new", label: "Add Practice", icon: Users },
   { href: "/recordings/new", label: "Add Recording", icon: Mic },
@@ -196,7 +199,7 @@ function AddMenu() {
             onClick={() => setOpen(false)}
             style={{ transitionDelay: open ? `${i * 40}ms` : "0ms" }}
             className={cn(
-              "flex items-center gap-2 whitespace-nowrap rounded-full border border-zinc-800 bg-zinc-900 py-2 pl-3 pr-4 text-sm font-medium text-zinc-200 shadow-lg transition-all ease-out motion-reduce:transition-none hover:bg-zinc-800",
+              "flex items-center gap-2 whitespace-nowrap rounded-full border border-zinc-700 bg-zinc-800 py-2 pl-3 pr-4 text-sm font-medium text-zinc-100 shadow-xl transition-all ease-out motion-reduce:transition-none hover:bg-zinc-700",
               open
                 ? "translate-y-0 opacity-100 duration-200"
                 : "pointer-events-none -translate-y-2 opacity-0 duration-100"

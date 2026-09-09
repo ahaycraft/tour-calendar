@@ -32,7 +32,7 @@ export default function BottomNav({
   return (
     <nav
       aria-label="Primary"
-      className="lg:hidden fixed left-1/2 -translate-x-1/2 z-40 bottom-[calc(1rem+env(safe-area-inset-bottom))] flex items-center gap-1 p-2 rounded-full bg-zinc-900/80 backdrop-blur-xl border border-zinc-800 shadow-xl"
+      className="lg:hidden fixed left-4 right-4 z-40 mx-auto max-w-md bottom-[calc(1rem+env(safe-area-inset-bottom))] flex items-center justify-between p-2 rounded-full bg-zinc-900/80 backdrop-blur-xl border border-zinc-800 shadow-xl"
     >
       {ITEMS.map(({ href, label, icon: Icon, activeMatch }) => {
         const active = (activeMatch ?? [href]).some((m) =>
