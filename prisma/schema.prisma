@@ -448,12 +448,16 @@ enum RecordingPartStatus {
 // self-serve registration), so this is how prospective users get in touch.
 // Visible only to global admins (User.role), at /admin/interest.
 model InterestSubmission {
-  id        String       @id @default(cuid())
-  firstName String
-  lastName  String
-  email     String
-  role      InterestRole
-  createdAt DateTime     @default(now())
+  id          String       @id @default(cuid())
+  firstName   String
+  lastName    String
+  email       String
+  role        InterestRole
+  createdAt   DateTime     @default(now())
+
+  // Set by an admin checking the "contacted" box at /admin/interest; null
+  // means no one has followed up yet.
+  contactedAt DateTime?
 
   @@index([createdAt])
 }
