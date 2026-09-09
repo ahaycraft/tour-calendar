@@ -110,9 +110,12 @@ export default async function EventDetail({ id, expected }: Props) {
       </Link>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] items-start">
-        <div className="space-y-6">
-          <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-6">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4 mb-4">
+        {/* One continuous card with internal dividers instead of three
+            separately bordered boxes — reads as one detail screen with
+            grouped sections rather than a stack of web-dashboard panels. */}
+        <div className="bg-zinc-900 rounded-2xl border border-zinc-800 divide-y divide-zinc-800">
+          <div className="p-6">
+            <div className="flex items-start justify-between gap-3 sm:gap-4 mb-4">
               <div className="min-w-0">
                 <div className="flex items-center gap-2 flex-wrap mb-1">
                   <h1 className="text-2xl font-bold text-zinc-50">
@@ -140,10 +143,11 @@ export default async function EventDetail({ id, expected }: Props) {
                 {isAdminOrCreator && (
                   <Link
                     href={`${eventHref(show.type, show.id)}/edit`}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100 font-medium transition-colors"
+                    aria-label="Edit"
+                    className="inline-flex h-9 w-9 items-center justify-center gap-1.5 rounded-full border border-zinc-700 text-sm font-medium text-zinc-300 transition-colors hover:bg-zinc-800 hover:text-zinc-100 sm:h-auto sm:w-auto sm:rounded-lg sm:px-3 sm:py-1.5"
                   >
                     <Pencil size={14} />
-                    Edit
+                    <span className="hidden sm:inline">Edit</span>
                   </Link>
                 )}
               </div>
@@ -234,7 +238,7 @@ export default async function EventDetail({ id, expected }: Props) {
           </div>
 
           {/* My Availability */}
-          <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-6">
+          <div className="p-6">
             <h2 className="font-semibold text-zinc-100 mb-3">
               My Availability
             </h2>
@@ -254,7 +258,7 @@ export default async function EventDetail({ id, expected }: Props) {
           </div>
 
           {/* Band Member Availability */}
-          <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-6">
+          <div className="p-6">
             <h2 className="font-semibold text-zinc-100 mb-4">
               Band Availability
               <span className="text-sm font-normal text-zinc-500 ml-2">
