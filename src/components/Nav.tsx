@@ -19,7 +19,7 @@ import {
   ShieldCheck,
   X
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, pathMatches } from "@/lib/utils";
 import BandSwitcher, { type NavBand } from "./BandSwitcher";
 import { ThemeMenu, ThemeToggle, useTheme, type Theme } from "./ThemeMenu";
 
@@ -47,9 +47,6 @@ const SECONDARY_LINKS = [
   { href: "/releases", label: "Releases", icon: Disc3 },
   { href: "/my-availability", label: "My Availability", icon: UserX }
 ];
-
-const pathMatches = (pathname: string, href: string) =>
-  pathname === href || pathname.startsWith(`${href}/`);
 
 /** Desktop-only "Events ▾" dropdown grouping the three event list routes. */
 function EventsMenu({ pathname }: { pathname: string }) {

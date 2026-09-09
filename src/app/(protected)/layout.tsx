@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getActiveBand, userBands } from "@/lib/band";
 import Nav from "@/components/Nav";
+import BottomNav from "@/components/BottomNav";
 
 export default async function ProtectedLayout({
   children
@@ -48,9 +49,10 @@ export default async function ProtectedLayout({
         needsResponseCount={needsResponseCount}
         theme={theme}
       />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-24 lg:pb-8">
         {children}
       </main>
+      <BottomNav needsResponseCount={needsResponseCount} />
     </div>
   );
 }

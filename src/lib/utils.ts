@@ -5,6 +5,11 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/** True if `pathname` is `href` or a route nested under it. */
+export function pathMatches(pathname: string, href: string) {
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
 /**
  * Calendar-only fields (Show.date, MemberUnavailability.date,
  * Release.targetDate, ...) are stored anchored to UTC midnight, with no

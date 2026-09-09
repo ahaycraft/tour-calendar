@@ -4,6 +4,7 @@ import { requireActiveBandId, withDeletePermission } from "@/lib/band";
 import Link from "next/link";
 import EventList from "@/components/EventList";
 import CalendarExportLink from "@/components/CalendarExportLink";
+import EventTypeTabs from "@/components/EventTypeTabs";
 import { isUpcomingEvent } from "@/lib/events";
 
 export default async function RecordingsPage() {
@@ -39,6 +40,8 @@ export default async function RecordingsPage() {
           </Link>
         </div>
       </div>
+
+      <EventTypeTabs active="/recordings" />
 
       <EventList
         events={withDeletePermission(recordings, session!, bandId)}
