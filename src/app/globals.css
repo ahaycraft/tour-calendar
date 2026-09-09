@@ -251,8 +251,8 @@ body {
 }
 .fc .fc-button {
   font-size: 0.8rem !important;
-  padding: 0.3rem 0.7rem !important;
-  border-radius: 6px !important;
+  padding: 0.35rem 0.9rem !important;
+  border-radius: 999px !important;
   font-weight: 500 !important;
 }
 .fc .fc-button:focus {
@@ -285,7 +285,7 @@ body {
     display: none;
   }
   .fc .fc-today-button {
-    border-radius: 6px !important;
+    border-radius: 999px !important;
   }
   .fc .fc-toolbar-title {
     font-size: 1.05rem !important;

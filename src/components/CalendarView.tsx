@@ -68,6 +68,12 @@ function paletteFor(type: string): Record<string, string> {
 // in globals.css — keep the two in sync).
 const UNAVAILABLE_COLOR = "#c2894a"; // warm ochre
 
+// Solid fill for the mobile initials badge (see eventContent below) — a
+// deeper, more saturated orange than UNAVAILABLE_COLOR so white text sits on
+// it at a solid ~5:1 contrast. A flat fill + white text needs no light/dark
+// theme handling: it doesn't blend with the page background either way.
+const UNAVAILABLE_BADGE_BG = "#c2410c";
+
 const legend = [
   { label: "Pending", color: statusColors.PENDING },
   { label: "Confirmed", color: statusColors.CONFIRMED },
@@ -76,6 +82,16 @@ const legend = [
   { label: "Practice", color: practiceColors.PENDING },
   { label: "Member unavailable", color: UNAVAILABLE_COLOR }
 ];
+
+// "AH" from "Alex Haycraft" — for the mobile-only initials badge (see
+// eventContent below), which stands in for the full "Name — reason" note
+// that doesn't fit a ~50px day cell on a phone.
+function initialsOf(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  const first = parts[0]?.[0] ?? "";
+  const last = parts.length > 1 ? parts[parts.length - 1][0] : "";
+  return (first + last).toUpperCase();
+}
 
 // Merge freshly-fetched rows into existing state by id, so re-fetching an
 // overlapping range (e.g. the shared padding days between two adjacent
@@ -153,9 +169,10 @@ export default function CalendarView({ userId }: { userId: string }) {
     };
   });
 
-  // Unavailable days are drawn as a striped day-cell background (see
-  // dayCellClassNames + globals.css), not a pill. Each record also gets a
-  // lightweight dot+text annotation naming who is out (and any note).
+  // Unavailable days are drawn as a tinted day-cell background (see
+  // dayCellClassNames + globals.css), not a pill. Each record also gets an
+  // annotation naming who is out: the full "Name — reason" note on desktop,
+  // shrunk down to just an initials badge on mobile (see eventContent).
   const unavailableEvents: EventInput[] = unavailableDates.map((u) => {
     const who = u.userId === userId ? "You" : u.user.name.split(" ")[0];
     return {
@@ -165,7 +182,7 @@ export default function CalendarView({ userId }: { userId: string }) {
       display: "list-item",
       color: UNAVAILABLE_COLOR,
       classNames: ["fc-unavailable-note"],
-      extendedProps: { type: "unavailable" }
+      extendedProps: { type: "unavailable", initials: initialsOf(u.user.name) }
     };
   });
 
@@ -250,11 +267,17 @@ export default function CalendarView({ userId }: { userId: string }) {
       </div>
 
       <div className="bg-zinc-900 border-y border-zinc-800 py-4 px-0 -mx-4 sm:mx-0 sm:rounded-2xl sm:border-x sm:p-4">
-        <div className="flex gap-x-4 gap-y-1.5 mb-4 px-4 sm:px-0 text-xs text-zinc-500 flex-wrap">
+        {/* A single scrollable row on mobile (six items would otherwise wrap
+            into a ragged multi-line block before the calendar even starts);
+            wraps normally once there's room to spare. */}
+        <div className="flex gap-2 overflow-x-auto pb-1 mb-4 px-4 sm:px-0 sm:flex-wrap">
           {legend.map(({ label, color }) => (
-            <span key={label} className="flex items-center gap-1.5">
+            <span
+              key={label}
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-zinc-800 bg-zinc-800/60 px-2.5 py-1 text-xs font-medium text-zinc-400"
+            >
               <span
-                className="inline-block w-3 h-3 rounded-full"
+                className="inline-block h-2 w-2 shrink-0 rounded-full"
                 style={{ backgroundColor: color }}
               />
               {label}
@@ -273,6 +296,33 @@ export default function CalendarView({ userId }: { userId: string }) {
                 ? "fc-day-unavailable"
                 : ""
             }
+            eventContent={(arg) => {
+              // Only the "unavailable" annotation gets custom content —
+              // `true` tells FullCalendar to render shows/practices/
+              // recordings the normal way.
+              if (arg.event.extendedProps.type !== "unavailable") return true;
+              const initials = arg.event.extendedProps.initials as string;
+              return (
+                <>
+                  <span
+                    title={arg.event.title}
+                    className="hidden min-w-0 items-center gap-1.5 sm:flex"
+                  >
+                    <span className="fc-daygrid-event-dot shrink-0" />
+                    <span className="fc-event-title truncate">
+                      {arg.event.title}
+                    </span>
+                  </span>
+                  <span
+                    title={arg.event.title}
+                    className="inline-flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold leading-none text-white sm:hidden"
+                    style={{ backgroundColor: UNAVAILABLE_BADGE_BG }}
+                  >
+                    {initials}
+                  </span>
+                </>
+              );
+            }}
             datesSet={handleDatesSet}
             dateClick={handleDateClick}
             eventClick={(info) => {
