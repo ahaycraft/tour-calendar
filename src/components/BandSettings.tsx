@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
-import { Check, Copy, Loader2, X } from "lucide-react";
+import { Check, Copy, Loader2, MessageCircle, X } from "lucide-react";
 import ConfirmDialog from "./ConfirmDialog";
 
 type Role = "OWNER" | "ADMIN" | "MEMBER";
@@ -12,6 +12,7 @@ interface Member {
   userId: string;
   name: string;
   email: string;
+  phone: string | null;
   role: Role;
 }
 
@@ -50,6 +51,19 @@ export default function BandSettings({
   const [name, setName] = useState(bandName);
   const [nameSaved, setNameSaved] = useState(false);
   const [busy, setBusy] = useState(false);
+
+  const me = members.find((m) => m.userId === myUserId);
+  const bandPhones = Array.from(
+    new Set(
+      members
+        .filter((m) => m.userId !== myUserId && m.phone)
+        .map((m) => m.phone as string)
+    )
+  );
+  const [phone, setPhone] = useState(me?.phone ?? "");
+  const [phoneBusy, setPhoneBusy] = useState(false);
+  const [phoneSaved, setPhoneSaved] = useState(false);
+  const [phoneError, setPhoneError] = useState("");
   const [error, setError] = useState("");
   const [leaving, setLeaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -126,6 +140,28 @@ export default function BandSettings({
     }
     setNameSaved(true);
     setTimeout(() => setNameSaved(false), 2000);
+    router.refresh();
+  }
+
+  async function savePhone(e: React.FormEvent) {
+    e.preventDefault();
+    if (phone.trim() === (me?.phone ?? "")) return;
+    setPhoneBusy(true);
+    setPhoneError("");
+    const res = await fetch("/api/account", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phone: phone.trim() || null })
+    });
+    setPhoneBusy(false);
+    if (!res.ok) {
+      setPhoneError(
+        (await res.json().catch(() => ({}))).error || "Couldn't save"
+      );
+      return;
+    }
+    setPhoneSaved(true);
+    setTimeout(() => setPhoneSaved(false), 2000);
     router.refresh();
   }
 
@@ -226,12 +262,23 @@ export default function BandSettings({
 
       {/* Members */}
       <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-6 mb-6">
-        <h2 className="font-semibold text-zinc-100 mb-4">
-          Members
-          <span className="text-sm font-normal text-zinc-500 ml-2">
-            {members.length}
-          </span>
-        </h2>
+        <div className="flex items-center justify-between gap-3 mb-4">
+          <h2 className="font-semibold text-zinc-100">
+            Members
+            <span className="text-sm font-normal text-zinc-500 ml-2">
+              {members.length}
+            </span>
+          </h2>
+          {bandPhones.length > 0 && (
+            <a
+              href={`sms:${bandPhones.join(",")}`}
+              className="inline-flex items-center gap-1.5 text-sm text-blue-400 hover:text-blue-300 shrink-0"
+            >
+              <MessageCircle size={14} />
+              Text band
+            </a>
+          )}
+        </div>
         <ul className="divide-y divide-zinc-800">
           {members.map((m) => {
             const isMe = m.userId === myUserId;
@@ -244,6 +291,48 @@ export default function BandSettings({
                     {isMe && <span className="text-zinc-600"> (you)</span>}
                   </p>
                   <p className="text-xs text-zinc-500 truncate">{m.email}</p>
+                  {isMe ? (
+                    <form
+                      onSubmit={savePhone}
+                      className="flex items-center gap-2 mt-2"
+                    >
+                      <input
+                        type="tel"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        placeholder="Add phone number"
+                        className={`${fieldClass} text-xs py-1.5 w-40`}
+                      />
+                      <button
+                        type="submit"
+                        disabled={
+                          phoneBusy || phone.trim() === (me?.phone ?? "")
+                        }
+                        className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-500 disabled:opacity-50 transition-colors"
+                      >
+                        {phoneBusy ? (
+                          <Loader2 size={13} className="animate-spin" />
+                        ) : phoneSaved ? (
+                          <Check size={13} />
+                        ) : (
+                          "Save"
+                        )}
+                      </button>
+                    </form>
+                  ) : (
+                    m.phone && (
+                      <a
+                        href={`sms:${m.phone}`}
+                        className="mt-1 inline-flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300"
+                      >
+                        <MessageCircle size={12} />
+                        Text {m.name.split(" ")[0]}
+                      </a>
+                    )
+                  )}
+                  {isMe && phoneError && (
+                    <p className="text-xs text-red-400 mt-1">{phoneError}</p>
+                  )}
                 </div>
 
                 {isOwner && !isMe ? (

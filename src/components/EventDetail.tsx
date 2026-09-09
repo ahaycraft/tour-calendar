@@ -30,7 +30,8 @@ import {
   DollarSign,
   FileText,
   Pencil,
-  Disc3
+  Disc3,
+  MessageCircle
 } from "lucide-react";
 
 interface Props {
@@ -48,7 +49,9 @@ export default async function EventDetail({ id, expected }: Props) {
       createdBy: { select: { id: true, name: true } },
       release: { select: { id: true, title: true } },
       availability: {
-        include: { user: { select: { id: true, name: true } } },
+        include: {
+          user: { select: { id: true, name: true, phone: true } }
+        },
         orderBy: { user: { name: "asc" } }
       }
     }
@@ -73,6 +76,14 @@ export default async function EventDetail({ id, expected }: Props) {
   );
   const pendingMembers = show.availability.filter(
     (a) => a.status === "PENDING"
+  );
+
+  const bandPhones = Array.from(
+    new Set(
+      show.availability
+        .filter((a) => a.userId !== session!.user.id && a.user.phone)
+        .map((a) => a.user.phone as string)
+    )
   );
 
   const isAdminOrCreator = canManage(session!, show.bandId, show.createdById);
@@ -125,6 +136,9 @@ export default async function EventDetail({ id, expected }: Props) {
                   <ShowStatusBadge status={show.status} />
                   {needsDetails(show) && <NeedsDetailsBadge />}
                 </div>
+                <p className="text-base sm:text-lg font-semibold text-zinc-200 mb-1">
+                  {formatDate(show.date)}
+                </p>
                 <p className="text-zinc-500 text-sm">
                   Added by {show.createdBy.name}
                 </p>
@@ -175,11 +189,6 @@ export default async function EventDetail({ id, expected }: Props) {
                     <div className="text-zinc-500">{show.venueAddress}</div>
                   )}
                 </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Clock size={15} className="text-zinc-500 shrink-0" />
-                <span>{formatDate(show.date)}</span>
               </div>
 
               {(show.loadInTime || show.doorsTime || show.setTime) && (
@@ -242,12 +251,23 @@ export default async function EventDetail({ id, expected }: Props) {
 
           {/* Band Member Availability */}
           <div className="p-6">
-            <h2 className="font-semibold text-zinc-100 mb-4">
-              Band Availability
-              <span className="text-sm font-normal text-zinc-500 ml-2">
-                {availableMembers.length} available
-              </span>
-            </h2>
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <h2 className="font-semibold text-zinc-100">
+                Band Availability
+                <span className="text-sm font-normal text-zinc-500 ml-2">
+                  {availableMembers.length} available
+                </span>
+              </h2>
+              {bandPhones.length > 0 && (
+                <a
+                  href={`sms:${bandPhones.join(",")}`}
+                  className="inline-flex items-center gap-1.5 text-sm text-blue-400 hover:text-blue-300 shrink-0"
+                >
+                  <MessageCircle size={14} />
+                  Text band
+                </a>
+              )}
+            </div>
 
             {show.availability.length === 0 ? (
               <p className="text-sm text-zinc-500">No responses yet.</p>
@@ -287,16 +307,27 @@ export default async function EventDetail({ id, expected }: Props) {
                       {unavailableMembers.map((a) => (
                         <div
                           key={a.id}
-                          className="flex items-center justify-between"
+                          className="flex items-center justify-between gap-2"
                         >
                           <span className="text-sm text-zinc-300">
                             {a.user.name}
                           </span>
-                          {a.note && (
-                            <span className="text-xs text-zinc-500">
-                              {a.note}
-                            </span>
-                          )}
+                          <div className="flex items-center gap-2">
+                            {a.note && (
+                              <span className="text-xs text-zinc-500">
+                                {a.note}
+                              </span>
+                            )}
+                            {a.user.phone && (
+                              <a
+                                href={`sms:${a.user.phone}`}
+                                aria-label={`Text ${a.user.name}`}
+                                className="text-zinc-500 hover:text-blue-400"
+                              >
+                                <MessageCircle size={14} />
+                              </a>
+                            )}
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -312,11 +343,20 @@ export default async function EventDetail({ id, expected }: Props) {
                       {pendingMembers.map((a) => (
                         <div
                           key={a.id}
-                          className="flex items-center justify-between"
+                          className="flex items-center justify-between gap-2"
                         >
                           <span className="text-sm text-zinc-500">
                             {a.user.name}
                           </span>
+                          {a.user.phone && (
+                            <a
+                              href={`sms:${a.user.phone}`}
+                              aria-label={`Text ${a.user.name}`}
+                              className="text-zinc-500 hover:text-blue-400"
+                            >
+                              <MessageCircle size={14} />
+                            </a>
+                          )}
                         </div>
                       ))}
                     </div>

@@ -14,7 +14,9 @@ export default async function BandSettingsPage() {
     include: {
       memberships: {
         orderBy: [{ role: "asc" }, { user: { name: "asc" } }],
-        include: { user: { select: { id: true, name: true, email: true } } }
+        include: {
+          user: { select: { id: true, name: true, email: true, phone: true } }
+        }
       },
       invites: {
         where: { acceptedAt: null, expiresAt: { gt: new Date() } },
@@ -34,6 +36,7 @@ export default async function BandSettingsPage() {
         userId: m.user.id,
         name: m.user.name,
         email: m.user.email,
+        phone: m.user.phone,
         role: m.role
       }))}
       pendingInvites={band.invites.map((i) => ({
