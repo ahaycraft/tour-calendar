@@ -15,6 +15,7 @@ import {
   Disc3,
   UserX,
   LogOut,
+  Plus,
   ShieldCheck,
   UserCircle,
   X
@@ -46,6 +47,17 @@ const SECONDARY_LINKS = [
   { href: "/songs", label: "Songs", icon: Music },
   { href: "/releases", label: "Releases", icon: Disc3 },
   { href: "/my-availability", label: "My Availability", icon: UserX }
+];
+
+// Every /new route in the app — flat, since five items is small enough that
+// grouping Show/Practice/Recording under an extra "Event" step would just
+// cost a tap without reducing the choice.
+const ADD_LINKS = [
+  { href: "/shows/new", label: "Add Show", icon: List },
+  { href: "/practices/new", label: "Add Practice", icon: Users },
+  { href: "/recordings/new", label: "Add Recording", icon: Mic },
+  { href: "/songs/new", label: "Add Song", icon: Music },
+  { href: "/releases/new", label: "Add Release", icon: Disc3 }
 ];
 
 /** Desktop-only "Events ▾" dropdown grouping the three event list routes. */
@@ -121,6 +133,80 @@ function EventsMenu({ pathname }: { pathname: string }) {
           })}
         </div>
       )}
+    </div>
+  );
+}
+
+/** Mobile-only ghost "+" button (left of the header) opening a flat menu of
+    every /new route in the app. */
+function AddMenu() {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function onDown(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node))
+        setOpen(false);
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  return (
+    <div ref={ref} className="absolute left-0 top-1/2 -translate-y-1/2">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-label={open ? "Close add menu" : "Add"}
+        className="p-2 text-zinc-300 hover:text-zinc-50"
+      >
+        <Plus
+          size={24}
+          className={cn(
+            "transition-transform duration-200 motion-reduce:transition-none",
+            open && "rotate-45"
+          )}
+        />
+      </button>
+
+      {/* Always mounted (rather than open && (...)) so closing can animate
+          back out instead of vanishing instantly; `inert` disables the pills
+          for focus/click while hidden regardless of the animation state. */}
+      <div
+        role="menu"
+        aria-label="Add"
+        inert={!open}
+        className="absolute left-0 z-50 mt-2 flex flex-col items-start gap-2"
+      >
+        {ADD_LINKS.map(({ href, label, icon: Icon }, i) => (
+          <Link
+            key={href}
+            href={href}
+            role="menuitem"
+            onClick={() => setOpen(false)}
+            style={{ transitionDelay: open ? `${i * 40}ms` : "0ms" }}
+            className={cn(
+              "flex items-center gap-2 whitespace-nowrap rounded-full border border-zinc-800 bg-zinc-900 py-2 pl-3 pr-4 text-sm font-medium text-zinc-200 shadow-lg transition-all ease-out motion-reduce:transition-none hover:bg-zinc-800",
+              open
+                ? "translate-y-0 opacity-100 duration-200"
+                : "pointer-events-none -translate-y-2 opacity-0 duration-100"
+            )}
+          >
+            <Icon size={16} />
+            {label}
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }
@@ -264,10 +350,12 @@ export default function Nav({
           </div>
 
           {/* Mobile header — wordmark centered; primary nav lives in the
-            floating bottom nav instead. The account button (right) opens
-            the panel below for band switching/settings, appearance, and
-            sign out. Left side is reserved, currently empty. */}
+            floating bottom nav instead. Left is a flat "+" menu of every
+            /new route; right opens the account panel (band switching/
+            settings, appearance, admin link, sign out). */}
           <div className="lg:hidden relative flex items-center justify-center h-16">
+            <AddMenu />
+
             <Link
               href="/calendar"
               className="font-bold text-zinc-50 text-lg whitespace-nowrap"
