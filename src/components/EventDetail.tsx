@@ -2,9 +2,10 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import { formatDate, formatTime } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
 import ShowStatusBadge from "@/components/ShowStatusBadge";
 import EventTypeBadge from "@/components/EventTypeBadge";
+import EventTimeline from "@/components/EventTimeline";
 import ShowAvailabilityControls from "@/components/ShowAvailabilityControls";
 import ShowStatusControls from "@/components/ShowStatusControls";
 import VenueMap from "@/components/VenueMap";
@@ -182,25 +183,15 @@ export default async function EventDetail({ id, expected }: Props) {
               </div>
 
               {(show.loadInTime || show.doorsTime || show.setTime) && (
-                <div className="flex items-center gap-2">
+                <div className="flex gap-2">
                   <Clock size={15} className="text-transparent shrink-0" />
-                  <div className="flex gap-4 text-zinc-400">
-                    {show.loadInTime && (
-                      <span>
-                        {isRecording ? "Call" : "Load in"}:{" "}
-                        {formatTime(show.loadInTime)}
-                      </span>
-                    )}
-                    {show.doorsTime && (
-                      <span>Doors: {formatTime(show.doorsTime)}</span>
-                    )}
-                    {show.setTime && (
-                      <span>
-                        {isRecording ? "Wrap" : "Set"}:{" "}
-                        {formatTime(show.setTime)}
-                      </span>
-                    )}
-                  </div>
+                  <EventTimeline
+                    date={show.date}
+                    loadInTime={show.loadInTime}
+                    doorsTime={show.doorsTime}
+                    setTime={show.setTime}
+                    isRecording={isRecording}
+                  />
                 </div>
               )}
 
