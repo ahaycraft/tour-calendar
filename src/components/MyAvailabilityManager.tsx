@@ -160,7 +160,34 @@ export default function MyAvailabilityManager({
 
   return (
     <div className="space-y-8">
-      {/* Unavailable Dates */}
+      {/* Upcoming Shows — the time-sensitive, per-show action, so it leads
+          on mobile rather than sitting below the less urgent Blocked Dates
+          section. */}
+      <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-6">
+        <h2 className="font-semibold text-zinc-100 mb-1">
+          Upcoming Shows — My Responses
+        </h2>
+        <p className="text-xs text-zinc-500 mb-4">
+          Slide a show right if you&apos;re available, left if you&apos;re not.
+          Tap to open it.
+        </p>
+
+        {upcomingFiltered.length === 0 ? (
+          <p className="text-sm text-zinc-500">No upcoming shows yet.</p>
+        ) : (
+          <ul className="space-y-3">
+            {upcomingFiltered.map((show) => (
+              <SwipeableShowRow
+                key={`${show.id}:${show.myStatus}`}
+                show={show}
+                onRespond={handleRespond}
+              />
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {/* Blocked Dates */}
       <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-6">
         <h2 className="font-semibold text-zinc-100 mb-4">Blocked Dates</h2>
 
@@ -226,31 +253,6 @@ export default function MyAvailabilityManager({
                   <Trash2 size={15} />
                 </button>
               </li>
-            ))}
-          </ul>
-        )}
-      </div>
-
-      {/* Upcoming Shows */}
-      <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-6">
-        <h2 className="font-semibold text-zinc-100 mb-1">
-          Upcoming Shows — My Responses
-        </h2>
-        <p className="text-xs text-zinc-500 mb-4">
-          Slide a show right if you&apos;re available, left if you&apos;re not.
-          Tap to open it.
-        </p>
-
-        {upcomingFiltered.length === 0 ? (
-          <p className="text-sm text-zinc-500">No upcoming shows yet.</p>
-        ) : (
-          <ul className="space-y-3">
-            {upcomingFiltered.map((show) => (
-              <SwipeableShowRow
-                key={`${show.id}:${show.myStatus}`}
-                show={show}
-                onRespond={handleRespond}
-              />
             ))}
           </ul>
         )}

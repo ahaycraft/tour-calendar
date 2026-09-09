@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Bell, BellOff, BellRing, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 /**
  * Opt-in control for Web Push notifications. Registers the service worker,
@@ -9,7 +10,7 @@ import { Bell, BellOff, BellRing, Loader2 } from "lucide-react";
  * /api/push/subscribe. One subscription per browser+device.
  *
  * iOS delivers push only to a PWA installed to the Home Screen, so on iOS
- * Safari (not standalone) we show the install hint instead of the button.
+ * Safari (not standalone) we show the install hint instead of a toggle.
  */
 
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
@@ -26,7 +27,8 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
 type State =
   "loading" | "unsupported" | "ios-install" | "subscribed" | "unsubscribed";
 
-export default function PushToggle() {
+/** Shared by PushMenuItem (account menus) and PushNudge (my-availability). */
+export function usePushSubscription() {
   const [state, setState] = useState<State>("loading");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -128,18 +130,35 @@ export default function PushToggle() {
     }
   }, []);
 
+  return { state, busy, error, subscribe, unsubscribe };
+}
+
+/**
+ * Compact row for the account menus (desktop dropdown + mobile drawer) —
+ * pass `className` to match whichever menu's row styling it's dropped into.
+ * Renders nothing while loading/unsupported, same as before.
+ */
+export default function PushMenuItem({
+  className,
+  iconSize = 16
+}: {
+  className?: string;
+  iconSize?: number;
+}) {
+  const { state, busy, error, subscribe, unsubscribe } = usePushSubscription();
+
   if (state === "loading" || state === "unsupported") return null;
 
   if (state === "ios-install") {
     return (
-      <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-4 text-sm text-zinc-400">
-        <div className="mb-1 flex items-center gap-2 font-medium text-zinc-200">
-          <Bell size={15} />
-          Get notified on your iPhone
+      <div className={cn(className)}>
+        <div className="flex items-center gap-2">
+          <Bell size={iconSize} className="shrink-0" />
+          Notifications
         </div>
-        Open the Share menu and tap{" "}
-        <span className="text-zinc-200">Add to Home Screen</span>. Then open
-        Woodshedd from the new icon and turn on notifications here.
+        <p className="mt-0.5 text-xs opacity-75">
+          Add to Home Screen from the Share menu to enable.
+        </p>
       </div>
     );
   }
@@ -147,40 +166,23 @@ export default function PushToggle() {
   const on = state === "subscribed";
 
   return (
-    <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-4">
-      <div className="flex items-center justify-between gap-3">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2 font-medium text-zinc-100">
-            {on ? (
-              <BellRing size={15} className="text-blue-400" />
-            ) : (
-              <BellOff size={15} className="text-zinc-500" />
-            )}
-            Push notifications
-          </div>
-          <p className="mt-0.5 text-sm text-zinc-500">
-            {on
-              ? "This device is on. You'll be alerted about new shows and pending availability."
-              : "Get alerted on this device when a show is added or your availability is still needed."}
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={on ? unsubscribe : subscribe}
-          disabled={busy}
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-zinc-700 px-3 py-1.5 text-sm font-medium text-zinc-200 transition-colors hover:bg-zinc-800 hover:text-zinc-100 disabled:opacity-60"
-        >
-          {busy ? (
-            <Loader2 size={14} className="animate-spin" />
-          ) : on ? (
-            <BellOff size={14} />
-          ) : (
-            <Bell size={14} />
-          )}
-          {on ? "Turn off" : "Turn on"}
-        </button>
-      </div>
-      {error && <p className="mt-2 text-sm text-red-400">{error}</p>}
+    <div>
+      <button
+        type="button"
+        onClick={on ? unsubscribe : subscribe}
+        disabled={busy}
+        className={cn("flex w-full items-center gap-2 text-left", className)}
+      >
+        {busy ? (
+          <Loader2 size={iconSize} className="shrink-0 animate-spin" />
+        ) : on ? (
+          <BellRing size={iconSize} className="shrink-0 text-blue-400" />
+        ) : (
+          <BellOff size={iconSize} className="shrink-0" />
+        )}
+        {on ? "Turn off notifications" : "Turn on notifications"}
+      </button>
+      {error && <p className="px-3 pb-1 text-xs text-red-400">{error}</p>}
     </div>
   );
 }

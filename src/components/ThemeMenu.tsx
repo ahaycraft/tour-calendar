@@ -11,6 +11,7 @@ import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { ChevronDown, LogOut, Moon, ShieldCheck, Sun } from "lucide-react";
 import { cn } from "@/lib/utils";
+import PushMenuItem from "./PushToggle";
 
 export type Theme = "light" | "dark";
 
@@ -190,6 +191,11 @@ export function ThemeMenu({
               onChange={onThemeChange}
             />
           </div>
+          <div className="my-1 border-t border-zinc-800" />
+          <PushMenuItem
+            iconSize={14}
+            className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800"
+          />
           {isAdmin && (
             <>
               <div className="my-1 border-t border-zinc-800" />

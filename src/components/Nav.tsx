@@ -23,6 +23,7 @@ import {
 import { cn, pathMatches } from "@/lib/utils";
 import BandSwitcher, { type NavBand } from "./BandSwitcher";
 import { ThemeMenu, ThemeToggle, useTheme, type Theme } from "./ThemeMenu";
+import PushMenuItem from "./PushToggle";
 
 interface NavProps {
   user: { name: string; email: string; role: string };
@@ -449,6 +450,10 @@ export default function Nav({
                 onChange={setTheme}
               />
             </div>
+            <PushMenuItem
+              iconSize={18}
+              className="flex items-center gap-3 w-full px-3 py-3 rounded-lg text-sm font-medium text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors"
+            />
             {isAdmin && (
               <Link
                 href="/admin/interest"
