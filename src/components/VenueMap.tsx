@@ -88,25 +88,25 @@ export default function VenueMap({
         <>
           <div ref={containerRef} className="w-full h-64 lg:h-80" />
           <div className="px-5 py-3 text-xs">
-            {address && <p className="text-zinc-400 mb-2">{address}</p>}
-            <div className="flex gap-4">
+            {address && <p className="text-zinc-400 mb-3">{address}</p>}
+            <div className="flex gap-2">
               <a
                 href={`https://www.google.com/maps/search/restaurants/@${lat},${lng},15z`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-blue-400 hover:text-blue-300"
+                className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-zinc-700 py-2.5 text-sm font-medium text-blue-400 transition-colors hover:bg-zinc-800 hover:text-blue-300"
               >
-                <UtensilsCrossed size={13} />
-                Food nearby ↗
+                <UtensilsCrossed size={15} />
+                Food nearby
               </a>
               <a
                 href={`https://www.google.com/maps/search/gas+station/@${lat},${lng},15z`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-blue-400 hover:text-blue-300"
+                className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-zinc-700 py-2.5 text-sm font-medium text-blue-400 transition-colors hover:bg-zinc-800 hover:text-blue-300"
               >
-                <Fuel size={13} />
-                Gas nearby ↗
+                <Fuel size={15} />
+                Gas nearby
               </a>
             </div>
           </div>
