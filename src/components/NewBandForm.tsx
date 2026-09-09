@@ -23,7 +23,7 @@ export default function NewBandForm() {
 
     if (!res.ok) {
       const json = await res.json().catch(() => ({}));
-      setError(json.error || "Failed to create band");
+      setError(json.error || "Failed to create group");
       setLoading(false);
       return;
     }
@@ -36,7 +36,7 @@ export default function NewBandForm() {
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <label className="block text-sm font-medium text-zinc-300 mb-1">
-          Band or artist name <span className="text-red-500">*</span>
+          Group or artist name <span className="text-red-500">*</span>
         </label>
         <input
           autoFocus
@@ -53,7 +53,7 @@ export default function NewBandForm() {
         disabled={loading || !name.trim()}
         className="w-full py-2 px-4 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
-        {loading ? "Creating..." : "Create band"}
+        {loading ? "Creating..." : "Create group"}
       </button>
     </form>
   );

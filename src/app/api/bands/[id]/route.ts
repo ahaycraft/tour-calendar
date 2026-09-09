@@ -51,7 +51,7 @@ export async function DELETE(
   const { id } = await params;
   if (bandRole(session, id) !== "OWNER") {
     return NextResponse.json(
-      { error: "Only an owner can delete a band" },
+      { error: "Only an owner can delete a group" },
       { status: 403 }
     );
   }

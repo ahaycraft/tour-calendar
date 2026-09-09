@@ -78,7 +78,7 @@ function RegisterForm() {
           {inviteToken && invite && !invite.valid && (
             <p className="text-sm text-amber-400 mb-4">
               That invite link is invalid or expired — you can still create your
-              own band below.
+              own group below.
             </p>
           )}
 
@@ -100,7 +100,7 @@ function RegisterForm() {
             {!joining && (
               <div>
                 <label className="block text-sm font-medium text-zinc-300 mb-1">
-                  Band or artist name
+                  Group or artist name
                 </label>
                 <input
                   type="text"
@@ -108,7 +108,7 @@ function RegisterForm() {
                   onChange={(e) => setBandName(e.target.value)}
                   required
                   className={inputClass}
-                  placeholder="Your band (you can rename it later)"
+                  placeholder="Your group (you can rename it later)"
                 />
               </div>
             )}
@@ -124,7 +124,7 @@ function RegisterForm() {
                 required
                 disabled={joining}
                 className={inputClass}
-                placeholder="you@band.com"
+                placeholder="you@group.com"
               />
             </div>
 

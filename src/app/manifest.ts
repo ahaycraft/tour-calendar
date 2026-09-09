@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "Woodshedd",
     short_name: "Woodshedd",
     description:
-      "Band calendar, availability, songwriting, and release planning",
+      "Group calendar, availability, songwriting, and release planning",
     start_url: "/",
     display: "standalone",
     background_color: "#09090b",

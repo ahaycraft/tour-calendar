@@ -2,7 +2,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import { formatDate } from "@/lib/utils";
+import { formatDate, formatTime } from "@/lib/utils";
 import ShowStatusBadge from "@/components/ShowStatusBadge";
 import EventTypeBadge from "@/components/EventTypeBadge";
 import EventTimeline from "@/components/EventTimeline";
@@ -10,6 +10,7 @@ import ShowAvailabilityControls from "@/components/ShowAvailabilityControls";
 import ShowStatusControls from "@/components/ShowStatusControls";
 import VenueMap from "@/components/VenueMap";
 import AddToCalendar from "@/components/AddToCalendar";
+import TextItineraryButton from "@/components/TextItineraryButton";
 import { geocodeVenue } from "@/lib/venues";
 import { googleCalendarUrl } from "@/lib/calendar";
 import {
@@ -60,9 +61,47 @@ export default async function EventDetail({ id, expected }: Props) {
   if (!show || !isBandMember(session!, show.bandId)) notFound();
   if (show.type !== expected) redirect(eventHref(show.type, show.id));
 
-  const memberCount = await prisma.bandMembership.count({
-    where: { bandId: show.bandId }
+  const bandMembers = await prisma.bandMembership.findMany({
+    where: { bandId: show.bandId },
+    select: { user: { select: { id: true, phone: true } } }
   });
+  const memberCount = bandMembers.length;
+
+  const itineraryPhones = Array.from(
+    new Set(
+      bandMembers
+        .filter((m) => m.user.id !== session!.user.id && m.user.phone)
+        .map((m) => m.user.phone as string)
+    )
+  );
+
+  const appUrl = process.env.AUTH_URL?.replace(/\/$/, "") ?? "";
+
+  const fullAddress = [
+    show.venueAddress,
+    [show.venue, show.city, show.state, show.country]
+      .filter(Boolean)
+      .join(", ")
+  ]
+    .filter(Boolean)
+    .join(", ");
+
+  const itineraryMessage = [
+    `${show.title} — ${formatDate(show.date)}`,
+    [
+      show.loadInTime && `Load-in ${formatTime(show.loadInTime)}`,
+      show.doorsTime && `Doors ${formatTime(show.doorsTime)}`,
+      show.setTime && `Set ${formatTime(show.setTime)}`
+    ]
+      .filter(Boolean)
+      .join(" · "),
+    [show.venue, show.city, show.state].filter(Boolean).join(", "),
+    fullAddress &&
+      `https://maps.google.com/?q=${encodeURIComponent(fullAddress)}`,
+    `Details: ${appUrl}${eventHref(show.type, show.id)}`
+  ]
+    .filter(Boolean)
+    .join("\n");
 
   const myAvailability = show.availability.find(
     (a) => a.userId === session!.user.id
@@ -90,7 +129,6 @@ export default async function EventDetail({ id, expected }: Props) {
 
   const isRecording = show.type === "RECORDING";
 
-  const appUrl = process.env.AUTH_URL?.replace(/\/$/, "") ?? "";
   const icsUrl = `/api/shows/${show.id}/event.ics`;
   const googleUrl = googleCalendarUrl(show, appUrl);
 
@@ -153,6 +191,10 @@ export default async function EventDetail({ id, expected }: Props) {
                 )}
               </div>
               <div className="flex flex-wrap items-center gap-2 shrink-0">
+                <TextItineraryButton
+                  phones={itineraryPhones}
+                  message={itineraryMessage}
+                />
                 <AddToCalendar googleUrl={googleUrl} icsUrl={icsUrl} />
                 {isAdminOrCreator && (
                   <Link
@@ -253,7 +295,7 @@ export default async function EventDetail({ id, expected }: Props) {
           <div className="p-6">
             <div className="flex items-center justify-between gap-3 mb-4">
               <h2 className="font-semibold text-zinc-100">
-                Band Availability
+                Group Availability
                 <span className="text-sm font-normal text-zinc-500 ml-2">
                   {availableMembers.length} available
                 </span>
@@ -264,7 +306,7 @@ export default async function EventDetail({ id, expected }: Props) {
                   className="inline-flex items-center gap-1.5 text-sm text-blue-400 hover:text-blue-300 shrink-0"
                 >
                   <MessageCircle size={14} />
-                  Text band
+                  Text group
                 </a>
               )}
             </div>

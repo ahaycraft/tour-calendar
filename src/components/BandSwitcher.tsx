@@ -77,7 +77,7 @@ export default function BandSwitcher({
             : "flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-zinc-200 hover:bg-zinc-800 transition-colors max-w-[12rem]"
         }
       >
-        <span className="truncate">{active?.name ?? "Choose a band"}</span>
+        <span className="truncate">{active?.name ?? "Choose a group"}</span>
         <ChevronsUpDown size={14} className="shrink-0 text-zinc-500" />
       </button>
 
@@ -89,7 +89,7 @@ export default function BandSwitcher({
           } z-50 rounded-lg border border-zinc-800 bg-zinc-900 shadow-xl py-1`}
         >
           <div className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-zinc-600">
-            Bands
+            Groups
           </div>
           {bands.map((b) => (
             <button
@@ -124,7 +124,7 @@ export default function BandSwitcher({
             className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-800"
           >
             <Plus size={14} />
-            New band
+            New group
           </Link>
           <Link
             href="/bands/settings"
@@ -135,7 +135,7 @@ export default function BandSwitcher({
             className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-800"
           >
             <Settings size={14} />
-            Band settings
+            Group settings
           </Link>
         </div>
       )}

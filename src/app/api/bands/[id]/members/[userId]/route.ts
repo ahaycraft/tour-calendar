@@ -43,7 +43,7 @@ export async function PATCH(
     (await ownerCount(bandId)) <= 1
   ) {
     return NextResponse.json(
-      { error: "A band needs at least one owner" },
+      { error: "A group needs at least one owner" },
       { status: 400 }
     );
   }
@@ -83,7 +83,7 @@ export async function DELETE(
 
   if (target.role === "OWNER" && (await ownerCount(bandId)) <= 1) {
     return NextResponse.json(
-      { error: "Transfer ownership before leaving — a band needs an owner" },
+      { error: "Transfer ownership before leaving — a group needs an owner" },
       { status: 400 }
     );
   }

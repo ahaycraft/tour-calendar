@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Woodshedd",
-  description: "Band calendar, availability, songwriting, and release planning",
+  description: "Group calendar, availability, songwriting, and release planning",
   appleWebApp: {
     capable: true,
     title: "Woodshedd",

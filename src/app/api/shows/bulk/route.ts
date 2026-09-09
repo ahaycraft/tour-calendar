@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
 
     const bandId = await getActiveBandId(session);
     if (!bandId) {
-      return NextResponse.json({ error: "No band selected" }, { status: 400 });
+      return NextResponse.json({ error: "No group selected" }, { status: 400 });
     }
 
     const sorted = [...new Set(dates as string[])].sort();

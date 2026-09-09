@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
   const { bandId } = await request.json();
   if (!isBandMember(session, bandId)) {
     return NextResponse.json(
-      { error: "Not a member of that band" },
+      { error: "Not a member of that group" },
       { status: 403 }
     );
   }

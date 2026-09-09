@@ -23,12 +23,12 @@ export default async function NewBandPage() {
           </Link>
         )}
         <h1 className="text-2xl font-bold text-zinc-50 mb-1">
-          {hasBands ? "New band" : "Create your band"}
+          {hasBands ? "New group" : "Create your group"}
         </h1>
         <p className="text-sm text-zinc-500 mb-6">
           {hasBands
             ? "You'll be switched to it once it's created."
-            : "You're not in a band yet — name one to get started."}
+            : "You're not in a group yet — name one to get started."}
         </p>
         <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-6">
           <NewBandForm />

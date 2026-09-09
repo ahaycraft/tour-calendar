@@ -106,7 +106,7 @@ export default function InterestPage() {
                     required
                     disabled={loading}
                     className={inputClass}
-                    placeholder="you@band.com"
+                    placeholder="you@group.com"
                   />
                 </div>
 

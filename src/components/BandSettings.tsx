@@ -219,7 +219,7 @@ export default function BandSettings({
     setDeleting(false);
     if (!res.ok) {
       setError(
-        (await res.json().catch(() => ({}))).error || "Couldn't delete band"
+        (await res.json().catch(() => ({}))).error || "Couldn't delete group"
       );
       return;
     }
@@ -229,7 +229,7 @@ export default function BandSettings({
 
   return (
     <div className="max-w-2xl">
-      <h1 className="text-2xl font-bold text-zinc-50 mb-6">Band settings</h1>
+      <h1 className="text-2xl font-bold text-zinc-50 mb-6">Group settings</h1>
 
       {/* Name */}
       <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-6 mb-6">
@@ -275,7 +275,7 @@ export default function BandSettings({
               className="inline-flex items-center gap-1.5 text-sm text-blue-400 hover:text-blue-300 shrink-0"
             >
               <MessageCircle size={14} />
-              Text band
+              Text group
             </a>
           )}
         </div>
@@ -382,7 +382,7 @@ export default function BandSettings({
               type="email"
               value={inviteEmail}
               onChange={(e) => setInviteEmail(e.target.value)}
-              placeholder="bandmate@email.com"
+              placeholder="member@group.com"
               className={`${fieldClass} flex-1 min-w-[180px]`}
             />
             <select
@@ -456,7 +456,7 @@ export default function BandSettings({
           onClick={() => setLeaving(true)}
           className="text-sm text-red-400 hover:text-red-300"
         >
-          Leave this band
+          Leave this group
         </button>
         {isOwner && (
           <button
@@ -464,7 +464,7 @@ export default function BandSettings({
             onClick={() => setDeleting(true)}
             className="text-sm text-red-400 hover:text-red-300"
           >
-            Delete this band
+            Delete this group
           </button>
         )}
       </div>
@@ -472,7 +472,7 @@ export default function BandSettings({
       <ConfirmDialog
         open={leaving}
         title={`Leave ${bandName}?`}
-        message="You'll lose access to this band's calendar, songs, and releases until someone adds you back."
+        message="You'll lose access to this group's calendar, songs, and releases until someone adds you back."
         confirmLabel="Leave"
         tone="danger"
         busy={busy}
@@ -491,7 +491,7 @@ export default function BandSettings({
             can&apos;t be undone.
           </>
         }
-        confirmLabel="Delete band"
+        confirmLabel="Delete group"
         tone="danger"
         busy={busy}
         onConfirm={deleteBand}

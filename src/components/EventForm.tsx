@@ -234,7 +234,7 @@ export default function EventForm({
           <p className="mt-1.5 flex items-start gap-1.5 text-xs text-amber-400">
             <AlertTriangle size={13} className="mt-px shrink-0" />
             Changing the date clears everyone&apos;s availability and returns a
-            confirmed event to pending — the band will need to respond again.
+            confirmed event to pending — the group will need to respond again.
           </p>
         )}
       </div>

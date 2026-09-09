@@ -41,7 +41,7 @@ export async function POST(
     });
     if (existingMember) {
       return NextResponse.json(
-        { error: "That person is already in the band" },
+        { error: "That person is already in the group" },
         { status: 409 }
       );
     }

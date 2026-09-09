@@ -100,7 +100,7 @@ describe("POST /api/shows — guards", () => {
     getActiveBandIdMock.mockResolvedValue(null);
     const res = await call({ title: "x", date: "2026-06-15" });
     expect(res.status).toBe(400);
-    expect(await res.json()).toEqual({ error: "No band selected" });
+    expect(await res.json()).toEqual({ error: "No group selected" });
   });
 });
 

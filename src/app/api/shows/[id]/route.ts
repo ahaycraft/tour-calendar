@@ -184,7 +184,7 @@ export async function PATCH(
     } else if (becamePending) {
       void notifyBandMembers(existing.bandId, session.user.id, {
         title: `${show.title} set to pending`,
-        body: `${format(show.date, "EEE, MMM d")} — waiting on the band to confirm.`,
+        body: `${format(show.date, "EEE, MMM d")} — waiting on the group to confirm.`,
         url: eventHref(show.type, show.id),
         tag: `show:${show.id}`
       });
