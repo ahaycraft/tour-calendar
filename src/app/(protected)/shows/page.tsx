@@ -5,14 +5,14 @@ import EventList from "@/components/EventList";
 import CalendarExportLink from "@/components/CalendarExportLink";
 import EventTypeTabs from "@/components/EventTypeTabs";
 import AddButton from "@/components/AddButton";
-import { isUpcomingEvent } from "@/lib/events";
+import { isUpcomingEvent, listSince } from "@/lib/events";
 
 export default async function ShowsPage() {
   const session = await auth();
   const bandId = await requireActiveBandId(session!);
 
   const shows = await prisma.show.findMany({
-    where: { type: "SHOW", bandId },
+    where: { type: "SHOW", bandId, date: { gte: listSince() } },
     orderBy: { date: "asc" },
     include: {
       createdBy: { select: { id: true, name: true } },

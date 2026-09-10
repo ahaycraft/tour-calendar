@@ -9,6 +9,8 @@ import {
   eventTypeLabel,
   isEventType,
   isUpcomingEvent,
+  LIST_PAST_DAYS,
+  listSince,
   tourEditHref
 } from "@/lib/events";
 
@@ -129,5 +131,28 @@ describe("isUpcomingEvent", () => {
         status: "PENDING"
       })
     ).toBe(true);
+  });
+});
+
+describe("listSince", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    // TZ is pinned to UTC in vitest.config, so start-of-day is UTC midnight.
+    vi.setSystemTime(new Date("2026-06-15T12:00:00Z"));
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("returns midnight, LIST_PAST_DAYS before today", () => {
+    expect(LIST_PAST_DAYS).toBe(90);
+    expect(listSince().toISOString()).toBe("2026-03-17T00:00:00.000Z");
+  });
+
+  it("is exactly LIST_PAST_DAYS days before the start of today", () => {
+    const daysBack =
+      (Date.parse("2026-06-15T00:00:00Z") - listSince().getTime()) /
+      86_400_000;
+    expect(daysBack).toBe(LIST_PAST_DAYS);
   });
 });

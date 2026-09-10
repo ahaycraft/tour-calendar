@@ -1,4 +1,4 @@
-import { startOfDay } from "date-fns";
+import { startOfDay, subDays } from "date-fns";
 import { calendarDate } from "@/lib/utils";
 
 /**
@@ -15,6 +15,16 @@ export function isUpcomingEvent(e: {
     startOfDay(calendarDate(e.date)).getTime() >=
       startOfDay(new Date()).getTime()
   );
+}
+
+/** How far back the Shows / Practices / Recordings list pages show past
+ *  events. Older ones stay reachable on the calendar (which loads by visible
+ *  range), but drop off the lists so a long-running band's query doesn't
+ *  grow without bound. */
+export const LIST_PAST_DAYS = 90;
+
+export function listSince(): Date {
+  return subDays(startOfDay(new Date()), LIST_PAST_DAYS);
 }
 
 export type EventTypeStr = "SHOW" | "RECORDING" | "PRACTICE";
