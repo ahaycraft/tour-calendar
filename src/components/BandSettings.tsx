@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
-import { Check, Copy, Loader2, MessageCircle, X } from "lucide-react";
+import { Check, Copy, Loader2, MessageCircle, Pencil, X } from "lucide-react";
 import ConfirmDialog from "./ConfirmDialog";
 
 type Role = "OWNER" | "ADMIN" | "MEMBER";
@@ -50,7 +51,7 @@ export default function BandSettings({
   const ownerCount = members.filter((m) => m.role === "OWNER").length;
 
   const [name, setName] = useState(bandName);
-  const [nameSaved, setNameSaved] = useState(false);
+  const [editingName, setEditingName] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const me = members.find((m) => m.userId === myUserId);
@@ -61,10 +62,6 @@ export default function BandSettings({
         .map((m) => m.phone as string)
     )
   );
-  const [phone, setPhone] = useState(me?.phone ?? "");
-  const [phoneBusy, setPhoneBusy] = useState(false);
-  const [phoneSaved, setPhoneSaved] = useState(false);
-  const [phoneError, setPhoneError] = useState("");
   const [error, setError] = useState("");
   const [leaving, setLeaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -150,31 +147,14 @@ export default function BandSettings({
       setError((await res.json().catch(() => ({}))).error || "Couldn't rename");
       return;
     }
-    setNameSaved(true);
-    setTimeout(() => setNameSaved(false), 2000);
+    setEditingName(false);
     router.refresh();
   }
 
-  async function savePhone(e: React.FormEvent) {
-    e.preventDefault();
-    if (phone.trim() === (me?.phone ?? "")) return;
-    setPhoneBusy(true);
-    setPhoneError("");
-    const res = await fetch("/api/account", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phone: phone.trim() || null })
-    });
-    setPhoneBusy(false);
-    if (!res.ok) {
-      setPhoneError(
-        (await res.json().catch(() => ({}))).error || "Couldn't save"
-      );
-      return;
-    }
-    setPhoneSaved(true);
-    setTimeout(() => setPhoneSaved(false), 2000);
-    router.refresh();
+  function cancelEditName() {
+    setName(bandName);
+    setEditingName(false);
+    setError("");
   }
 
   async function changeRole(userId: string, role: Role) {
@@ -247,26 +227,44 @@ export default function BandSettings({
       <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-6 mb-6">
         <h2 className="font-semibold text-zinc-100 mb-3">Name</h2>
         {canManage ? (
-          <form onSubmit={saveName} className="flex gap-2">
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className={`${fieldClass} flex-1`}
-            />
-            <button
-              type="submit"
-              disabled={busy || !name.trim() || name.trim() === bandName}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-500 disabled:opacity-50 transition-colors"
-            >
-              {busy ? (
-                <Loader2 size={15} className="animate-spin" />
-              ) : nameSaved ? (
-                <Check size={15} />
-              ) : (
-                "Save"
-              )}
-            </button>
-          </form>
+          editingName ? (
+            <form onSubmit={saveName} className="space-y-2">
+              <input
+                autoFocus
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className={`${fieldClass} w-full`}
+              />
+              <div className="flex gap-2">
+                <button
+                  type="submit"
+                  disabled={busy || !name.trim() || name.trim() === bandName}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-500 disabled:opacity-50 transition-colors"
+                >
+                  {busy ? <Loader2 size={15} className="animate-spin" /> : "Save"}
+                </button>
+                <button
+                  type="button"
+                  onClick={cancelEditName}
+                  className="px-4 py-2 bg-zinc-800 text-zinc-300 rounded-lg text-sm font-medium hover:bg-zinc-700 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          ) : (
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm text-zinc-200 truncate">{name}</p>
+              <button
+                type="button"
+                onClick={() => setEditingName(true)}
+                className="inline-flex items-center gap-1.5 text-sm text-blue-400 hover:text-blue-300 shrink-0"
+              >
+                <Pencil size={14} />
+                Edit
+              </button>
+            </div>
+          )
         ) : (
           <p className="text-sm text-zinc-300">{bandName}</p>
         )}
@@ -304,33 +302,13 @@ export default function BandSettings({
                   </p>
                   <p className="text-xs text-zinc-500 truncate">{m.email}</p>
                   {isMe ? (
-                    <form
-                      onSubmit={savePhone}
-                      className="flex items-center gap-2 mt-2"
+                    <Link
+                      href="/account"
+                      className="mt-1 inline-flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300"
                     >
-                      <input
-                        type="tel"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        placeholder="Add phone number"
-                        className={`${fieldClass} text-xs py-1.5 w-40`}
-                      />
-                      <button
-                        type="submit"
-                        disabled={
-                          phoneBusy || phone.trim() === (me?.phone ?? "")
-                        }
-                        className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-500 disabled:opacity-50 transition-colors"
-                      >
-                        {phoneBusy ? (
-                          <Loader2 size={13} className="animate-spin" />
-                        ) : phoneSaved ? (
-                          <Check size={13} />
-                        ) : (
-                          "Save"
-                        )}
-                      </button>
-                    </form>
+                      <Pencil size={11} />
+                      {me?.phone || "Add your phone number"}
+                    </Link>
                   ) : (
                     m.phone && (
                       <a
@@ -341,9 +319,6 @@ export default function BandSettings({
                         Text {m.name.split(" ")[0]}
                       </a>
                     )
-                  )}
-                  {isMe && phoneError && (
-                    <p className="text-xs text-red-400 mt-1">{phoneError}</p>
                   )}
                 </div>
 
@@ -390,35 +365,37 @@ export default function BandSettings({
             yourself.
           </p>
 
-          <form onSubmit={sendInvite} className="flex flex-wrap gap-2 mb-4">
+          <form onSubmit={sendInvite} className="flex flex-col gap-2 mb-4">
             <input
               type="email"
               value={inviteEmail}
               onChange={(e) => setInviteEmail(e.target.value)}
               placeholder="member@group.com"
-              className={`${fieldClass} flex-1 min-w-[180px]`}
+              className={`${fieldClass} w-full`}
             />
-            <input
-              type="tel"
-              value={invitePhone}
-              onChange={(e) => setInvitePhone(e.target.value)}
-              placeholder="Phone (optional)"
-              className={`${fieldClass} w-36`}
-            />
-            <select
-              value={inviteRole}
-              onChange={(e) =>
-                setInviteRole(e.target.value as "ADMIN" | "MEMBER")
-              }
-              className={fieldClass}
-            >
-              <option value="MEMBER">Member</option>
-              <option value="ADMIN">Admin</option>
-            </select>
+            <div className="flex gap-2">
+              <input
+                type="tel"
+                value={invitePhone}
+                onChange={(e) => setInvitePhone(e.target.value)}
+                placeholder="Phone (optional)"
+                className={`${fieldClass} flex-1 min-w-0`}
+              />
+              <select
+                value={inviteRole}
+                onChange={(e) =>
+                  setInviteRole(e.target.value as "ADMIN" | "MEMBER")
+                }
+                className={`${fieldClass} shrink-0`}
+              >
+                <option value="MEMBER">Member</option>
+                <option value="ADMIN">Admin</option>
+              </select>
+            </div>
             <button
               type="submit"
               disabled={inviteBusy || !inviteEmail.trim()}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-500 disabled:opacity-50 transition-colors"
+              className="self-start px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-500 disabled:opacity-50 transition-colors"
             >
               {inviteBusy ? (
                 <Loader2 size={15} className="animate-spin" />
