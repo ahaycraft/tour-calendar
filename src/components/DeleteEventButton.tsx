@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import ConfirmDialog from "./ConfirmDialog";
 import { revalidateShell } from "@/app/(protected)/actions";
+import { invalidateCalendarCache } from "@/lib/calendarCache";
 
 /**
  * Deliberately separate from the Admin Actions button row (Confirm/Pending/
@@ -27,6 +28,7 @@ export default function DeleteEventButton({
   async function doDelete() {
     setBusy(true);
     await fetch(`/api/shows/${showId}`, { method: "DELETE" });
+    invalidateCalendarCache();
     await revalidateShell();
     router.push(basePath);
     router.refresh();

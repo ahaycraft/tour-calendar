@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import ConfirmDialog from "./ConfirmDialog";
 import { revalidateShell } from "@/app/(protected)/actions";
+import { invalidateCalendarCache } from "@/lib/calendarCache";
 
 interface Props {
   showId: string;
@@ -34,6 +35,7 @@ export default function ShowStatusControls({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status })
     });
+    invalidateCalendarCache();
     await revalidateShell();
     setLoading(false);
     setConfirmingAnyway(false);

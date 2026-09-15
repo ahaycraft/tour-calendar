@@ -12,6 +12,7 @@ import {
 } from "@/lib/events";
 import CalendarExportLink from "@/components/CalendarExportLink";
 import DatePicker from "@/components/DatePicker";
+import { invalidateCalendarCache } from "@/lib/calendarCache";
 
 const inputClass =
   "w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent";
@@ -111,6 +112,7 @@ export default function BulkEventForm({
       return;
     }
 
+    invalidateCalendarCache();
     // Refresh the list route's data in the background, then show the recap
     // (with a one-tap "add every date to your calendar" link).
     router.refresh();

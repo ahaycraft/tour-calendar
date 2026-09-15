@@ -9,6 +9,7 @@ import Pagination from "./Pagination";
 import { calendarDate } from "@/lib/utils";
 import { matchesQuery } from "@/lib/search";
 import { usePagination } from "@/lib/pagination";
+import { invalidateCalendarCache } from "@/lib/calendarCache";
 
 interface UnavailableDate {
   id: string;
@@ -51,6 +52,7 @@ export default function BlockedDates({
     });
 
     if (res.ok) {
+      invalidateCalendarCache();
       const records: UnavailableDate[] = await res.json();
       setUnavailableDates((prev) => {
         const byId = new Map(prev.map((u) => [u.id, u] as const));
@@ -76,6 +78,7 @@ export default function BlockedDates({
       body: JSON.stringify({ date })
     });
     if (res.ok) {
+      invalidateCalendarCache();
       setUnavailableDates((prev) => prev.filter((u) => u.id !== id));
     }
   }

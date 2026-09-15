@@ -9,6 +9,7 @@ import Pagination from "./Pagination";
 import { eventNoun, isUpcomingEvent } from "@/lib/events";
 import { matchesQuery } from "@/lib/search";
 import { usePagination } from "@/lib/pagination";
+import { invalidateCalendarCache } from "@/lib/calendarCache";
 
 interface Props {
   events: EventListItem[];
@@ -39,6 +40,7 @@ export default function EventList({
     });
     setDeleting(false);
     if (res.ok) {
+      invalidateCalendarCache();
       setEvents((prev) => prev.filter((e) => e.id !== pendingDelete.id));
       setPendingDelete(null);
       router.refresh();

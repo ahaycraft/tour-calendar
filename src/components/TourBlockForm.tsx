@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { eventBasePath, type EventTypeStr } from "@/lib/events";
 import { revalidateShell } from "@/app/(protected)/actions";
+import { invalidateCalendarCache } from "@/lib/calendarCache";
 
 const BLOCK_NOUN: Record<EventTypeStr, string> = {
   SHOW: "Tour",
@@ -79,6 +80,7 @@ export default function TourBlockForm({
       return;
     }
 
+    invalidateCalendarCache();
     await revalidateShell();
     router.push(eventBasePath(initial.type));
     router.refresh();

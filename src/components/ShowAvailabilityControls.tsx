@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { revalidateShell } from "@/app/(protected)/actions";
+import { invalidateCalendarCache } from "@/lib/calendarCache";
 import { cn } from "@/lib/utils";
 import AvailabilityBadge from "@/components/AvailabilityBadge";
 
@@ -35,6 +36,7 @@ export default function ShowAvailabilityControls({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status, note })
     });
+    invalidateCalendarCache();
     await revalidateShell();
     setLoading(false);
     router.refresh();

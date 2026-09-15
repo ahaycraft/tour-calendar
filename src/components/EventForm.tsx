@@ -6,6 +6,7 @@ import VenueSearch, { type VenueResult } from "./VenueSearch";
 import ConfirmDialog from "./ConfirmDialog";
 import DatePicker from "./DatePicker";
 import { eventHref, eventNoun, type EventTypeStr } from "@/lib/events";
+import { invalidateCalendarCache } from "@/lib/calendarCache";
 import { AlertTriangle } from "lucide-react";
 
 const TYPE_TABS: { value: EventTypeStr; label: string }[] = [
@@ -149,6 +150,7 @@ export default function EventForm({
     }
 
     const saved = await res.json();
+    invalidateCalendarCache();
     router.push(eventHref(saved.type, saved.id));
     router.refresh();
   }

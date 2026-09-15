@@ -1,17 +1,23 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { useRouter } from "next/navigation";
 import type { EventInput, DatesSetArg } from "@fullcalendar/core";
 import type { DateClickArg } from "@fullcalendar/interaction";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import DayActionModal from "./DayActionModal";
 import AddButton from "./AddButton";
-import { eventHref, type EventTypeStr } from "@/lib/events";
+import { eventHref } from "@/lib/events";
 import { cn } from "@/lib/utils";
+import {
+  readCalendarCache,
+  writeCalendarCache,
+  type CachedShow as Show,
+  type CachedUnavailableDate as UnavailableDate
+} from "@/lib/calendarCache";
 
 type CalendarViewType = "dayGridMonth" | "dayGridWeek";
 
@@ -19,30 +25,6 @@ const VIEW_OPTIONS: { value: CalendarViewType; label: string }[] = [
   { value: "dayGridMonth", label: "Month" },
   { value: "dayGridWeek", label: "Week" }
 ];
-
-interface Show {
-  id: string;
-  type: EventTypeStr;
-  title: string;
-  venue: string | null;
-  city: string | null;
-  state?: string;
-  date: string;
-  status: "PENDING" | "CONFIRMED" | "CANCELLED";
-  availability: Array<{
-    userId: string;
-    status: string;
-    user: { name: string };
-  }>;
-}
-
-interface UnavailableDate {
-  id: string;
-  date: string;
-  note?: string;
-  userId: string;
-  user: { name: string };
-}
 
 // Muted, coordinated palette so the month view reads calm rather than neon.
 // Every fill is dark enough for white event text (all ≥ 4.5:1). Hue still
@@ -115,21 +97,39 @@ function mergeById<T extends { id: string }>(
   return [...byId.values()];
 }
 
-export default function CalendarView({ userId }: { userId: string }) {
+export default function CalendarView({
+  userId,
+  bandId
+}: {
+  userId: string;
+  bandId: string;
+}) {
   const router = useRouter();
-  const [shows, setShows] = useState<Show[]>([]);
+  // Seed from the in-memory session cache (see lib/calendarCache.ts) so
+  // navigating away from /calendar and back doesn't show a loader for
+  // months already fetched this session — only a cold first visit, a
+  // different band, or a mutation invalidating the cache does.
+  const cached = readCalendarCache(bandId);
+  const [shows, setShows] = useState<Show[]>(cached?.shows ?? []);
   const [unavailableDates, setUnavailableDates] = useState<UnavailableDate[]>(
-    []
+    cached?.unavailableDates ?? []
   );
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!cached);
   const [modalDate, setModalDate] = useState<string | null>(null);
   const [viewTitle, setViewTitle] = useState("");
   const [viewType, setViewType] = useState<CalendarViewType>("dayGridMonth");
   // Date ranges already fetched (`${from}_${to}` on the calendar's own visible
   // range, e.g. from `datesSet`), so paging back to a month already seen
   // doesn't re-fetch it. A ref, not state — it's read/written synchronously
-  // and shouldn't trigger a render on its own.
-  const loadedRanges = useRef(new Set<string>());
+  // and shouldn't trigger a render on its own. Seeded from the cache too.
+  const loadedRanges = useRef(cached?.loadedRanges ?? new Set<string>());
+
+  // Keep the session cache in sync with whatever this view currently shows,
+  // whether that came from a fetch below or from DayActionModal's optimistic
+  // add/remove callbacks further down this component.
+  useEffect(() => {
+    writeCalendarCache(bandId, shows, unavailableDates, loadedRanges.current);
+  }, [bandId, shows, unavailableDates]);
 
   // FullCalendar's day-cell dates are UTC-based (see fmtCellDate below), so
   // the visible range's start/end read the same way.
@@ -139,6 +139,7 @@ export default function CalendarView({ userId }: { userId: string }) {
     const key = `${from}_${to}`;
     if (loadedRanges.current.has(key)) return;
     loadedRanges.current.add(key);
+    setLoading(true);
 
     const [showsRes, unavailRes] = await Promise.all([
       fetch(`/api/shows?from=${from}&to=${to}`),
@@ -369,7 +370,22 @@ export default function CalendarView({ userId }: { userId: string }) {
           ))}
         </div>
 
-        <div onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+        <div
+          className="relative"
+          onTouchStart={onTouchStart}
+          onTouchEnd={onTouchEnd}
+        >
+          {/* Dims the grid instead of blocking it while a not-yet-cached
+              month loads, so paging never flashes an empty grid before
+              events pop in. */}
+          {loading && (
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-zinc-950/40 backdrop-blur-[1px] transition-opacity"
+            >
+              <Loader2 size={24} className="animate-spin text-zinc-400" />
+            </div>
+          )}
           <FullCalendar
             ref={calRef}
             plugins={[dayGridPlugin, interactionPlugin]}

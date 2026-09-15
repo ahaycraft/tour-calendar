@@ -6,6 +6,7 @@ import SwipeableShowRow from "./SwipeableShowRow";
 import SearchInput from "./SearchInput";
 import Pagination from "./Pagination";
 import { revalidateShell } from "@/app/(protected)/actions";
+import { invalidateCalendarCache } from "@/lib/calendarCache";
 import { calendarDate } from "@/lib/utils";
 import { matchesQuery } from "@/lib/search";
 import { usePagination } from "@/lib/pagination";
@@ -46,6 +47,7 @@ export default function MyResponses({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status })
     });
+    invalidateCalendarCache();
     // Keep the nav's "needs response" count in sync.
     await revalidateShell();
     return res.ok;
