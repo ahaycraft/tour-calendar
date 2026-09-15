@@ -20,8 +20,8 @@ beforeEach(() => {
   vi.clearAllMocks();
   authMock.mockResolvedValue(makeSession());
   updateMock.mockImplementation(
-    async (args: { data: { phone: string | null } }) =>
-      ({ id: "u1", phone: args.data.phone }) as never
+    async (args: { data: { name?: string; phone?: string | null } }) =>
+      ({ id: "u1", ...args.data }) as never
   );
 });
 
@@ -50,9 +50,40 @@ describe("PATCH /api/account", () => {
     expect(updateMock).toHaveBeenCalledWith({
       where: { id: "u1" },
       data: { phone: "+1 (217) 888-5757" },
-      select: { id: true, phone: true }
+      select: { id: true, name: true, phone: true }
     });
     expect(await res.json()).toEqual({ id: "u1", phone: "+1 (217) 888-5757" });
+  });
+
+  it("400 when name is not a string", async () => {
+    const res = await patch({ name: 5 });
+    expect(res.status).toBe(400);
+    expect(updateMock).not.toHaveBeenCalled();
+  });
+
+  it("400 when name is empty or whitespace-only", async () => {
+    expect((await patch({ name: "" })).status).toBe(400);
+    expect((await patch({ name: "   " })).status).toBe(400);
+    expect(updateMock).not.toHaveBeenCalled();
+  });
+
+  it("saves a trimmed name and leaves phone untouched", async () => {
+    const res = await patch({ name: "  Jordan Lee  " });
+    expect(res.status).toBe(200);
+    expect(updateMock).toHaveBeenCalledWith({
+      where: { id: "u1" },
+      data: { name: "Jordan Lee" },
+      select: { id: true, name: true, phone: true }
+    });
+  });
+
+  it("saves name and phone together", async () => {
+    await patch({ name: "Jordan Lee", phone: "2178885757" });
+    expect(updateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: { name: "Jordan Lee", phone: "2178885757" }
+      })
+    );
   });
 
   it("clears the phone number when given an empty/whitespace string", async () => {

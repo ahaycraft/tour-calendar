@@ -5,8 +5,12 @@ import { format, startOfDay } from "date-fns";
 import { Trash2 } from "lucide-react";
 import SwipeableShowRow from "./SwipeableShowRow";
 import DateRangePicker from "./DateRangePicker";
+import SearchInput from "./SearchInput";
+import Pagination from "./Pagination";
 import { revalidateShell } from "@/app/(protected)/actions";
 import { calendarDate } from "@/lib/utils";
+import { matchesQuery } from "@/lib/search";
+import { usePagination } from "@/lib/pagination";
 
 interface UnavailableDate {
   id: string;
@@ -44,6 +48,8 @@ export default function MyAvailabilityManager({
     initialUnavailableDates
   );
   const [shows, setShows] = useState(upcomingShows);
+  const [showQuery, setShowQuery] = useState("");
+  const [dateQuery, setDateQuery] = useState("");
   const [undo, setUndo] = useState<UndoState | null>(null);
   const undoTimer = useRef<number | null>(null);
   const [newDate, setNewDate] = useState("");
@@ -154,9 +160,20 @@ export default function MyAvailabilityManager({
   }
 
   const today = startOfDay(new Date());
-  const upcomingFiltered = shows.filter(
-    (s) => startOfDay(calendarDate(s.date)) >= today
+  const upcomingFiltered = shows
+    .filter((s) => startOfDay(calendarDate(s.date)) >= today)
+    .filter((s) =>
+      matchesQuery(showQuery, [s.title, s.venue, s.city, s.state])
+    );
+  const upcomingPage = usePagination(upcomingFiltered, undefined, showQuery);
+
+  const blockedFiltered = unavailableDates.filter((u) =>
+    matchesQuery(dateQuery, [
+      format(calendarDate(u.date), "EEE, MMM d, yyyy"),
+      u.note
+    ])
   );
+  const blockedPage = usePagination(blockedFiltered, undefined, dateQuery);
 
   return (
     <div className="space-y-8">
@@ -172,18 +189,36 @@ export default function MyAvailabilityManager({
           Tap to open it.
         </p>
 
+        {shows.length > 0 && (
+          <SearchInput
+            value={showQuery}
+            onChange={setShowQuery}
+            placeholder="Search by title, venue, or city"
+            className="mb-4"
+          />
+        )}
+
         {upcomingFiltered.length === 0 ? (
-          <p className="text-sm text-zinc-500">No upcoming shows yet.</p>
+          <p className="text-sm text-zinc-500">
+            {showQuery ? "No matches." : "No upcoming shows yet."}
+          </p>
         ) : (
-          <ul className="space-y-3">
-            {upcomingFiltered.map((show) => (
-              <SwipeableShowRow
-                key={`${show.id}:${show.myStatus}`}
-                show={show}
-                onRespond={handleRespond}
-              />
-            ))}
-          </ul>
+          <>
+            <ul className="space-y-3">
+              {upcomingPage.pageItems.map((show) => (
+                <SwipeableShowRow
+                  key={`${show.id}:${show.myStatus}`}
+                  show={show}
+                  onRespond={handleRespond}
+                />
+              ))}
+            </ul>
+            <Pagination
+              page={upcomingPage.page}
+              totalPages={upcomingPage.totalPages}
+              onChange={upcomingPage.setPage}
+            />
+          </>
         )}
       </div>
 
@@ -229,32 +264,52 @@ export default function MyAvailabilityManager({
 
         {addError && <p className="text-sm text-red-400 mb-4">{addError}</p>}
 
-        {unavailableDates.length === 0 ? (
-          <p className="text-sm text-zinc-500">No blocked dates. All clear!</p>
+        {unavailableDates.length > 0 && (
+          <SearchInput
+            value={dateQuery}
+            onChange={setDateQuery}
+            placeholder="Search by date or reason"
+            className="mb-4"
+          />
+        )}
+
+        {blockedFiltered.length === 0 ? (
+          <p className="text-sm text-zinc-500">
+            {dateQuery ? "No matches." : "No blocked dates. All clear!"}
+          </p>
         ) : (
-          <ul className="space-y-2">
-            {unavailableDates.map((u) => (
-              <li
-                key={u.id}
-                className="flex items-center justify-between py-2 border-b border-zinc-800 last:border-0"
-              >
-                <div>
-                  <span className="text-sm font-medium text-zinc-200">
-                    {format(calendarDate(u.date), "EEE, MMM d, yyyy")}
-                  </span>
-                  {u.note && (
-                    <span className="text-xs text-zinc-500 ml-2">{u.note}</span>
-                  )}
-                </div>
-                <button
-                  onClick={() => removeDate(u.id, u.date)}
-                  className="text-zinc-600 hover:text-red-400 transition-colors p-1"
+          <>
+            <ul className="space-y-2">
+              {blockedPage.pageItems.map((u) => (
+                <li
+                  key={u.id}
+                  className="flex items-center justify-between py-2 border-b border-zinc-800 last:border-0"
                 >
-                  <Trash2 size={15} />
-                </button>
-              </li>
-            ))}
-          </ul>
+                  <div>
+                    <span className="text-sm font-medium text-zinc-200">
+                      {format(calendarDate(u.date), "EEE, MMM d, yyyy")}
+                    </span>
+                    {u.note && (
+                      <span className="text-xs text-zinc-500 ml-2">
+                        {u.note}
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => removeDate(u.id, u.date)}
+                    className="text-zinc-600 hover:text-red-400 transition-colors p-1"
+                  >
+                    <Trash2 size={15} />
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <Pagination
+              page={blockedPage.page}
+              totalPages={blockedPage.totalPages}
+              onChange={blockedPage.setPage}
+            />
+          </>
         )}
       </div>
 
