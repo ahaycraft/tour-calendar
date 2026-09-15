@@ -17,6 +17,7 @@ import {
   LogOut,
   Plus,
   ShieldCheck,
+  User,
   UserCircle,
   X
 } from "lucide-react";
@@ -465,6 +466,14 @@ export default function Nav({
           </div>
 
           <div className="flex-1 overflow-y-auto p-3 space-y-3">
+            <Link
+              href="/account"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-3 w-full px-3 py-3 rounded-lg text-sm font-medium text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors"
+            >
+              <User size={18} />
+              My Account
+            </Link>
             <div className="px-1">
               <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
                 Appearance

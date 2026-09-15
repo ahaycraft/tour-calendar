@@ -57,11 +57,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // Read memberships fresh every time so creating a band, switching,
       // accepting an invite, or a role change all take effect immediately —
       // no stale JWT copy to refresh.
-      const memberships = await prisma.bandMembership.findMany({
-        where: { userId: token.id as string },
-        include: { band: { select: { id: true, name: true, slug: true } } },
-        orderBy: { createdAt: "asc" }
-      });
+      const [user, memberships] = await Promise.all([
+        prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: { name: true }
+        }),
+        prisma.bandMembership.findMany({
+          where: { userId: token.id as string },
+          include: { band: { select: { id: true, name: true, slug: true } } },
+          orderBy: { createdAt: "asc" }
+        })
+      ]);
+      // Same reasoning as memberships above: read fresh so an /account name
+      // edit shows up immediately instead of waiting for the next login.
+      if (user) session.user.name = user.name;
       session.user.bands = memberships.map((m) => ({
         id: m.band.id,
         name: m.band.name,

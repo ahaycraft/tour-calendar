@@ -9,7 +9,14 @@ import {
 } from "react";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
-import { ChevronDown, LogOut, Moon, ShieldCheck, Sun } from "lucide-react";
+import {
+  ChevronDown,
+  LogOut,
+  Moon,
+  ShieldCheck,
+  Sun,
+  User
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import PushMenuItem from "./PushToggle";
 
@@ -181,6 +188,16 @@ export function ThemeMenu({
           role="menu"
           className="absolute right-0 mt-1 w-56 z-50 rounded-lg border border-zinc-800 bg-zinc-900 shadow-xl py-1"
         >
+          <Link
+            href="/account"
+            role="menuitem"
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-800"
+          >
+            <User size={14} />
+            My Account
+          </Link>
+          <div className="my-1 border-t border-zinc-800" />
           <div className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-zinc-600">
             Appearance
           </div>
