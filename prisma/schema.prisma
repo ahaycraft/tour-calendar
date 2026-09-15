@@ -39,6 +39,7 @@ model User {
   accounts         Account[]
   sessions         Session[]
   pushSubscriptions PushSubscription[]
+  mobilePushTokens MobilePushToken[]
 }
 
 enum Role {
@@ -238,6 +239,26 @@ model PushSubscription {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+// A native app's Expo push token (opaque string — no p256dh/auth keys like
+// Web Push, so kept as its own model rather than a pile of nullable columns
+// on PushSubscription). Expo's push service fans out to APNs/FCM for us.
+model MobilePushToken {
+  id        String         @id @default(cuid())
+  userId    String
+  token     String         @unique
+  platform  MobilePlatform
+  createdAt DateTime       @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+enum MobilePlatform {
+  IOS
+  ANDROID
 }
 
 model VerificationToken {

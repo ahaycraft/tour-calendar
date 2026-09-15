@@ -30,52 +30,115 @@ export type PushPayload = {
   tag?: string;
 };
 
+const EXPO_PUSH_URL = "https://exp.host/--/api/v2/push/send";
+// Expo's push API accepts at most 100 messages per request.
+const EXPO_BATCH_SIZE = 100;
+
+function chunk<T>(items: T[], size: number): T[][] {
+  const chunks: T[][] = [];
+  for (let i = 0; i < items.length; i += size)
+    chunks.push(items.slice(i, i + size));
+  return chunks;
+}
+
 /**
- * Fan a notification out to every device the given users have subscribed.
- * Fire-and-forget from request handlers (`void sendPushToUsers(...)`) — never
- * block the HTTP response on the push services.
+ * Fan a notification out to every device the given users have subscribed —
+ * both browsers (Web Push) and native apps (Expo push tokens, which Expo's
+ * own service relays to APNs/FCM for us — no separate credentials needed
+ * here). Fire-and-forget from request handlers (`void sendPushToUsers(...)`)
+ * — never block the HTTP response on the push services.
  *
- * Stale subscriptions (the push service answers 404/410) are deleted as they're
- * encountered; this is required maintenance, not an optimisation.
+ * Stale subscriptions/tokens (the push service reports the device is gone)
+ * are deleted as they're encountered; this is required maintenance, not an
+ * optimisation.
  */
 export async function sendPushToUsers(
   userIds: string[],
   payload: PushPayload
 ): Promise<void> {
-  if (!configured || userIds.length === 0) return;
+  if (userIds.length === 0) return;
 
-  const subs = await prisma.pushSubscription.findMany({
-    where: { userId: { in: userIds } }
-  });
-  if (subs.length === 0) return;
+  const [subs, mobileTokens] = await Promise.all([
+    configured
+      ? prisma.pushSubscription.findMany({ where: { userId: { in: userIds } } })
+      : Promise.resolve([]),
+    prisma.mobilePushToken.findMany({ where: { userId: { in: userIds } } })
+  ]);
 
   const body = JSON.stringify(payload);
 
-  await Promise.allSettled(
-    subs.map(async (sub) => {
-      try {
-        await webpush.sendNotification(
-          {
-            endpoint: sub.endpoint,
-            keys: { p256dh: sub.p256dh, auth: sub.auth }
-          },
-          body
-        );
-      } catch (err) {
-        const statusCode =
-          err && typeof err === "object" && "statusCode" in err
-            ? (err as { statusCode?: number }).statusCode
-            : undefined;
-        if (statusCode === 404 || statusCode === 410) {
-          await prisma.pushSubscription
-            .delete({ where: { id: sub.id } })
-            .catch(() => {});
-        } else {
-          console.error("web-push send failed", statusCode ?? err);
-        }
+  const webPushSends = subs.map(async (sub) => {
+    try {
+      await webpush.sendNotification(
+        {
+          endpoint: sub.endpoint,
+          keys: { p256dh: sub.p256dh, auth: sub.auth }
+        },
+        body
+      );
+    } catch (err) {
+      const statusCode =
+        err && typeof err === "object" && "statusCode" in err
+          ? (err as { statusCode?: number }).statusCode
+          : undefined;
+      if (statusCode === 404 || statusCode === 410) {
+        await prisma.pushSubscription
+          .delete({ where: { id: sub.id } })
+          .catch(() => {});
+      } else {
+        console.error("web-push send failed", statusCode ?? err);
       }
-    })
+    }
+  });
+
+  const expoSends = chunk(mobileTokens, EXPO_BATCH_SIZE).map((batch) =>
+    sendExpoBatch(batch, payload)
   );
+
+  await Promise.allSettled([...webPushSends, ...expoSends]);
+}
+
+async function sendExpoBatch(
+  batch: { id: string; token: string }[],
+  payload: PushPayload
+): Promise<void> {
+  try {
+    const res = await fetch(EXPO_PUSH_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        "Accept-Encoding": "gzip, deflate"
+      },
+      body: JSON.stringify(
+        batch.map((t) => ({
+          to: t.token,
+          title: payload.title,
+          body: payload.body,
+          data: payload.url ? { url: payload.url } : undefined,
+          collapseId: payload.tag
+        }))
+      )
+    });
+    if (!res.ok) {
+      console.error("Expo push send failed", res.status);
+      return;
+    }
+
+    const { data } = (await res.json()) as {
+      data?: { details?: { error?: string } }[];
+    };
+    const stale = batch.filter(
+      (_, i) => data?.[i]?.details?.error === "DeviceNotRegistered"
+    );
+    if (stale.length > 0) {
+      await prisma.mobilePushToken
+        .deleteMany({ where: { id: { in: stale.map((t) => t.id) } } })
+        .catch(() => {});
+    }
+  } catch (err) {
+    console.error("Expo push send failed", err);
+  }
 }
 
 /**
@@ -88,8 +151,6 @@ export async function notifyBandMembers(
   exceptUserId: string,
   payload: PushPayload
 ): Promise<void> {
-  if (!configured) return;
-
   const members = await prisma.bandMembership.findMany({
     where: { bandId, userId: { not: exceptUserId } },
     select: { userId: true }
