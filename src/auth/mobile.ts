@@ -10,6 +10,12 @@ const MOBILE_TOKEN_SALT = "mobile-bearer-token";
 // band-only app, people expect to stay signed in.
 export const MOBILE_TOKEN_MAX_AGE = 60 * 60 * 24 * 365;
 
+// NextAuth's own config falls back to the legacy NEXTAUTH_SECRET name when
+// AUTH_SECRET isn't set (production here still uses the old name) — mirror
+// that fallback since encode()/decode() below are called directly, outside
+// NextAuth's own config resolution.
+const AUTH_SECRET = process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET!;
+
 interface MobileTokenPayload {
   id: string;
   role: string;
@@ -20,7 +26,7 @@ export async function mintMobileToken(
   payload: MobileTokenPayload
 ): Promise<string> {
   return encode({
-    secret: process.env.AUTH_SECRET!,
+    secret: AUTH_SECRET,
     salt: MOBILE_TOKEN_SALT,
     maxAge: MOBILE_TOKEN_MAX_AGE,
     token: payload
@@ -41,7 +47,7 @@ async function decodeMobileToken(
   if (!token) return null;
   try {
     const payload = await decode({
-      secret: process.env.AUTH_SECRET!,
+      secret: AUTH_SECRET,
       salt: MOBILE_TOKEN_SALT,
       token
     });

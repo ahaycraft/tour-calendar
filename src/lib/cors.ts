@@ -15,13 +15,31 @@ function originHeaders(origin: string | null): HeadersInit {
   return { "Access-Control-Allow-Origin": origin, Vary: "Origin" };
 }
 
-/** Wraps a route handler, adding CORS headers to whatever response it
- *  returns when the request's Origin is on the allow-list. */
+/**
+ * Wraps a route handler, adding CORS headers to whatever response it
+ * returns when the request's Origin is on the allow-list.
+ *
+ * Also catches anything the handler throws: an *uncaught* error skips this
+ * function's header-attaching entirely (Next's own generic error response
+ * takes over instead), which strips CORS headers from the error response —
+ * so a real server bug shows up to a browser client as an opaque "Failed
+ * to fetch" with no status code or error message to debug from, instead of
+ * the actual error.
+ */
 export async function withCors(
   request: NextRequest,
   handler: () => Promise<NextResponse>
 ): Promise<NextResponse> {
-  const response = await handler();
+  let response: NextResponse;
+  try {
+    response = await handler();
+  } catch (err) {
+    console.error("Unhandled error in CORS-wrapped route:", err);
+    response = NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
   for (const [key, value] of Object.entries(
     originHeaders(request.headers.get("origin"))
   )) {
