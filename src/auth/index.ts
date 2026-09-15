@@ -81,6 +81,12 @@ const {
     // otherwise get redirected to /login before reaching the route handler,
     // so also allow through anything carrying a valid mobile token.
     async authorized({ request, auth: cookieSession }) {
+      // A browser's CORS preflight never carries real credentials (that's
+      // the whole point of a preflight) — without this, the proxy would
+      // redirect the preflight itself to /login, breaking CORS for the
+      // mobile app's web target before the real request (which *is*
+      // properly checked, same as always) ever gets sent.
+      if (request.method === "OPTIONS") return true;
       if (cookieSession) return true;
       return hasValidMobileToken(request.headers.get("authorization"));
     }

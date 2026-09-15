@@ -4,8 +4,11 @@ vi.mock("@/auth", () => ({ auth: vi.fn() }));
 
 import { GET } from "@/app/api/mobile/me/route";
 import { auth } from "@/auth";
+import { jsonRequest } from "@/test/factories";
 
 const authMock = auth as unknown as Mock;
+
+const get = () => GET(jsonRequest(undefined) as Parameters<typeof GET>[0]);
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -14,7 +17,7 @@ beforeEach(() => {
 describe("GET /api/mobile/me", () => {
   it("401 without a session", async () => {
     authMock.mockResolvedValue(null);
-    const res = await GET();
+    const res = await get();
     expect(res.status).toBe(401);
   });
 
@@ -28,7 +31,7 @@ describe("GET /api/mobile/me", () => {
         bands: []
       }
     });
-    const res = await GET();
+    const res = await get();
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({
       id: "u1",

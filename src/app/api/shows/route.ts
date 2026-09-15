@@ -4,156 +4,168 @@ import { prisma } from "@/lib/prisma";
 import { getActiveBandId } from "@/lib/band";
 import { notifyBandMembers } from "@/lib/push";
 import { eventHref, eventTypeLabel, isEventType } from "@/lib/events";
+import { corsPreflight, withCors } from "@/lib/cors";
 
 // `from`/`to` are the calendar's currently visible date range (`to` exclusive),
 // e.g. what FullCalendar's `datesSet` reports — not a full-history dump, since
 // a long-running band's show count only grows.
 export async function GET(request: NextRequest) {
-  const session = await auth();
-  if (!session)
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  return withCors(request, async () => {
+    const session = await auth();
+    if (!session)
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const bandId = await getActiveBandId(session);
-  if (!bandId) return NextResponse.json([]);
+    const bandId = await getActiveBandId(session);
+    if (!bandId) return NextResponse.json([]);
 
-  const { searchParams } = new URL(request.url);
-  const fromParam = searchParams.get("from");
-  const toParam = searchParams.get("to");
-  if (!fromParam || !toParam) {
-    return NextResponse.json(
-      { error: "from and to are required" },
-      { status: 400 }
-    );
-  }
-  const from = new Date(`${fromParam}T00:00:00Z`);
-  const to = new Date(`${toParam}T00:00:00Z`);
-  if (isNaN(from.getTime()) || isNaN(to.getTime())) {
-    return NextResponse.json(
-      { error: "Invalid from or to date" },
-      { status: 400 }
-    );
-  }
-
-  const shows = await prisma.show.findMany({
-    where: { bandId, date: { gte: from, lt: to } },
-    orderBy: { date: "asc" },
-    include: {
-      createdBy: { select: { id: true, name: true } },
-      availability: {
-        include: { user: { select: { id: true, name: true } } }
-      }
+    const { searchParams } = new URL(request.url);
+    const fromParam = searchParams.get("from");
+    const toParam = searchParams.get("to");
+    if (!fromParam || !toParam) {
+      return NextResponse.json(
+        { error: "from and to are required" },
+        { status: 400 }
+      );
     }
-  });
+    const from = new Date(`${fromParam}T00:00:00Z`);
+    const to = new Date(`${toParam}T00:00:00Z`);
+    if (isNaN(from.getTime()) || isNaN(to.getTime())) {
+      return NextResponse.json(
+        { error: "Invalid from or to date" },
+        { status: 400 }
+      );
+    }
 
-  return NextResponse.json(shows);
+    const shows = await prisma.show.findMany({
+      where: { bandId, date: { gte: from, lt: to } },
+      orderBy: { date: "asc" },
+      include: {
+        createdBy: { select: { id: true, name: true } },
+        availability: {
+          include: { user: { select: { id: true, name: true } } }
+        }
+      }
+    });
+
+    return NextResponse.json(shows);
+  });
+}
+
+export async function OPTIONS(request: NextRequest) {
+  return corsPreflight(request);
 }
 
 export async function POST(request: NextRequest) {
-  const session = await auth();
-  if (!session)
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  return withCors(request, async () => {
+    const session = await auth();
+    if (!session)
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  try {
-    const body = await request.json();
-    const {
-      type,
-      title,
-      venue,
-      city,
-      state,
-      country,
-      date,
-      doorsTime,
-      setTime,
-      loadInTime,
-      guarantee,
-      notes,
-      venueAddress,
-      venueLat,
-      venueLng,
-      releaseId
-    } = body;
+    try {
+      const body = await request.json();
+      const {
+        type,
+        title,
+        venue,
+        city,
+        state,
+        country,
+        date,
+        doorsTime,
+        setTime,
+        loadInTime,
+        guarantee,
+        notes,
+        venueAddress,
+        venueLat,
+        venueLng,
+        releaseId
+      } = body;
 
-    // Venue and city are optional so skeleton events (e.g. a bulk-created tour
-    // run) can be saved before the routing is booked.
-    if (!title || !date) {
-      return NextResponse.json(
-        { error: "Title and date are required" },
-        { status: 400 }
-      );
-    }
-
-    if (type !== undefined && !isEventType(type)) {
-      return NextResponse.json(
-        { error: "Invalid event type" },
-        { status: 400 }
-      );
-    }
-
-    const bandId = await getActiveBandId(session);
-    if (!bandId) {
-      return NextResponse.json({ error: "No group selected" }, { status: 400 });
-    }
-
-    // A release link only applies to recording sessions, and the release must
-    // belong to the same band.
-    const effectiveType = type ?? "SHOW";
-    let resolvedReleaseId: string | null = null;
-    if (releaseId && effectiveType === "RECORDING") {
-      const release = await prisma.release.findFirst({
-        where: { id: releaseId, bandId },
-        select: { id: true }
-      });
-      if (!release) {
+      // Venue and city are optional so skeleton events (e.g. a bulk-created tour
+      // run) can be saved before the routing is booked.
+      if (!title || !date) {
         return NextResponse.json(
-          { error: "Release not found" },
+          { error: "Title and date are required" },
           { status: 400 }
         );
       }
-      resolvedReleaseId = release.id;
-    }
 
-    const show = await prisma.show.create({
-      data: {
-        bandId,
-        type: effectiveType,
-        releaseId: resolvedReleaseId,
-        title,
-        venue: venue || null,
-        city: city || null,
-        state: state || null,
-        country: country || "US",
-        date: new Date(date),
-        doorsTime: doorsTime ? new Date(doorsTime) : null,
-        setTime: setTime ? new Date(setTime) : null,
-        loadInTime: loadInTime ? new Date(loadInTime) : null,
-        guarantee: guarantee ? parseFloat(guarantee) : null,
-        notes: notes || null,
-        venueAddress: venueAddress || null,
-        venueLat: typeof venueLat === "number" ? venueLat : null,
-        venueLng: typeof venueLng === "number" ? venueLng : null,
-        createdById: session.user.id
-      },
-      include: {
-        createdBy: { select: { id: true, name: true } },
-        availability: true
+      if (type !== undefined && !isEventType(type)) {
+        return NextResponse.json(
+          { error: "Invalid event type" },
+          { status: 400 }
+        );
       }
-    });
 
-    // Notify the rest of the band. The app treats a missing/PENDING availability
-    // row as "owes a response", so this doubles as the pending-availability alert.
-    void notifyBandMembers(bandId, session.user.id, {
-      title: `New ${eventTypeLabel(effectiveType).toLowerCase()}: ${show.title}`,
-      body: "Tap to set your availability.",
-      url: eventHref(effectiveType, show.id),
-      tag: `show:${show.id}`
-    });
+      const bandId = await getActiveBandId(session);
+      if (!bandId) {
+        return NextResponse.json(
+          { error: "No group selected" },
+          { status: 400 }
+        );
+      }
 
-    return NextResponse.json(show, { status: 201 });
-  } catch {
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
-  }
+      // A release link only applies to recording sessions, and the release must
+      // belong to the same band.
+      const effectiveType = type ?? "SHOW";
+      let resolvedReleaseId: string | null = null;
+      if (releaseId && effectiveType === "RECORDING") {
+        const release = await prisma.release.findFirst({
+          where: { id: releaseId, bandId },
+          select: { id: true }
+        });
+        if (!release) {
+          return NextResponse.json(
+            { error: "Release not found" },
+            { status: 400 }
+          );
+        }
+        resolvedReleaseId = release.id;
+      }
+
+      const show = await prisma.show.create({
+        data: {
+          bandId,
+          type: effectiveType,
+          releaseId: resolvedReleaseId,
+          title,
+          venue: venue || null,
+          city: city || null,
+          state: state || null,
+          country: country || "US",
+          date: new Date(date),
+          doorsTime: doorsTime ? new Date(doorsTime) : null,
+          setTime: setTime ? new Date(setTime) : null,
+          loadInTime: loadInTime ? new Date(loadInTime) : null,
+          guarantee: guarantee ? parseFloat(guarantee) : null,
+          notes: notes || null,
+          venueAddress: venueAddress || null,
+          venueLat: typeof venueLat === "number" ? venueLat : null,
+          venueLng: typeof venueLng === "number" ? venueLng : null,
+          createdById: session.user.id
+        },
+        include: {
+          createdBy: { select: { id: true, name: true } },
+          availability: true
+        }
+      });
+
+      // Notify the rest of the band. The app treats a missing/PENDING availability
+      // row as "owes a response", so this doubles as the pending-availability alert.
+      void notifyBandMembers(bandId, session.user.id, {
+        title: `New ${eventTypeLabel(effectiveType).toLowerCase()}: ${show.title}`,
+        body: "Tap to set your availability.",
+        url: eventHref(effectiveType, show.id),
+        tag: `show:${show.id}`
+      });
+
+      return NextResponse.json(show, { status: 201 });
+    } catch {
+      return NextResponse.json(
+        { error: "Internal server error" },
+        { status: 500 }
+      );
+    }
+  });
 }

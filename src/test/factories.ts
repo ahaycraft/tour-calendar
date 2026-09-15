@@ -61,12 +61,15 @@ export function makeShow(overrides: Partial<FakeShow> = {}): FakeShow {
   };
 }
 
-/** A stand-in for NextRequest that only answers `.json()`, which is all the
- *  handlers use. */
-export function jsonRequest(body: unknown): {
-  json: () => Promise<unknown>;
-} {
-  return { json: async () => body };
+/** A stand-in for NextRequest that answers `.json()` and `.headers` (a real
+ *  `Headers`, so `.get()` works — e.g. for handlers wrapped in withCors,
+ *  src/lib/cors.ts, which reads the Origin header). Defaults to no headers,
+ *  which reads the same as a same-origin request with none sent. */
+export function jsonRequest(
+  body: unknown,
+  headers?: Record<string, string>
+): { json: () => Promise<unknown>; headers: Headers } {
+  return { json: async () => body, headers: new Headers(headers) };
 }
 
 /** `{ params }` context for a dynamic `[id]` route handler. */
@@ -74,8 +77,12 @@ export function routeCtx(id: string): { params: Promise<{ id: string }> } {
   return { params: Promise.resolve({ id }) };
 }
 
-/** A stand-in for NextRequest that only answers `.url`, for GET handlers that
- *  read query params via `new URL(request.url)`. */
-export function urlRequest(url: string): { url: string } {
-  return { url: `http://localhost${url}` };
+/** A stand-in for NextRequest that answers `.url` (for GET handlers reading
+ *  query params via `new URL(request.url)`) and `.headers`, same as
+ *  jsonRequest above. */
+export function urlRequest(
+  url: string,
+  headers?: Record<string, string>
+): { url: string; headers: Headers } {
+  return { url: `http://localhost${url}`, headers: new Headers(headers) };
 }
