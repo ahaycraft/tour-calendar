@@ -1,5 +1,6 @@
 import { startOfDay, subDays } from "date-fns";
 import { calendarDate } from "@/lib/utils";
+import { prisma } from "@/lib/prisma";
 
 /**
  * Upcoming = happening today or later, and not cancelled. This is the split
@@ -25,6 +26,28 @@ export const LIST_PAST_DAYS = 90;
 
 export function listSince(): Date {
   return subDays(startOfDay(new Date()), LIST_PAST_DAYS);
+}
+
+/** Upcoming, non-cancelled shows in `bandId` that `userId` hasn't responded
+ *  to yet. Whether an admin has confirmed the show is a separate concern and
+ *  deliberately not counted here. Shared by the nav badges and the My
+ *  Availability tabs so they never disagree. */
+export async function needsResponseCount(
+  bandId: string,
+  userId: string
+): Promise<number> {
+  return prisma.show.count({
+    where: {
+      bandId,
+      status: { not: "CANCELLED" },
+      date: { gte: startOfDay(new Date()) },
+      NOT: {
+        availability: {
+          some: { userId, status: { in: ["AVAILABLE", "UNAVAILABLE"] } }
+        }
+      }
+    }
+  });
 }
 
 export type EventTypeStr = "SHOW" | "RECORDING" | "PRACTICE";

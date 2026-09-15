@@ -3,22 +3,17 @@ import { prisma } from "@/lib/prisma";
 import { requireActiveBandId } from "@/lib/band";
 import { needsResponseCount as getNeedsResponseCount } from "@/lib/events";
 import MyAvailabilityTabs from "@/components/MyAvailabilityTabs";
-import MyResponses from "@/components/MyResponses";
-import PushNudge from "@/components/PushNudge";
+import BlockedDates from "@/components/BlockedDates";
 
-export default async function MyAvailabilityPage() {
+export default async function BlockedDatesPage() {
   const session = await auth();
   const bandId = await requireActiveBandId(session!);
 
-  const [allShows, needsResponseCount] = await Promise.all([
-    prisma.show.findMany({
-      where: { bandId, status: { not: "CANCELLED" } },
-      orderBy: { date: "asc" },
-      include: {
-        availability: {
-          where: { userId: session!.user.id }
-        }
-      }
+  // Unavailability is global to the user — the same across every band.
+  const [unavailableDates, needsResponseCount] = await Promise.all([
+    prisma.memberUnavailability.findMany({
+      where: { userId: session!.user.id },
+      orderBy: { date: "asc" }
     }),
     getNeedsResponseCount(bandId, session!.user.id)
   ]);
@@ -31,22 +26,15 @@ export default async function MyAvailabilityPage() {
       </p>
 
       <MyAvailabilityTabs
-        active="/my-availability"
+        active="/my-availability/blocked-dates"
         needsResponseCount={needsResponseCount}
       />
 
-      <PushNudge />
-
-      <MyResponses
-        upcomingShows={allShows.map((s) => ({
-          id: s.id,
-          type: s.type,
-          title: s.title,
-          venue: s.venue,
-          city: s.city,
-          state: s.state,
-          date: s.date.toISOString(),
-          myStatus: s.availability[0]?.status ?? "PENDING"
+      <BlockedDates
+        initialUnavailableDates={unavailableDates.map((u) => ({
+          id: u.id,
+          date: u.date.toISOString(),
+          note: u.note ?? undefined
         }))}
       />
     </div>

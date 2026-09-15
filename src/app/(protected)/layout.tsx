@@ -1,9 +1,8 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { startOfDay } from "date-fns";
 import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
 import { getActiveBand, userBands } from "@/lib/band";
+import { needsResponseCount as getNeedsResponseCount } from "@/lib/events";
 import Nav from "@/components/Nav";
 import BottomNav from "@/components/BottomNav";
 
@@ -21,24 +20,10 @@ export default async function ProtectedLayout({
   const theme =
     (await cookies()).get("theme")?.value === "light" ? "light" : "dark";
 
-  // Upcoming, non-cancelled events in the active band that the current user
-  // still owes a response on. (Whether an admin has confirmed the show is a
-  // separate concern and deliberately not counted here.)
-  const needsResponseCount = await prisma.show.count({
-    where: {
-      bandId: activeBand.id,
-      status: { not: "CANCELLED" },
-      date: { gte: startOfDay(new Date()) },
-      NOT: {
-        availability: {
-          some: {
-            userId: session.user.id,
-            status: { in: ["AVAILABLE", "UNAVAILABLE"] }
-          }
-        }
-      }
-    }
-  });
+  const needsResponseCount = await getNeedsResponseCount(
+    activeBand.id,
+    session.user.id
+  );
 
   return (
     <div className="min-h-screen bg-zinc-950">
