@@ -42,6 +42,7 @@ export default async function BandSettingsPage() {
       pendingInvites={band.invites.map((i) => ({
         id: i.id,
         email: i.email,
+        phone: i.phone,
         role: i.role as "ADMIN" | "MEMBER",
         token: i.token,
         expiresAt: i.expiresAt.toISOString()

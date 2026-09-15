@@ -19,6 +19,7 @@ interface Member {
 interface PendingInvite {
   id: string;
   email: string;
+  phone: string | null;
   role: "ADMIN" | "MEMBER";
   token: string;
   expiresAt: string;
@@ -69,6 +70,7 @@ export default function BandSettings({
   const [deleting, setDeleting] = useState(false);
 
   const [inviteEmail, setInviteEmail] = useState("");
+  const [invitePhone, setInvitePhone] = useState("");
   const [inviteRole, setInviteRole] = useState<"ADMIN" | "MEMBER">("MEMBER");
   const [inviteBusy, setInviteBusy] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
@@ -77,6 +79,11 @@ export default function BandSettings({
     typeof window === "undefined"
       ? ""
       : `${window.location.origin}/invite/${token}`;
+
+  const textLinkHref = (invite: PendingInvite) =>
+    `sms:${invite.phone}?body=${encodeURIComponent(
+      `Here's your sign-up link for ${bandName}: ${inviteUrl(invite.token)}`
+    )}`;
 
   async function copyLink(token: string) {
     try {
@@ -96,7 +103,11 @@ export default function BandSettings({
     const res = await fetch(`/api/bands/${bandId}/invites`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: inviteEmail, role: inviteRole })
+      body: JSON.stringify({
+        email: inviteEmail,
+        phone: invitePhone,
+        role: inviteRole
+      })
     });
     setInviteBusy(false);
     if (!res.ok) {
@@ -107,6 +118,7 @@ export default function BandSettings({
     }
     const { token } = await res.json();
     setInviteEmail("");
+    setInvitePhone("");
     await copyLink(token);
     router.refresh();
   }
@@ -374,7 +386,8 @@ export default function BandSettings({
           <h2 className="font-semibold text-zinc-100 mb-1">Invite people</h2>
           <p className="text-xs text-zinc-500 mb-4">
             Creates a link to send them. It works for 14 days and only for that
-            email.
+            email. Add a phone number to text it to them instead of copying it
+            yourself.
           </p>
 
           <form onSubmit={sendInvite} className="flex flex-wrap gap-2 mb-4">
@@ -384,6 +397,13 @@ export default function BandSettings({
               onChange={(e) => setInviteEmail(e.target.value)}
               placeholder="member@group.com"
               className={`${fieldClass} flex-1 min-w-[180px]`}
+            />
+            <input
+              type="tel"
+              value={invitePhone}
+              onChange={(e) => setInvitePhone(e.target.value)}
+              placeholder="Phone (optional)"
+              className={`${fieldClass} w-36`}
             />
             <select
               value={inviteRole}
@@ -421,6 +441,15 @@ export default function BandSettings({
                       {format(new Date(inv.expiresAt), "MMM d, yyyy")}
                     </p>
                   </div>
+                  {inv.phone && (
+                    <a
+                      href={textLinkHref(inv)}
+                      className="inline-flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300"
+                    >
+                      <MessageCircle size={13} />
+                      Text link
+                    </a>
+                  )}
                   <button
                     type="button"
                     onClick={() => copyLink(inv.token)}

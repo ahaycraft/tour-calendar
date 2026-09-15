@@ -35,6 +35,14 @@ export async function POST(
       );
     }
 
+    const phone = body.phone?.trim() || null;
+    if (phone && !/^\+?[0-9()\-.\s]{7,20}$/.test(phone)) {
+      return NextResponse.json(
+        { error: "That doesn't look like a valid phone number" },
+        { status: 400 }
+      );
+    }
+
     const existingMember = await prisma.bandMembership.findFirst({
       where: { bandId, user: { email } },
       select: { id: true }
@@ -51,19 +59,21 @@ export async function POST(
       create: {
         bandId,
         email,
+        phone,
         role: inviteRole,
         token: newInviteToken(),
         invitedById: session.user.id,
         expiresAt: inviteExpiry()
       },
       update: {
+        phone,
         role: inviteRole,
         token: newInviteToken(),
         invitedById: session.user.id,
         expiresAt: inviteExpiry(),
         acceptedAt: null
       },
-      select: { token: true, email: true, role: true, expiresAt: true }
+      select: { token: true, email: true, phone: true, role: true, expiresAt: true }
     });
 
     return NextResponse.json(invite, { status: 201 });

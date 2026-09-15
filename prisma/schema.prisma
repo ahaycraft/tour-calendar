@@ -66,6 +66,7 @@ model BandInvite {
   id          String    @id @default(cuid())
   bandId      String
   email       String
+  phone       String?
   role        BandRole  @default(MEMBER)
   token       String    @unique
   invitedById String
