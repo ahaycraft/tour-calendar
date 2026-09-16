@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
 import { corsPreflight, withCors } from "@/lib/cors";
 
 // "Who am I" for the mobile app — its bearer token is an encrypted JWE, so
@@ -11,7 +12,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const { id, name, email, role } = session.user;
-    return NextResponse.json({ id, name, email, role });
+    // phone isn't on the session (see src/auth/index.ts), so the account
+    // screen needs it looked up directly, same as the web app's /account
+    // server component does.
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: { phone: true }
+    });
+    return NextResponse.json({ id, name, email, role, phone: user?.phone ?? null });
   });
 }
 

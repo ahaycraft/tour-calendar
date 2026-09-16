@@ -3,6 +3,47 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { canManage, isBandMember } from "@/lib/band";
 import { isReleaseKind, isReleaseStatus } from "@/lib/releases";
+import { corsPreflight, withCors } from "@/lib/cors";
+
+export async function OPTIONS(request: NextRequest) {
+  return corsPreflight(request);
+}
+
+// Mirrors src/app/(protected)/releases/[id]/page.tsx's query, but joins the
+// track's song directly instead of fetching the whole band's song list — the
+// mobile app only needs each track's own song, not the picker the web
+// editor uses to add new ones.
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  return withCors(request, async () => {
+    const session = await auth();
+    if (!session)
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const { id } = await params;
+
+    const release = await prisma.release.findUnique({
+      where: { id },
+      include: {
+        createdBy: { select: { name: true } },
+        tracks: {
+          orderBy: { position: "asc" },
+          include: {
+            song: { select: { id: true, title: true, status: true, duration: true } }
+          }
+        }
+      }
+    });
+
+    if (!release || !isBandMember(session, release.bandId)) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(release);
+  });
+}
 
 export async function PATCH(
   request: NextRequest,

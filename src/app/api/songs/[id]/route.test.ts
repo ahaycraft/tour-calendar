@@ -11,7 +11,7 @@ vi.mock("@/lib/band", () => ({
   isBandMember: vi.fn()
 }));
 
-import { DELETE, PATCH } from "@/app/api/songs/[id]/route";
+import { DELETE, GET, PATCH } from "@/app/api/songs/[id]/route";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { canManage, isBandMember } from "@/lib/band";
@@ -24,10 +24,12 @@ const deleteMock = prisma.song.delete as unknown as Mock;
 const isBandMemberMock = vi.mocked(isBandMember);
 const canManageMock = vi.mocked(canManage);
 
+const get = (id: string) =>
+  GET(jsonRequest(undefined) as Parameters<typeof GET>[0], routeCtx(id));
 const patch = (id: string, body: unknown) =>
   PATCH(jsonRequest(body) as Parameters<typeof PATCH>[0], routeCtx(id));
 const del = (id: string) =>
-  DELETE({} as Parameters<typeof DELETE>[0], routeCtx(id));
+  DELETE(jsonRequest(undefined) as Parameters<typeof DELETE>[0], routeCtx(id));
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -36,6 +38,37 @@ beforeEach(() => {
   canManageMock.mockReturnValue(true);
   findUniqueMock.mockResolvedValue({ bandId: "band1", createdById: "u1" });
   updateMock.mockResolvedValue({ id: "s1", updatedAt: new Date() });
+});
+
+describe("GET /api/songs/[id]", () => {
+  it("401 without a session", async () => {
+    authMock.mockResolvedValue(null);
+    expect((await get("s1")).status).toBe(401);
+  });
+
+  it("404 when the song doesn't exist or the caller isn't in its band", async () => {
+    findUniqueMock.mockResolvedValue(null);
+    expect((await get("s1")).status).toBe(404);
+
+    findUniqueMock.mockResolvedValue({ bandId: "band1", createdById: "u1" });
+    isBandMemberMock.mockReturnValue(false);
+    expect((await get("s1")).status).toBe(404);
+  });
+
+  it("returns the song when found and the caller is a band member", async () => {
+    findUniqueMock.mockResolvedValue({
+      id: "s1",
+      bandId: "band1",
+      title: "Test Song",
+      comments: [],
+      demos: [],
+      sections: [],
+      tracks: []
+    });
+    const res = await get("s1");
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ id: "s1", title: "Test Song" });
+  });
 });
 
 describe("PATCH /api/songs/[id] — guards", () => {
@@ -66,38 +99,50 @@ describe("PATCH /api/songs/[id] — duration", () => {
   it("stores a plain integer number of seconds", async () => {
     await patch("s1", { duration: 225 });
     expect(updateMock).toHaveBeenCalledWith(
-      expect.objectContaining({ data: expect.objectContaining({ duration: 225 }) })
+      expect.objectContaining({
+        data: expect.objectContaining({ duration: 225 })
+      })
     );
   });
 
   it("rounds a fractional value and rejects a negative one", async () => {
     await patch("s1", { duration: 225.6 });
     expect(updateMock).toHaveBeenCalledWith(
-      expect.objectContaining({ data: expect.objectContaining({ duration: 226 }) })
+      expect.objectContaining({
+        data: expect.objectContaining({ duration: 226 })
+      })
     );
 
     await patch("s1", { duration: -5 });
     expect(updateMock).toHaveBeenCalledWith(
-      expect.objectContaining({ data: expect.objectContaining({ duration: null }) })
+      expect.objectContaining({
+        data: expect.objectContaining({ duration: null })
+      })
     );
   });
 
   it("clears duration on null or an empty string", async () => {
     await patch("s1", { duration: null });
     expect(updateMock).toHaveBeenCalledWith(
-      expect.objectContaining({ data: expect.objectContaining({ duration: null }) })
+      expect.objectContaining({
+        data: expect.objectContaining({ duration: null })
+      })
     );
 
     await patch("s1", { duration: "" });
     expect(updateMock).toHaveBeenCalledWith(
-      expect.objectContaining({ data: expect.objectContaining({ duration: null }) })
+      expect.objectContaining({
+        data: expect.objectContaining({ duration: null })
+      })
     );
   });
 
   it("treats an unparsable value as null rather than erroring", async () => {
     await patch("s1", { duration: "not a number" });
     expect(updateMock).toHaveBeenCalledWith(
-      expect.objectContaining({ data: expect.objectContaining({ duration: null }) })
+      expect.objectContaining({
+        data: expect.objectContaining({ duration: null })
+      })
     );
   });
 

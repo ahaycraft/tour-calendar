@@ -5,33 +5,42 @@ import { prisma } from "@/lib/prisma";
 import { canManage, isBandMember } from "@/lib/band";
 import { notifyBandMembers } from "@/lib/push";
 import { eventHref, isEventType } from "@/lib/events";
+import { corsPreflight, withCors } from "@/lib/cors";
 
+export async function OPTIONS(request: NextRequest) {
+  return corsPreflight(request);
+}
+
+// Mirrors src/app/(protected)/shows/[id]/page.tsx's query exactly, so the
+// mobile app's detail view matches the web app's.
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await auth();
-  if (!session)
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  return withCors(request, async () => {
+    const session = await auth();
+    if (!session)
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { id } = await params;
+    const { id } = await params;
 
-  const show = await prisma.show.findUnique({
-    where: { id },
-    include: {
-      createdBy: { select: { id: true, name: true } },
-      release: { select: { id: true, title: true } },
-      availability: {
-        include: { user: { select: { id: true, name: true } } }
+    const show = await prisma.show.findUnique({
+      where: { id },
+      include: {
+        createdBy: { select: { id: true, name: true } },
+        release: { select: { id: true, title: true } },
+        availability: {
+          include: { user: { select: { id: true, name: true } } }
+        }
       }
+    });
+
+    if (!show || !isBandMember(session, show.bandId)) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
+
+    return NextResponse.json(show);
   });
-
-  if (!show || !isBandMember(session, show.bandId)) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
-  }
-
-  return NextResponse.json(show);
 }
 
 export async function PATCH(

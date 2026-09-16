@@ -22,7 +22,7 @@ vi.mock("@/lib/band", () => ({
 }));
 vi.mock("@/lib/push", () => ({ notifyBandMembers: vi.fn() }));
 
-import { DELETE, PATCH } from "@/app/api/shows/[id]/route";
+import { DELETE, GET, PATCH } from "@/app/api/shows/[id]/route";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { canManage, isBandMember } from "@/lib/band";
@@ -39,6 +39,8 @@ const isBandMemberMock = vi.mocked(isBandMember);
 const canManageMock = vi.mocked(canManage);
 const notifyMock = vi.mocked(notifyBandMembers);
 
+const get = (id: string) =>
+  GET(jsonRequest(undefined) as Parameters<typeof GET>[0], routeCtx(id));
 const patch = (id: string, body: unknown) =>
   PATCH(jsonRequest(body) as Parameters<typeof PATCH>[0], routeCtx(id));
 const del = (id: string) =>
@@ -61,6 +63,29 @@ function existing(show = makeShow()) {
   currentExisting = show;
   findUniqueMock.mockResolvedValue(show as never);
 }
+
+describe("GET /api/shows/[id]", () => {
+  it("401 without a session", async () => {
+    authMock.mockResolvedValue(null);
+    expect((await get("s1")).status).toBe(401);
+  });
+
+  it("404 when the show doesn't exist or the caller isn't in its band", async () => {
+    findUniqueMock.mockResolvedValue(null);
+    expect((await get("s1")).status).toBe(404);
+
+    existing();
+    isBandMemberMock.mockReturnValue(false);
+    expect((await get("s1")).status).toBe(404);
+  });
+
+  it("returns the show when found and the caller is a band member", async () => {
+    existing(makeShow({ id: "show1" }));
+    const res = await get("show1");
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ id: "show1" });
+  });
+});
 
 describe("PATCH /api/shows/[id] — guards", () => {
   it("401 without a session", async () => {
