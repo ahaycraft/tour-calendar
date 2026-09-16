@@ -55,7 +55,8 @@ export function corsPreflight(request: NextRequest): NextResponse {
     headers: {
       ...originHeaders(request.headers.get("origin")),
       "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization"
+      "Access-Control-Allow-Headers":
+        "Content-Type, Authorization, X-Active-Band"
     }
   });
 }

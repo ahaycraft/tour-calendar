@@ -39,7 +39,24 @@ export async function GET(
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
-    return NextResponse.json(show);
+    // memberCount is for the "X of Y available" confirm/cancel controls —
+    // see ShowStatusControls.tsx / EventDetail.tsx's own query. itineraryPhones
+    // is EventDetail.tsx's own itineraryPhones — every band member's phone
+    // (except the caller's), for the "Text itinerary" shortcut.
+    const bandMembers = await prisma.bandMembership.findMany({
+      where: { bandId: show.bandId },
+      select: { user: { select: { id: true, phone: true } } }
+    });
+    const memberCount = bandMembers.length;
+    const itineraryPhones = Array.from(
+      new Set(
+        bandMembers
+          .filter((m) => m.user.id !== session.user.id && m.user.phone)
+          .map((m) => m.user.phone as string)
+      )
+    );
+
+    return NextResponse.json({ ...show, memberCount, itineraryPhones });
   });
 }
 

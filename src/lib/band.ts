@@ -1,9 +1,14 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import type { Session } from "next-auth";
 
 export const ACTIVE_BAND_COOKIE = "active_band";
+// The mobile app has no cookie jar (see src/auth/mobile.ts), so it signals
+// its chosen band with this header instead, sent on every authedFetch call
+// once the user has picked one. Ignored whenever a session cookie is
+// present, so this never affects the web app.
+export const ACTIVE_BAND_HEADER = "x-active-band";
 
 export interface SessionBand {
   id: string;
@@ -21,15 +26,18 @@ export function userBands(session: Session): SessionBand[] {
  * create endpoints use this; detail pages load a record by id and check
  * membership of *that record's* band instead.
  *
- * Resolution: the `active_band` cookie if it names a band the user belongs to,
- * otherwise their first membership.
+ * Resolution: the `active_band` cookie if it names a band the user belongs
+ * to, else the `x-active-band` header (the mobile app's equivalent), else
+ * their first membership.
  */
 export async function getActiveBand(
   session: Session
 ): Promise<SessionBand | null> {
   const bands = userBands(session);
   if (bands.length === 0) return null;
-  const selected = (await cookies()).get(ACTIVE_BAND_COOKIE)?.value;
+  const cookieValue = (await cookies()).get(ACTIVE_BAND_COOKIE)?.value;
+  const headerValue = (await headers()).get(ACTIVE_BAND_HEADER) ?? undefined;
+  const selected = cookieValue ?? headerValue;
   return bands.find((b) => b.id === selected) ?? bands[0];
 }
 

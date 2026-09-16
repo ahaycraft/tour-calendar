@@ -2,12 +2,34 @@ import { describe, expect, it, vi } from "vitest";
 import type { Session } from "next-auth";
 
 // band.ts pulls these in at module load; the pure helpers under test never
-// call them, so empty stubs are enough to let the import resolve.
-vi.mock("next/headers", () => ({ cookies: vi.fn() }));
+// call them, so empty stubs are enough to let the import resolve. getActiveBand
+// below overrides these per-test.
+vi.mock("next/headers", () => ({ cookies: vi.fn(), headers: vi.fn() }));
 vi.mock("next/navigation", () => ({ redirect: vi.fn() }));
 vi.mock("@/lib/prisma", () => ({ prisma: {} }));
 
-import { bandRole, canManage, isBandMember, userBands } from "@/lib/band";
+import { cookies, headers } from "next/headers";
+import {
+  bandRole,
+  canManage,
+  getActiveBand,
+  isBandMember,
+  userBands
+} from "@/lib/band";
+
+const cookiesMock = vi.mocked(cookies);
+const headersMock = vi.mocked(headers);
+
+function mockRequestState(opts: { cookie?: string; header?: string } = {}) {
+  cookiesMock.mockResolvedValue({
+    get: (name: string) =>
+      name === "active_band" && opts.cookie ? { value: opts.cookie } : undefined
+  } as unknown as Awaited<ReturnType<typeof cookies>>);
+  headersMock.mockResolvedValue({
+    get: (name: string) =>
+      name === "x-active-band" ? (opts.header ?? null) : null
+  } as unknown as Awaited<ReturnType<typeof headers>>);
+}
 
 type Role = "OWNER" | "ADMIN" | "MEMBER";
 
@@ -29,6 +51,42 @@ const owner = session("u1", [{ id: "b1", role: "OWNER" }]);
 const admin = session("u2", [{ id: "b1", role: "ADMIN" }]);
 const member = session("u3", [{ id: "b1", role: "MEMBER" }]);
 const outsider = session("u4", [{ id: "b2", role: "OWNER" }]);
+const multiBand = session("u5", [
+  { id: "b1", role: "OWNER" },
+  { id: "b2", role: "MEMBER" }
+]);
+
+describe("getActiveBand", () => {
+  it("returns null when the user has no bands", () => {
+    mockRequestState();
+    return expect(getActiveBand(session("u6", []))).resolves.toBeNull();
+  });
+
+  it("defaults to the first membership with no cookie or header", async () => {
+    mockRequestState();
+    expect((await getActiveBand(multiBand))?.id).toBe("b1");
+  });
+
+  it("prefers the active_band cookie when it names a band the user is in", async () => {
+    mockRequestState({ cookie: "b2" });
+    expect((await getActiveBand(multiBand))?.id).toBe("b2");
+  });
+
+  it("falls back to the x-active-band header (mobile) when there's no cookie", async () => {
+    mockRequestState({ header: "b2" });
+    expect((await getActiveBand(multiBand))?.id).toBe("b2");
+  });
+
+  it("prefers the cookie over the header when both are present", async () => {
+    mockRequestState({ cookie: "b1", header: "b2" });
+    expect((await getActiveBand(multiBand))?.id).toBe("b1");
+  });
+
+  it("falls back to the first membership when the cookie/header name a band the user isn't in", async () => {
+    mockRequestState({ header: "not-mine" });
+    expect((await getActiveBand(multiBand))?.id).toBe("b1");
+  });
+});
 
 describe("userBands", () => {
   it("returns the session's bands", () => {

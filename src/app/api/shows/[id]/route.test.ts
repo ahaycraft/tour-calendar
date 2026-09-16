@@ -5,7 +5,8 @@ vi.mock("@/auth", () => ({ auth: vi.fn() }));
 vi.mock("@/lib/prisma", () => {
   const prisma: Record<string, unknown> = {
     show: { findUnique: vi.fn(), update: vi.fn(), delete: vi.fn() },
-    showAvailability: { deleteMany: vi.fn() }
+    showAvailability: { deleteMany: vi.fn() },
+    bandMembership: { findMany: vi.fn() }
   };
   // The [id] route always calls $transaction with a callback; run it against
   // the same mock so tx.show.update === prisma.show.update for assertions.
@@ -35,6 +36,7 @@ const findUniqueMock = prisma.show.findUnique as unknown as Mock;
 const updateMock = prisma.show.update as unknown as Mock;
 const deleteMock = prisma.show.delete as unknown as Mock;
 const deleteManyMock = prisma.showAvailability.deleteMany as unknown as Mock;
+const bandMembersMock = prisma.bandMembership.findMany as unknown as Mock;
 const isBandMemberMock = vi.mocked(isBandMember);
 const canManageMock = vi.mocked(canManage);
 const notifyMock = vi.mocked(notifyBandMembers);
@@ -51,6 +53,12 @@ beforeEach(() => {
   authMock.mockResolvedValue(makeSession());
   isBandMemberMock.mockReturnValue(true);
   canManageMock.mockReturnValue(true);
+  bandMembersMock.mockResolvedValue([
+    { user: { id: "u1", phone: "555-0001" } },
+    { user: { id: "u2", phone: "555-0002" } },
+    { user: { id: "u3", phone: null } },
+    { user: { id: "u4", phone: "555-0004" } }
+  ]);
   // The updated row = existing merged with whatever the handler wrote.
   updateMock.mockImplementation(
     async (args: { data: Record<string, unknown> }) =>
@@ -79,11 +87,30 @@ describe("GET /api/shows/[id]", () => {
     expect((await get("s1")).status).toBe(404);
   });
 
-  it("returns the show when found and the caller is a band member", async () => {
+  it("returns the show plus the band's member count and itinerary phones when found and the caller is a band member", async () => {
     existing(makeShow({ id: "show1" }));
     const res = await get("show1");
     expect(res.status).toBe(200);
-    expect(await res.json()).toMatchObject({ id: "show1" });
+    expect(await res.json()).toMatchObject({
+      id: "show1",
+      memberCount: 4,
+      itineraryPhones: ["555-0002", "555-0004"]
+    });
+    expect(bandMembersMock).toHaveBeenCalledWith({
+      where: { bandId: "band1" },
+      select: { user: { select: { id: true, phone: true } } }
+    });
+  });
+
+  it("dedupes a phone shared by more than one member", async () => {
+    existing(makeShow({ id: "show1" }));
+    bandMembersMock.mockResolvedValue([
+      { user: { id: "u1", phone: "555-0001" } },
+      { user: { id: "u2", phone: "555-0002" } },
+      { user: { id: "u4", phone: "555-0002" } }
+    ]);
+    const res = await get("show1");
+    expect((await res.json()).itineraryPhones).toEqual(["555-0002"]);
   });
 });
 

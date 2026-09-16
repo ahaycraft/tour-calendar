@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { corsPreflight, withCors } from "@/lib/cors";
+import { getActiveBand, userBands } from "@/lib/band";
 
 // "Who am I" for the mobile app — its bearer token is an encrypted JWE, so
 // the client can't just decode its own id out of the token client-side.
@@ -15,11 +16,19 @@ export async function GET(request: NextRequest) {
     // phone isn't on the session (see src/auth/index.ts), so the account
     // screen needs it looked up directly, same as the web app's /account
     // server component does.
-    const user = await prisma.user.findUnique({
-      where: { id },
-      select: { phone: true }
+    const [user, activeBand] = await Promise.all([
+      prisma.user.findUnique({ where: { id }, select: { phone: true } }),
+      getActiveBand(session)
+    ]);
+    return NextResponse.json({
+      id,
+      name,
+      email,
+      role,
+      phone: user?.phone ?? null,
+      bands: userBands(session),
+      activeBandId: activeBand?.id ?? null
     });
-    return NextResponse.json({ id, name, email, role, phone: user?.phone ?? null });
   });
 }
 
