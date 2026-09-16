@@ -44,7 +44,7 @@ const get = (id: string) =>
 const patch = (id: string, body: unknown) =>
   PATCH(jsonRequest(body) as Parameters<typeof PATCH>[0], routeCtx(id));
 const del = (id: string) =>
-  DELETE({} as Parameters<typeof DELETE>[0], routeCtx(id));
+  DELETE(jsonRequest(undefined) as Parameters<typeof DELETE>[0], routeCtx(id));
 
 beforeEach(() => {
   vi.clearAllMocks();

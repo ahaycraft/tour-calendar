@@ -97,6 +97,11 @@ async function searchPhoton(q: string): Promise<VenueResult[]> {
   const data = (await res.json()) as { features?: PhotonFeature[] };
 
   const results: VenueResult[] = [];
+  // Photon can list the same OSM object twice (e.g. indexed as both a POI
+  // and an address point) — osm_id alone isn't a stable enough dedupe key
+  // upstream, so drop repeats here rather than passing duplicate ids
+  // through to callers that key a list by `id`.
+  const seenIds = new Set<string>();
   for (const f of data.features ?? []) {
     const p = f.properties ?? {};
     const name = p.name || p.street || "";
@@ -108,8 +113,11 @@ async function searchPhoton(q: string): Promise<VenueResult[]> {
     const address = [streetLine, city, p.state, p.postcode, p.country]
       .filter(Boolean)
       .join(", ");
+    const id = `photon-${p.osm_id ?? `${coords?.[1]},${coords?.[0]}`}`;
+    if (seenIds.has(id)) continue;
+    seenIds.add(id);
     results.push({
-      id: `photon-${p.osm_id ?? `${coords?.[1]},${coords?.[0]}`}`,
+      id,
       name,
       address,
       city,
