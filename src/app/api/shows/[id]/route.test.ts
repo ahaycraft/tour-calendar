@@ -212,6 +212,39 @@ describe("PATCH /api/shows/[id] — status → pending", () => {
   });
 });
 
+describe("PATCH /api/shows/[id] — venue contact", () => {
+  it("updates the venue contact name/email", async () => {
+    existing();
+    await patch("show1", {
+      venueContactName: "Jane Smith",
+      venueContactEmail: "jane@venue.com"
+    });
+    expect(updateMock.mock.calls[0][0].data).toMatchObject({
+      venueContactName: "Jane Smith",
+      venueContactEmail: "jane@venue.com"
+    });
+  });
+
+  it("clears the contact email when set to an empty string", async () => {
+    existing(makeShow({ venueContactEmail: "old@venue.com" } as never));
+    await patch("show1", { venueContactEmail: "" });
+    expect(updateMock.mock.calls[0][0].data).toMatchObject({
+      venueContactEmail: null
+    });
+  });
+
+  it("leaves the venue contact untouched when omitted", async () => {
+    existing();
+    await patch("show1", { notes: "Load in through the alley" });
+    expect(updateMock.mock.calls[0][0].data).not.toHaveProperty(
+      "venueContactEmail"
+    );
+    expect(updateMock.mock.calls[0][0].data).not.toHaveProperty(
+      "venueContactName"
+    );
+  });
+});
+
 describe("DELETE /api/shows/[id]", () => {
   it("401 without a session", async () => {
     authMock.mockResolvedValue(null);

@@ -58,6 +58,8 @@ export default async function EventEdit({ id, expected }: Props) {
     venueAddress: show.venueAddress ?? "",
     venueLat: show.venueLat,
     venueLng: show.venueLng,
+    venueContactName: show.venueContactName ?? "",
+    venueContactEmail: show.venueContactEmail ?? "",
     releaseId: show.releaseId ?? ""
   };
 

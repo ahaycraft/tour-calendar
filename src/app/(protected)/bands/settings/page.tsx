@@ -30,6 +30,7 @@ export default async function BandSettingsPage() {
     <BandSettings
       bandId={band.id}
       bandName={band.name}
+      bandRider={band.rider}
       myRole={active.role}
       myUserId={session!.user.id}
       members={band.memberships.map((m) => ({

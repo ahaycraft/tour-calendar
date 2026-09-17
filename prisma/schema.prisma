@@ -55,6 +55,10 @@ model Band {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Reusable hospitality/tech rider, sent to a show's venue contact as-is
+  // (see Show.venueContactEmail) rather than varying per show.
+  rider String? @db.Text
+
   memberships BandMembership[]
   invites     BandInvite[]
   shows       Show[]
@@ -122,6 +126,9 @@ model Show {
   venueAddress String?
   venueLat     Float?
   venueLng     Float?
+  // Who to send the band's rider to for this show, if anyone.
+  venueContactName  String?
+  venueContactEmail String?
   status       ShowStatus @default(PENDING)
   createdById  String
   createdAt    DateTime   @default(now())

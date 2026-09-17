@@ -99,6 +99,8 @@ export async function PATCH(
         venueAddress,
         venueLat,
         venueLng,
+        venueContactName,
+        venueContactEmail,
         releaseId
       } = body;
 
@@ -182,6 +184,12 @@ export async function PATCH(
             }),
             ...(venueLng !== undefined && {
               venueLng: typeof venueLng === "number" ? venueLng : null
+            }),
+            ...(venueContactName !== undefined && {
+              venueContactName: venueContactName || null
+            }),
+            ...(venueContactEmail !== undefined && {
+              venueContactEmail: venueContactEmail || null
             })
           },
           include: {
