@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { canManage, isBandMember } from "@/lib/band";
+import { canManage, canAccessContent } from "@/lib/band";
 import { corsPreflight, withCors } from "@/lib/cors";
 
 const MAX_LEN = 4000;
@@ -41,7 +41,7 @@ export async function POST(
         where: { id: songId },
         select: { bandId: true }
       });
-      if (!song || !isBandMember(session, song.bandId)) {
+      if (!song || !canAccessContent(session, song.bandId)) {
         return NextResponse.json({ error: "Song not found" }, { status: 404 });
       }
 
@@ -81,7 +81,7 @@ export async function DELETE(
       if (
         !comment ||
         comment.songId !== songId ||
-        !isBandMember(session, comment.song.bandId)
+        !canAccessContent(session, comment.song.bandId)
       ) {
         return NextResponse.json({ error: "Not found" }, { status: 404 });
       }

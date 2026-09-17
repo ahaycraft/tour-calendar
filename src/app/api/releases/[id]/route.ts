@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { canManage, isBandMember } from "@/lib/band";
+import { canManage, canAccessContent } from "@/lib/band";
 import { isReleaseKind, isReleaseStatus } from "@/lib/releases";
 import { corsPreflight, withCors } from "@/lib/cors";
 
@@ -37,7 +37,7 @@ export async function GET(
       }
     });
 
-    if (!release || !isBandMember(session, release.bandId)) {
+    if (!release || !canAccessContent(session, release.bandId)) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
@@ -60,7 +60,7 @@ export async function PATCH(
       where: { id },
       select: { bandId: true }
     });
-    if (!existing || !isBandMember(session, existing.bandId)) {
+    if (!existing || !canAccessContent(session, existing.bandId)) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
@@ -122,7 +122,7 @@ export async function DELETE(
 
     const { id } = await params;
     const release = await prisma.release.findUnique({ where: { id } });
-    if (!release || !isBandMember(session, release.bandId)) {
+    if (!release || !canAccessContent(session, release.bandId)) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
     if (!canManage(session, release.bandId, release.createdById)) {

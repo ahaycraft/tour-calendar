@@ -6,18 +6,18 @@ vi.mock("@/lib/prisma", () => ({
 }));
 vi.mock("@/lib/band", () => ({
   canManage: vi.fn(),
-  isBandMember: vi.fn()
+  canAccessContent: vi.fn()
 }));
 
 import { GET } from "@/app/api/releases/[id]/route";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { isBandMember } from "@/lib/band";
+import { canAccessContent } from "@/lib/band";
 import { jsonRequest, makeSession, routeCtx } from "@/test/factories";
 
 const authMock = auth as unknown as Mock;
 const findUniqueMock = prisma.release.findUnique as unknown as Mock;
-const isBandMemberMock = vi.mocked(isBandMember);
+const canAccessContentMock = vi.mocked(canAccessContent);
 
 const get = (id: string) =>
   GET(jsonRequest(undefined) as Parameters<typeof GET>[0], routeCtx(id));
@@ -25,7 +25,7 @@ const get = (id: string) =>
 beforeEach(() => {
   vi.clearAllMocks();
   authMock.mockResolvedValue(makeSession());
-  isBandMemberMock.mockReturnValue(true);
+  canAccessContentMock.mockReturnValue(true);
 });
 
 describe("GET /api/releases/[id]", () => {
@@ -39,7 +39,7 @@ describe("GET /api/releases/[id]", () => {
     expect((await get("r1")).status).toBe(404);
 
     findUniqueMock.mockResolvedValue({ bandId: "band1" });
-    isBandMemberMock.mockReturnValue(false);
+    canAccessContentMock.mockReturnValue(false);
     expect((await get("r1")).status).toBe(404);
   });
 

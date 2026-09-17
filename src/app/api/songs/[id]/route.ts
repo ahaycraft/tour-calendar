@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { canManage, isBandMember } from "@/lib/band";
+import { canManage, canAccessContent } from "@/lib/band";
 import { isSongStatus } from "@/lib/songs";
 import { corsPreflight, withCors } from "@/lib/cors";
 
@@ -38,7 +38,7 @@ export async function GET(
       }
     });
 
-    if (!song || !isBandMember(session, song.bandId)) {
+    if (!song || !canAccessContent(session, song.bandId)) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
@@ -65,7 +65,7 @@ export async function PATCH(
       where: { id },
       select: { bandId: true }
     });
-    if (!existing || !isBandMember(session, existing.bandId)) {
+    if (!existing || !canAccessContent(session, existing.bandId)) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
@@ -150,7 +150,7 @@ export async function DELETE(
     const { id } = await params;
 
     const song = await prisma.song.findUnique({ where: { id } });
-    if (!song || !isBandMember(session, song.bandId)) {
+    if (!song || !canAccessContent(session, song.bandId)) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
     if (!canManage(session, song.bandId, song.createdById)) {

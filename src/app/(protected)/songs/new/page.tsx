@@ -1,8 +1,15 @@
 import NewSongForm from "@/components/NewSongForm";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
+import { redirect } from "next/navigation";
+import { auth } from "@/auth";
+import { canCreateContent, requireActiveBandId } from "@/lib/band";
 
-export default function NewSongPage() {
+export default async function NewSongPage() {
+  const session = await auth();
+  const bandId = await requireActiveBandId(session!);
+  if (!canCreateContent(session!, bandId)) redirect("/songs");
+
   return (
     <div className="max-w-md">
       <Link

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { isBandMember } from "@/lib/band";
+import { canAccessContent } from "@/lib/band";
 import { ensureBandInstruments } from "@/lib/instruments";
 
 async function loadRelease(id: string) {
@@ -22,7 +22,7 @@ export async function POST(
 
   const { id } = await params;
   const release = await loadRelease(id);
-  if (!release || !isBandMember(session, release.bandId)) {
+  if (!release || !canAccessContent(session, release.bandId)) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
@@ -50,7 +50,7 @@ export async function PATCH(
 
   const { id } = await params;
   const release = await loadRelease(id);
-  if (!release || !isBandMember(session, release.bandId)) {
+  if (!release || !canAccessContent(session, release.bandId)) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
   if (!release.trackingPlan) {

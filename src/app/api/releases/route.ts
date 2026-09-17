@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { getActiveBandId } from "@/lib/band";
+import { canAccessContent, canCreateContent, getActiveBandId } from "@/lib/band";
 import { isReleaseKind } from "@/lib/releases";
 import { corsPreflight, withCors } from "@/lib/cors";
 
@@ -19,6 +19,9 @@ export async function GET(request: NextRequest) {
 
     const bandId = await getActiveBandId(session);
     if (!bandId) return NextResponse.json([]);
+    if (!canAccessContent(session, bandId)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
 
     const releases = await prisma.release.findMany({
       where: { bandId },
@@ -51,6 +54,9 @@ export async function POST(request: NextRequest) {
       const bandId = await getActiveBandId(session);
       if (!bandId) {
         return NextResponse.json({ error: "No group selected" }, { status: 400 });
+      }
+      if (!canCreateContent(session, bandId)) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
       }
 
       const release = await prisma.release.create({

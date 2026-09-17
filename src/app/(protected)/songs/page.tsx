@@ -1,6 +1,12 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { canManage, requireActiveBandId } from "@/lib/band";
+import {
+  canAccessContent,
+  canCreateContent,
+  canManage,
+  requireActiveBandId
+} from "@/lib/band";
+import { redirect } from "next/navigation";
 import { Music } from "lucide-react";
 import SongsList from "@/components/SongsList";
 import AddButton from "@/components/AddButton";
@@ -8,6 +14,8 @@ import AddButton from "@/components/AddButton";
 export default async function SongsPage() {
   const session = await auth();
   const bandId = await requireActiveBandId(session!);
+  if (!canAccessContent(session!, bandId)) redirect("/calendar");
+  const canAdd = canCreateContent(session!, bandId);
 
   const songs = await prisma.song.findMany({
     where: { bandId },
@@ -25,7 +33,7 @@ export default async function SongsPage() {
     <div className="max-w-3xl">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-zinc-50">Songs</h1>
-        <AddButton href="/songs/new" label="New Song" />
+        {canAdd && <AddButton href="/songs/new" label="New Song" />}
       </div>
 
       {songs.length === 0 ? (

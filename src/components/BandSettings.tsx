@@ -6,8 +6,17 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { Check, Copy, Loader2, MessageCircle, Pencil, X } from "lucide-react";
 import ConfirmDialog from "./ConfirmDialog";
+import { roleLabel } from "@/lib/role-label";
 
-type Role = "OWNER" | "ADMIN" | "MEMBER";
+type Role = "OWNER" | "ADMIN" | "MANAGER" | "TOUR_MANAGER" | "BOOKING_AGENT" | "MEMBER";
+type InviteRole = Exclude<Role, "OWNER">;
+const INVITE_ROLES: InviteRole[] = [
+  "ADMIN",
+  "MANAGER",
+  "TOUR_MANAGER",
+  "BOOKING_AGENT",
+  "MEMBER"
+];
 
 interface Member {
   userId: string;
@@ -21,7 +30,7 @@ interface PendingInvite {
   id: string;
   email: string;
   phone: string | null;
-  role: "ADMIN" | "MEMBER";
+  role: InviteRole;
   token: string;
   expiresAt: string;
 }
@@ -68,7 +77,7 @@ export default function BandSettings({
 
   const [inviteEmail, setInviteEmail] = useState("");
   const [invitePhone, setInvitePhone] = useState("");
-  const [inviteRole, setInviteRole] = useState<"ADMIN" | "MEMBER">("MEMBER");
+  const [inviteRole, setInviteRole] = useState<InviteRole>("MEMBER");
   const [inviteBusy, setInviteBusy] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
 
@@ -332,11 +341,14 @@ export default function BandSettings({
                   >
                     <option value="OWNER">Owner</option>
                     <option value="ADMIN">Admin</option>
+                    <option value="MANAGER">Manager</option>
+                    <option value="TOUR_MANAGER">Tour Manager</option>
+                    <option value="BOOKING_AGENT">Booking Agent</option>
                     <option value="MEMBER">Member</option>
                   </select>
                 ) : (
-                  <span className="text-xs text-zinc-500 capitalize">
-                    {m.role.toLowerCase()}
+                  <span className="text-xs text-zinc-500">
+                    {roleLabel(m.role)}
                   </span>
                 )}
 
@@ -383,13 +395,14 @@ export default function BandSettings({
               />
               <select
                 value={inviteRole}
-                onChange={(e) =>
-                  setInviteRole(e.target.value as "ADMIN" | "MEMBER")
-                }
+                onChange={(e) => setInviteRole(e.target.value as InviteRole)}
                 className={`${fieldClass} shrink-0`}
               >
-                <option value="MEMBER">Member</option>
-                <option value="ADMIN">Admin</option>
+                {INVITE_ROLES.map((r) => (
+                  <option key={r} value={r}>
+                    {roleLabel(r)}
+                  </option>
+                ))}
               </select>
             </div>
             <button
@@ -414,7 +427,7 @@ export default function BandSettings({
                       {inv.email}
                     </p>
                     <p className="text-xs text-zinc-500">
-                      {inv.role.toLowerCase()} · expires{" "}
+                      {roleLabel(inv.role)} · expires{" "}
                       {format(new Date(inv.expiresAt), "MMM d, yyyy")}
                     </p>
                   </div>

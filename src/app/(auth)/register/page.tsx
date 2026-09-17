@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { roleLabel } from "@/lib/role-label";
 
 function RegisterForm() {
   const router = useRouter();
@@ -70,7 +71,7 @@ function RegisterForm() {
             <h1 className="text-2xl font-bold text-zinc-50">Woodshedd</h1>
             <p className="text-zinc-500 mt-1">
               {joining
-                ? `Join ${invite?.bandName} as ${invite?.role?.toLowerCase()}`
+                ? `Join ${invite?.bandName} as ${invite?.role ? roleLabel(invite.role) : ""}`
                 : "Create your account"}
             </p>
           </div>

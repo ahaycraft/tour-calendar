@@ -13,7 +13,7 @@ import {
   tourEditHref,
   type EventTypeStr
 } from "@/lib/events";
-import { canManage, isBandMember } from "@/lib/band";
+import { canManageEvents, isBandMember } from "@/lib/band";
 
 const BLOCK_NOUN: Record<EventTypeStr, string> = {
   SHOW: "tour",
@@ -37,7 +37,7 @@ export default async function TourEdit({ tourGroupId, expected }: Props) {
   const first = events[0];
   if (!first || !isBandMember(session!, first.bandId)) notFound();
   if (first.type !== expected) redirect(tourEditHref(first.type, tourGroupId));
-  if (!canManage(session!, first.bandId, first.createdById)) {
+  if (!canManageEvents(session!, first.bandId, first.createdById)) {
     redirect(eventBasePath(first.type));
   }
 

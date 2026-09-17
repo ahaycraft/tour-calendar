@@ -1,8 +1,15 @@
 import NewReleaseForm from "@/components/NewReleaseForm";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
+import { redirect } from "next/navigation";
+import { auth } from "@/auth";
+import { canCreateContent, requireActiveBandId } from "@/lib/band";
 
-export default function NewReleasePage() {
+export default async function NewReleasePage() {
+  const session = await auth();
+  const bandId = await requireActiveBandId(session!);
+  if (!canCreateContent(session!, bandId)) redirect("/releases");
+
   return (
     <div className="max-w-md">
       <Link

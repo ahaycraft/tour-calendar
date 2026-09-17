@@ -19,7 +19,7 @@ vi.mock("@/lib/prisma", () => {
 });
 vi.mock("@/lib/band", () => ({
   getActiveBandId: vi.fn(),
-  canManage: vi.fn(),
+  canManageEvents: vi.fn(),
   isBandMember: vi.fn()
 }));
 vi.mock("@/lib/push", () => ({ notifyBandMembers: vi.fn() }));
@@ -27,7 +27,7 @@ vi.mock("@/lib/push", () => ({ notifyBandMembers: vi.fn() }));
 import { PATCH, POST } from "@/app/api/shows/bulk/route";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { canManage, getActiveBandId, isBandMember } from "@/lib/band";
+import { canManageEvents, getActiveBandId, isBandMember } from "@/lib/band";
 import { notifyBandMembers } from "@/lib/push";
 import { jsonRequest, makeSession, makeShow } from "@/test/factories";
 
@@ -39,7 +39,7 @@ const updateManyMock = prisma.show.updateMany as unknown as Mock;
 const updateMock = prisma.show.update as unknown as Mock;
 const getActiveBandIdMock = vi.mocked(getActiveBandId);
 const isBandMemberMock = vi.mocked(isBandMember);
-const canManageMock = vi.mocked(canManage);
+const canManageEventsMock = vi.mocked(canManageEvents);
 const notifyMock = vi.mocked(notifyBandMembers);
 
 const UUID_RE =
@@ -55,7 +55,7 @@ beforeEach(() => {
   authMock.mockResolvedValue(makeSession());
   getActiveBandIdMock.mockResolvedValue("band1");
   isBandMemberMock.mockReturnValue(true);
-  canManageMock.mockReturnValue(true);
+  canManageEventsMock.mockReturnValue(true);
   createManyMock.mockImplementation(
     async (args: { data: unknown[] }) =>
       args.data.map((_, i) => ({ id: `c${i}` })) as never
@@ -193,7 +193,7 @@ describe("PATCH /api/shows/bulk — guards", () => {
     expect((await patch({ tourGroupId: "grp1" })).status).toBe(404);
 
     isBandMemberMock.mockReturnValue(true);
-    canManageMock.mockReturnValue(false);
+    canManageEventsMock.mockReturnValue(false);
     expect((await patch({ tourGroupId: "grp1" })).status).toBe(403);
   });
 });

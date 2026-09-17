@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { format } from "date-fns";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { canManage, isBandMember } from "@/lib/band";
+import { canManageEvents, isBandMember } from "@/lib/band";
 import { notifyBandMembers } from "@/lib/push";
 import { eventHref, isEventType } from "@/lib/events";
 import { corsPreflight, withCors } from "@/lib/cors";
@@ -76,7 +76,7 @@ export async function PATCH(
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
-    if (!canManage(session, existing.bandId, existing.createdById)) {
+    if (!canManageEvents(session, existing.bandId, existing.createdById)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -246,7 +246,7 @@ export async function DELETE(
     if (!show || !isBandMember(session, show.bandId)) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
-    if (!canManage(session, show.bandId, show.createdById)) {
+    if (!canManageEvents(session, show.bandId, show.createdById)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

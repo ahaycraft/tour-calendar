@@ -3,7 +3,14 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { bandRole } from "@/lib/band";
 
-const ROLES = ["OWNER", "ADMIN", "MEMBER"] as const;
+const ROLES = [
+  "OWNER",
+  "ADMIN",
+  "MANAGER",
+  "TOUR_MANAGER",
+  "BOOKING_AGENT",
+  "MEMBER"
+] as const;
 
 async function ownerCount(bandId: string) {
   return prisma.bandMembership.count({ where: { bandId, role: "OWNER" } });

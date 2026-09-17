@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { isBandMember } from "@/lib/band";
+import { canAccessContent } from "@/lib/band";
 import { corsPreflight, withCors } from "@/lib/cors";
 
 const MAX_URL = 2000;
@@ -44,7 +44,7 @@ export async function POST(
         where: { id: songId },
         select: { bandId: true }
       });
-      if (!song || !isBandMember(session, song.bandId)) {
+      if (!song || !canAccessContent(session, song.bandId)) {
         return NextResponse.json(
           { error: "Song not found" },
           { status: 404 }

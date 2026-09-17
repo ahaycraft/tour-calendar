@@ -5,7 +5,7 @@ import type { Session } from "next-auth";
  * handlers actually read — not full Prisma / next-auth objects.
  */
 
-type Role = "OWNER" | "ADMIN" | "MEMBER";
+type Role = "OWNER" | "ADMIN" | "MANAGER" | "TOUR_MANAGER" | "BOOKING_AGENT" | "MEMBER";
 
 export function makeSession(
   opts: { userId?: string; bands?: { id: string; role: Role }[] } = {}

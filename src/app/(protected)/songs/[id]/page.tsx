@@ -7,7 +7,7 @@ import { formatDistanceToNow } from "date-fns";
 import SongWorkspace from "@/components/SongWorkspace";
 import SongArrangement from "@/components/SongArrangement";
 import SongComments from "@/components/SongComments";
-import { canManage, isBandMember } from "@/lib/band";
+import { canManage, canAccessContent } from "@/lib/band";
 import { formatDuration } from "@/lib/utils";
 
 interface PageProps {
@@ -38,7 +38,7 @@ export default async function SongPage({ params }: PageProps) {
     }
   });
 
-  if (!song || !isBandMember(session!, song.bandId)) notFound();
+  if (!song || !canAccessContent(session!, song.bandId)) notFound();
 
   const canDelete = canManage(session!, song.bandId, song.createdById);
 

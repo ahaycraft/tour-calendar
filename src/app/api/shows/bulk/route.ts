@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { getActiveBandId, canManage, isBandMember } from "@/lib/band";
+import { getActiveBandId, canManageEvents, isBandMember } from "@/lib/band";
 import { notifyBandMembers } from "@/lib/push";
 import { isEventType } from "@/lib/events";
 
@@ -151,7 +151,7 @@ export async function PATCH(request: NextRequest) {
     if (!isBandMember(session, bandId)) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
-    if (!canManage(session, bandId, createdById)) {
+    if (!canManageEvents(session, bandId, createdById)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

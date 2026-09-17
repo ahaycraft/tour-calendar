@@ -9,7 +9,7 @@ export interface NavBand {
   id: string;
   name: string;
   slug: string;
-  role: "OWNER" | "ADMIN" | "MEMBER";
+  role: "OWNER" | "ADMIN" | "MANAGER" | "TOUR_MANAGER" | "BOOKING_AGENT" | "MEMBER";
 }
 
 export default function BandSwitcher({

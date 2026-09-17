@@ -6,9 +6,16 @@ import { usePathname } from "next/navigation";
 import { Calendar, CalendarDays, Music, Disc3, UserX } from "lucide-react";
 import { cn, pathMatches } from "@/lib/utils";
 
+interface NavItem {
+  href: string;
+  label: string;
+  icon: typeof Calendar;
+  activeMatch?: string[];
+}
+
 // Same icon set as Nav's mobile drawer (Calendar, CalendarDays, Music, Disc3,
 // UserX) so the two stay visually consistent until dedicated icons land.
-const ITEMS = [
+const BASE_ITEMS: NavItem[] = [
   { href: "/calendar", label: "Calendar", icon: Calendar },
   {
     href: "/shows",
@@ -17,19 +24,34 @@ const ITEMS = [
     // Shows/practices/recordings are one grouping in the desktop nav's
     // "Events" dropdown — the tab lights up for any of the three here too.
     activeMatch: ["/shows", "/practices", "/recordings"]
-  },
-  { href: "/songs", label: "Songs", icon: Music },
-  { href: "/releases", label: "Releases", icon: Disc3 },
-  { href: "/my-availability", label: "My Availability", icon: UserX }
+  }
 ];
 
+const CONTENT_ITEMS: NavItem[] = [
+  { href: "/songs", label: "Songs", icon: Music },
+  { href: "/releases", label: "Releases", icon: Disc3 }
+];
+
+const AVAILABILITY_ITEM: NavItem = {
+  href: "/my-availability",
+  label: "My Availability",
+  icon: UserX
+};
+
 export default function BottomNav({
-  needsResponseCount = 0
+  needsResponseCount = 0,
+  role
 }: {
   needsResponseCount?: number;
+  /** Booking Agent has no access to songs/releases, so those tabs are hidden for them. */
+  role?: string;
 }) {
   const pathname = usePathname();
   const navRef = useRef<HTMLElement>(null);
+  const ITEMS =
+    role === "BOOKING_AGENT"
+      ? [...BASE_ITEMS, AVAILABILITY_ITEM]
+      : [...BASE_ITEMS, ...CONTENT_ITEMS, AVAILABILITY_ITEM];
   // Position/size of the highlight pill, measured from the active item's DOM
   // node so it lands correctly whatever the container width. `null` until the
   // first measurement, or when no nav item matches the route.

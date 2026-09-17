@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { isBandMember } from "@/lib/band";
+import { canAccessContent } from "@/lib/band";
 import { isRecordingPartStatus } from "@/lib/instruments";
 
 const MAX_LABEL = 80;
@@ -31,7 +31,7 @@ export async function PATCH(
 
   const { id, partId } = await params;
   const part = await loadPart(id, partId);
-  if (!part || !isBandMember(session, part.plan.release.bandId)) {
+  if (!part || !canAccessContent(session, part.plan.release.bandId)) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
@@ -109,7 +109,7 @@ export async function DELETE(
 
   const { id, partId } = await params;
   const part = await loadPart(id, partId);
-  if (!part || !isBandMember(session, part.plan.release.bandId)) {
+  if (!part || !canAccessContent(session, part.plan.release.bandId)) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 

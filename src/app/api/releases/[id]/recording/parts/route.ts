@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { isBandMember } from "@/lib/band";
+import { canAccessContent } from "@/lib/band";
 
 const MAX_LABEL = 80;
 const MAX_DESC = 4000;
@@ -19,7 +19,7 @@ export async function POST(
     where: { id },
     select: { bandId: true, trackingPlan: { select: { id: true } } }
   });
-  if (!release || !isBandMember(session, release.bandId)) {
+  if (!release || !canAccessContent(session, release.bandId)) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
   if (!release.trackingPlan) {

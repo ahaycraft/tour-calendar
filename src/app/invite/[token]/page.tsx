@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { roleLabel } from "@/lib/role-label";
 import AcceptInvite from "@/components/AcceptInvite";
 
 export default async function InvitePage({
@@ -55,7 +56,7 @@ export default async function InvitePage({
               <span className="font-medium text-zinc-100">
                 {invite!.band.name}
               </span>{" "}
-              as {invite!.role.toLowerCase()}.
+              as {roleLabel(invite!.role)}.
             </p>
 
             {!session ? (

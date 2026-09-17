@@ -5,7 +5,7 @@ interface SessionBand {
   id: string;
   name: string;
   slug: string;
-  role: "OWNER" | "ADMIN" | "MEMBER";
+  role: "OWNER" | "ADMIN" | "MANAGER" | "TOUR_MANAGER" | "BOOKING_AGENT" | "MEMBER";
 }
 
 declare module "next-auth" {

@@ -22,6 +22,7 @@ import {
   X
 } from "lucide-react";
 import { cn, pathMatches } from "@/lib/utils";
+import { roleLabel } from "@/lib/role-label";
 import BandSwitcher, { type NavBand } from "./BandSwitcher";
 import { ThemeMenu, ThemeToggle, useTheme, type Theme } from "./ThemeMenu";
 import PushMenuItem from "./PushToggle";
@@ -45,9 +46,13 @@ const EVENT_LINKS = [
 
 const PRIMARY_LINK = { href: "/calendar", label: "Calendar", icon: Calendar };
 
-const SECONDARY_LINKS = [
+const CONTENT_LINKS = [
   { href: "/songs", label: "Songs", icon: Music },
-  { href: "/releases", label: "Releases", icon: Disc3 },
+  { href: "/releases", label: "Releases", icon: Disc3 }
+];
+
+const SECONDARY_LINKS = [
+  ...CONTENT_LINKS,
   { href: "/my-availability", label: "My Availability", icon: UserX }
 ];
 
@@ -65,7 +70,12 @@ const ADD_LINKS = [
   },
   { href: "/shows/new", label: "Add Show", icon: List },
   { href: "/practices/new", label: "Add Practice", icon: Users },
-  { href: "/recordings/new", label: "Add Recording", icon: Mic },
+  { href: "/recordings/new", label: "Add Recording", icon: Mic }
+];
+
+// Manager/Tour Manager are read-only on songs/releases; Booking Agent has no
+// access to them at all — only Owner/Admin/Member can create content.
+const CONTENT_ADD_LINKS = [
   { href: "/songs/new", label: "Add Song", icon: Music },
   { href: "/releases/new", label: "Add Release", icon: Disc3 }
 ];
@@ -184,10 +194,12 @@ function AddMenu({
     bg-black/60 treatment as the account drawer. */
 function AddMenuPanel({
   open,
-  setOpen
+  setOpen,
+  links
 }: {
   open: boolean;
   setOpen: (open: boolean) => void;
+  links: typeof ADD_LINKS;
 }) {
   useEffect(() => {
     if (!open) return;
@@ -220,7 +232,7 @@ function AddMenuPanel({
         inert={!open}
         className="absolute left-4 top-[4.5rem] flex flex-col items-start gap-2"
       >
-        {ADD_LINKS.map(({ href, label, icon: Icon }, i) => (
+        {links.map(({ href, label, icon: Icon }, i) => (
           <Link
             key={href}
             href={href}
@@ -260,9 +272,19 @@ export default function Nav({
 
   const activeRole = bands.find((b) => b.id === activeBandId)?.role;
   const roleChip =
-    activeRole === "OWNER" ? "Owner" : activeRole === "ADMIN" ? "Admin" : null;
+    activeRole && activeRole !== "MEMBER" ? roleLabel(activeRole) : null;
   // Global admin (User.role), distinct from the per-band role above.
   const isAdmin = user.role === "ADMIN";
+
+  const canAccessContent = activeRole !== "BOOKING_AGENT";
+  const canCreateContent =
+    activeRole === "OWNER" || activeRole === "ADMIN" || activeRole === "MEMBER";
+  const secondaryLinks = canAccessContent
+    ? SECONDARY_LINKS
+    : SECONDARY_LINKS.filter((l) => !CONTENT_LINKS.includes(l));
+  const addLinks = canCreateContent
+    ? [...ADD_LINKS, ...CONTENT_ADD_LINKS]
+    : ADD_LINKS;
 
   const badgeFor = (href: string) =>
     href === "/my-availability" && needsResponseCount > 0
@@ -366,7 +388,7 @@ export default function Nav({
               <nav className="flex gap-1">
                 {desktopLink(PRIMARY_LINK)}
                 <EventsMenu pathname={pathname} />
-                {SECONDARY_LINKS.map(desktopLink)}
+                {secondaryLinks.map(desktopLink)}
               </nav>
             </div>
 
@@ -410,7 +432,7 @@ export default function Nav({
         </div>
       </header>
 
-      <AddMenuPanel open={addMenuOpen} setOpen={setAddMenuOpen} />
+      <AddMenuPanel open={addMenuOpen} setOpen={setAddMenuOpen} links={addLinks} />
 
       {/* Mobile account panel — stays mounted (rather than open && (...)) so
           closing slides/fades it back out instead of snapping away instantly.

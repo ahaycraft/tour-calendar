@@ -5,7 +5,7 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { ChevronLeft } from "lucide-react";
 import ReleaseEditor from "@/components/ReleaseEditor";
-import { canManage, isBandMember } from "@/lib/band";
+import { canManage, canAccessContent } from "@/lib/band";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -22,7 +22,7 @@ export default async function ReleasePage({ params }: PageProps) {
     }
   });
 
-  if (!release || !isBandMember(session!, release.bandId)) notFound();
+  if (!release || !canAccessContent(session!, release.bandId)) notFound();
 
   const songs = await prisma.song.findMany({
     where: { bandId: release.bandId },

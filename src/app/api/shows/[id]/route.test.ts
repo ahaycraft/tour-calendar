@@ -18,7 +18,7 @@ vi.mock("@/lib/prisma", () => {
   return { prisma };
 });
 vi.mock("@/lib/band", () => ({
-  canManage: vi.fn(),
+  canManageEvents: vi.fn(),
   isBandMember: vi.fn()
 }));
 vi.mock("@/lib/push", () => ({ notifyBandMembers: vi.fn() }));
@@ -26,7 +26,7 @@ vi.mock("@/lib/push", () => ({ notifyBandMembers: vi.fn() }));
 import { DELETE, GET, PATCH } from "@/app/api/shows/[id]/route";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { canManage, isBandMember } from "@/lib/band";
+import { canManageEvents, isBandMember } from "@/lib/band";
 import { notifyBandMembers } from "@/lib/push";
 import { jsonRequest, makeSession, makeShow, routeCtx } from "@/test/factories";
 
@@ -38,7 +38,7 @@ const deleteMock = prisma.show.delete as unknown as Mock;
 const deleteManyMock = prisma.showAvailability.deleteMany as unknown as Mock;
 const bandMembersMock = prisma.bandMembership.findMany as unknown as Mock;
 const isBandMemberMock = vi.mocked(isBandMember);
-const canManageMock = vi.mocked(canManage);
+const canManageEventsMock = vi.mocked(canManageEvents);
 const notifyMock = vi.mocked(notifyBandMembers);
 
 const get = (id: string) =>
@@ -52,7 +52,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   authMock.mockResolvedValue(makeSession());
   isBandMemberMock.mockReturnValue(true);
-  canManageMock.mockReturnValue(true);
+  canManageEventsMock.mockReturnValue(true);
   bandMembersMock.mockResolvedValue([
     { user: { id: "u1", phone: "555-0001" } },
     { user: { id: "u2", phone: "555-0002" } },
@@ -133,7 +133,7 @@ describe("PATCH /api/shows/[id] — guards", () => {
 
   it("403 when the caller can't manage the show", async () => {
     existing();
-    canManageMock.mockReturnValue(false);
+    canManageEventsMock.mockReturnValue(false);
     expect((await patch("s1", {})).status).toBe(403);
   });
 
@@ -227,7 +227,7 @@ describe("DELETE /api/shows/[id]", () => {
     expect((await del("s1")).status).toBe(404);
 
     isBandMemberMock.mockReturnValue(true);
-    canManageMock.mockReturnValue(false);
+    canManageEventsMock.mockReturnValue(false);
     expect((await del("s1")).status).toBe(403);
   });
 

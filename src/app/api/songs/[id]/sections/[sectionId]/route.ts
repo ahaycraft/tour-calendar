@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import type { Session } from "next-auth";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { isBandMember } from "@/lib/band";
+import { canAccessContent } from "@/lib/band";
 import { MAX_SECTION_NAME } from "@/lib/arrangement";
 import { corsPreflight, withCors } from "@/lib/cors";
 
@@ -20,7 +20,7 @@ async function guard(songId: string, sectionId: string, session: Session) {
   if (
     !section ||
     section.songId !== songId ||
-    !isBandMember(session, section.song.bandId)
+    !canAccessContent(session, section.song.bandId)
   ) {
     return false;
   }

@@ -8,20 +8,20 @@ vi.mock("@/lib/prisma", () => ({
 }));
 vi.mock("@/lib/band", () => ({
   canManage: vi.fn(),
-  isBandMember: vi.fn()
+  canAccessContent: vi.fn()
 }));
 
 import { DELETE, GET, PATCH } from "@/app/api/songs/[id]/route";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { canManage, isBandMember } from "@/lib/band";
+import { canManage, canAccessContent } from "@/lib/band";
 import { jsonRequest, makeSession, routeCtx } from "@/test/factories";
 
 const authMock = auth as unknown as Mock;
 const findUniqueMock = prisma.song.findUnique as unknown as Mock;
 const updateMock = prisma.song.update as unknown as Mock;
 const deleteMock = prisma.song.delete as unknown as Mock;
-const isBandMemberMock = vi.mocked(isBandMember);
+const canAccessContentMock = vi.mocked(canAccessContent);
 const canManageMock = vi.mocked(canManage);
 
 const get = (id: string) =>
@@ -34,7 +34,7 @@ const del = (id: string) =>
 beforeEach(() => {
   vi.clearAllMocks();
   authMock.mockResolvedValue(makeSession());
-  isBandMemberMock.mockReturnValue(true);
+  canAccessContentMock.mockReturnValue(true);
   canManageMock.mockReturnValue(true);
   findUniqueMock.mockResolvedValue({ bandId: "band1", createdById: "u1" });
   updateMock.mockResolvedValue({ id: "s1", updatedAt: new Date() });
@@ -51,7 +51,7 @@ describe("GET /api/songs/[id]", () => {
     expect((await get("s1")).status).toBe(404);
 
     findUniqueMock.mockResolvedValue({ bandId: "band1", createdById: "u1" });
-    isBandMemberMock.mockReturnValue(false);
+    canAccessContentMock.mockReturnValue(false);
     expect((await get("s1")).status).toBe(404);
   });
 
@@ -82,7 +82,7 @@ describe("PATCH /api/songs/[id] — guards", () => {
     expect((await patch("s1", {})).status).toBe(404);
 
     findUniqueMock.mockResolvedValue({ bandId: "band1", createdById: "u1" });
-    isBandMemberMock.mockReturnValue(false);
+    canAccessContentMock.mockReturnValue(false);
     expect((await patch("s1", {})).status).toBe(404);
   });
 

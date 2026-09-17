@@ -43,7 +43,7 @@ export default async function BandSettingsPage() {
         id: i.id,
         email: i.email,
         phone: i.phone,
-        role: i.role as "ADMIN" | "MEMBER",
+        role: i.role as "ADMIN" | "MANAGER" | "TOUR_MANAGER" | "BOOKING_AGENT" | "MEMBER",
         token: i.token,
         expiresAt: i.expiresAt.toISOString()
       }))}

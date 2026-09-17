@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { canManage, isBandMember } from "@/lib/band";
+import { canManage, canAccessContent } from "@/lib/band";
 import { corsPreflight, withCors } from "@/lib/cors";
 
 export async function OPTIONS(request: NextRequest) {
@@ -27,7 +27,7 @@ export async function DELETE(
     if (
       !demo ||
       demo.songId !== songId ||
-      !isBandMember(session, demo.song.bandId)
+      !canAccessContent(session, demo.song.bandId)
     ) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }

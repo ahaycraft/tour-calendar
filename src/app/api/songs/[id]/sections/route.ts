@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { isBandMember } from "@/lib/band";
+import { canAccessContent } from "@/lib/band";
 import { MAX_SECTION_NAME } from "@/lib/arrangement";
 import { corsPreflight, withCors } from "@/lib/cors";
 
@@ -32,7 +32,7 @@ export async function POST(
 
     const { id: songId } = await params;
     const bandId = await bandForSong(songId);
-    if (!bandId || !isBandMember(session, bandId)) {
+    if (!bandId || !canAccessContent(session, bandId)) {
       return NextResponse.json({ error: "Song not found" }, { status: 404 });
     }
 
@@ -93,7 +93,7 @@ export async function PUT(
 
     const { id: songId } = await params;
     const bandId = await bandForSong(songId);
-    if (!bandId || !isBandMember(session, bandId)) {
+    if (!bandId || !canAccessContent(session, bandId)) {
       return NextResponse.json({ error: "Song not found" }, { status: 404 });
     }
 

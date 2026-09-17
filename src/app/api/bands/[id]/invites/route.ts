@@ -9,6 +9,8 @@ import {
   normalizeEmail
 } from "@/lib/invites";
 
+const INVITE_ROLES = ["ADMIN", "MANAGER", "TOUR_MANAGER", "BOOKING_AGENT", "MEMBER"];
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -26,7 +28,7 @@ export async function POST(
   try {
     const body = await request.json();
     const email = normalizeEmail(body.email);
-    const inviteRole = body.role === "ADMIN" ? "ADMIN" : "MEMBER";
+    const inviteRole = INVITE_ROLES.includes(body.role) ? body.role : "MEMBER";
 
     if (!isEmail(email)) {
       return NextResponse.json(

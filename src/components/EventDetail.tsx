@@ -22,7 +22,7 @@ import {
   eventNoun,
   type EventTypeStr
 } from "@/lib/events";
-import { canManage, isBandMember } from "@/lib/band";
+import { canManageEvents, isBandMember } from "@/lib/band";
 import NeedsDetailsBadge, {
   needsDetails
 } from "@/components/NeedsDetailsBadge";
@@ -102,7 +102,7 @@ export default async function EventDetail({ id, expected }: Props) {
     )
   );
 
-  const isAdminOrCreator = canManage(session!, show.bandId, show.createdById);
+  const isAdminOrCreator = canManageEvents(session!, show.bandId, show.createdById);
 
   const isRecording = show.type === "RECORDING";
 

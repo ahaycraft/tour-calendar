@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { isBandMember } from "@/lib/band";
+import { canAccessContent } from "@/lib/band";
 import { corsPreflight, withCors } from "@/lib/cors";
 
 export async function OPTIONS(request: NextRequest) {
@@ -37,7 +37,7 @@ export async function PUT(
         where: { id: releaseId },
         select: { bandId: true }
       });
-      if (!release || !isBandMember(session, release.bandId)) {
+      if (!release || !canAccessContent(session, release.bandId)) {
         return NextResponse.json({ error: "Not found" }, { status: 404 });
       }
 

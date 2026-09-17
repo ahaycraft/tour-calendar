@@ -99,6 +99,9 @@ model BandMembership {
 enum BandRole {
   OWNER
   ADMIN
+  MANAGER
+  TOUR_MANAGER
+  BOOKING_AGENT
   MEMBER
 }
 

@@ -10,12 +10,30 @@ export const ACTIVE_BAND_COOKIE = "active_band";
 // present, so this never affects the web app.
 export const ACTIVE_BAND_HEADER = "x-active-band";
 
+export type BandRole =
+  | "OWNER"
+  | "ADMIN"
+  | "MANAGER"
+  | "TOUR_MANAGER"
+  | "BOOKING_AGENT"
+  | "MEMBER";
+
 export interface SessionBand {
   id: string;
   name: string;
   slug: string;
-  role: "OWNER" | "ADMIN" | "MEMBER";
+  role: BandRole;
 }
+
+/** Roles that can book/edit/approve shows, practices, and recordings. */
+const EVENT_MANAGER_ROLES: BandRole[] = [
+  "OWNER",
+  "ADMIN",
+  "MANAGER",
+  "TOUR_MANAGER",
+  "BOOKING_AGENT"
+];
+
 
 export function userBands(session: Session): SessionBand[] {
   return (session.user.bands ?? []) as SessionBand[];
@@ -68,7 +86,7 @@ export function bandRole(
   return userBands(session).find((b) => b.id === bandId)?.role ?? null;
 }
 
-/** OWNER/ADMIN in the given band, or the record's creator. */
+/** OWNER/ADMIN in the given band, or the record's creator. Gates songs, releases, and their sub-resources (comments, demos, sections, tracks). */
 export function canManage(
   session: Session,
   bandId: string | null | undefined,
@@ -80,6 +98,36 @@ export function canManage(
   );
 }
 
+/** Owner/Admin/Manager/Tour Manager/Booking Agent, or the record's creator. Gates shows, practices, and recordings. */
+export function canManageEvents(
+  session: Session,
+  bandId: string | null | undefined,
+  createdById?: string
+): boolean {
+  const role = bandRole(session, bandId);
+  return (
+    (!!role && EVENT_MANAGER_ROLES.includes(role)) ||
+    session.user.id === createdById
+  );
+}
+
+/** Band member who isn't a Booking Agent — Booking Agent has no access to songs/releases at all. */
+export function canAccessContent(
+  session: Session,
+  bandId: string | null | undefined
+): boolean {
+  return isBandMember(session, bandId) && bandRole(session, bandId) !== "BOOKING_AGENT";
+}
+
+/** Owner/Admin/Member can create songs and releases; Manager/Tour Manager are read-only on content, Booking Agent has no access at all. */
+export function canCreateContent(
+  session: Session,
+  bandId: string | null | undefined
+): boolean {
+  const role = bandRole(session, bandId);
+  return role === "OWNER" || role === "ADMIN" || role === "MEMBER";
+}
+
 /** Tags each event with whether the current user can delete it, for the list pages. */
 export function withDeletePermission<T extends { createdById: string }>(
   events: T[],
@@ -88,7 +136,7 @@ export function withDeletePermission<T extends { createdById: string }>(
 ): (T & { canDelete: boolean })[] {
   return events.map((e) => ({
     ...e,
-    canDelete: canManage(session, bandId, e.createdById)
+    canDelete: canManageEvents(session, bandId, e.createdById)
   }));
 }
 
