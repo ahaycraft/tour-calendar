@@ -2,19 +2,38 @@ import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 
 vi.mock("@/auth", () => ({ auth: vi.fn() }));
 vi.mock("@/lib/prisma", () => ({
-  prisma: { user: { update: vi.fn() } }
+  prisma: {
+    user: { update: vi.fn(), upsert: vi.fn(), delete: vi.fn() },
+    bandMembership: { findMany: vi.fn(), count: vi.fn() },
+    show: { updateMany: vi.fn() },
+    song: { updateMany: vi.fn() },
+    release: { updateMany: vi.fn() },
+    recordingPlan: { updateMany: vi.fn() },
+    songDemo: { updateMany: vi.fn() },
+    recordingPart: { updateMany: vi.fn() },
+    bandInvite: { updateMany: vi.fn() },
+    $transaction: vi.fn()
+  }
 }));
 
-import { PATCH } from "@/app/api/account/route";
+import { DELETE, PATCH } from "@/app/api/account/route";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { jsonRequest, makeSession } from "@/test/factories";
 
 const authMock = auth as unknown as Mock;
 const updateMock = prisma.user.update as unknown as Mock;
+const upsertMock = prisma.user.upsert as unknown as Mock;
+const deleteMock = prisma.user.delete as unknown as Mock;
+const findMembershipsMock = prisma.bandMembership.findMany as unknown as Mock;
+const countOwnersMock = prisma.bandMembership.count as unknown as Mock;
+const transactionMock = prisma.$transaction as unknown as Mock;
+const showUpdateManyMock = prisma.show.updateMany as unknown as Mock;
+const bandInviteUpdateManyMock = prisma.bandInvite.updateMany as unknown as Mock;
 
 const patch = (body: unknown) =>
   PATCH(jsonRequest(body) as Parameters<typeof PATCH>[0]);
+const del = () => DELETE(jsonRequest({}) as Parameters<typeof DELETE>[0]);
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -23,6 +42,28 @@ beforeEach(() => {
     async (args: { data: { name?: string; phone?: string | null } }) =>
       ({ id: "u1", ...args.data }) as never
   );
+  findMembershipsMock.mockResolvedValue([]); // owns no bands, by default
+  countOwnersMock.mockResolvedValue(2);
+  upsertMock.mockResolvedValue({ id: "deleted-user-placeholder" });
+  transactionMock.mockImplementation(async (ops: unknown[]) =>
+    Promise.all(ops as Promise<unknown>[])
+  );
+  showUpdateManyMock.mockResolvedValue({ count: 0 });
+  (prisma.song.updateMany as unknown as Mock).mockResolvedValue({ count: 0 });
+  (prisma.release.updateMany as unknown as Mock).mockResolvedValue({
+    count: 0
+  });
+  (prisma.recordingPlan.updateMany as unknown as Mock).mockResolvedValue({
+    count: 0
+  });
+  (prisma.songDemo.updateMany as unknown as Mock).mockResolvedValue({
+    count: 0
+  });
+  (prisma.recordingPart.updateMany as unknown as Mock).mockResolvedValue({
+    count: 0
+  });
+  bandInviteUpdateManyMock.mockResolvedValue({ count: 0 });
+  deleteMock.mockResolvedValue({ id: "u1" });
 });
 
 describe("PATCH /api/account", () => {
@@ -108,5 +149,65 @@ describe("PATCH /api/account", () => {
     expect(updateMock).toHaveBeenCalledWith(
       expect.objectContaining({ where: { id: "someone-else" } })
     );
+  });
+});
+
+describe("DELETE /api/account", () => {
+  it("401 without a session", async () => {
+    authMock.mockResolvedValue(null);
+    expect((await del()).status).toBe(401);
+    expect(transactionMock).not.toHaveBeenCalled();
+  });
+
+  it("400 when the caller is the sole owner of a band, naming it", async () => {
+    findMembershipsMock.mockResolvedValue([
+      { bandId: "band1", band: { name: "The Wailers" } }
+    ]);
+    countOwnersMock.mockResolvedValue(1);
+
+    const res = await del();
+    expect(res.status).toBe(400);
+    expect((await res.json()).error).toContain("The Wailers");
+    expect(transactionMock).not.toHaveBeenCalled();
+    expect(deleteMock).not.toHaveBeenCalled();
+  });
+
+  it("succeeds when a co-owner exists, even if the caller owns a band", async () => {
+    findMembershipsMock.mockResolvedValue([
+      { bandId: "band1", band: { name: "The Wailers" } }
+    ]);
+    countOwnersMock.mockResolvedValue(2); // caller + at least one other owner
+
+    const res = await del();
+    expect(res.status).toBe(200);
+    expect(transactionMock).toHaveBeenCalled();
+  });
+
+  it("reassigns created/assigned content to the placeholder before deleting the user", async () => {
+    authMock.mockResolvedValue(makeSession({ userId: "u1" }));
+    await del();
+
+    expect(upsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { email: "deleted-user@system.internal" }
+      })
+    );
+    expect(showUpdateManyMock).toHaveBeenCalledWith({
+      where: { createdById: "u1" },
+      data: { createdById: "deleted-user-placeholder" }
+    });
+    expect(bandInviteUpdateManyMock).toHaveBeenCalledWith({
+      where: { invitedById: "u1" },
+      data: { invitedById: "deleted-user-placeholder" }
+    });
+    expect(deleteMock).toHaveBeenCalledWith({ where: { id: "u1" } });
+  });
+
+  it("scopes deletion to the signed-in user, not an arbitrary id", async () => {
+    authMock.mockResolvedValue(makeSession({ userId: "someone-else" }));
+    await del();
+    expect(deleteMock).toHaveBeenCalledWith({
+      where: { id: "someone-else" }
+    });
   });
 });

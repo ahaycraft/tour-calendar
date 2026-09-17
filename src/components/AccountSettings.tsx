@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { signOut } from "next-auth/react";
 import { Check, Loader2 } from "lucide-react";
+import ConfirmDialog from "./ConfirmDialog";
 
 const fieldClass =
   "px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent";
@@ -22,6 +24,9 @@ export default function AccountSettings({
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
+  const [deleting, setDeleting] = useState(false);
+  const [deleteBusy, setDeleteBusy] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   const dirty =
     name.trim() !== initialName || phone.trim() !== (initialPhone ?? "");
@@ -44,6 +49,24 @@ export default function AccountSettings({
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
     router.refresh();
+  }
+
+  // Apple requires account deletion be reachable from within the app (App
+  // Store Review Guideline 5.1.1(v)) for the mobile client — added here too
+  // for parity, since both clients share this same endpoint. See the route
+  // for what happens to a deleted user's band-shared content.
+  async function deleteAccount() {
+    setDeleteBusy(true);
+    const res = await fetch("/api/account", { method: "DELETE" });
+    setDeleteBusy(false);
+    setDeleting(false);
+    if (!res.ok) {
+      setDeleteError(
+        (await res.json().catch(() => ({}))).error || "Couldn't delete account"
+      );
+      return;
+    }
+    signOut({ callbackUrl: "/login" });
   }
 
   return (
@@ -103,6 +126,35 @@ export default function AccountSettings({
           </button>
         </form>
       </div>
+
+      <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-6 mt-6">
+        <h2 className="font-semibold text-zinc-100 mb-1">Delete account</h2>
+        <p className="text-sm text-zinc-500 mb-3">
+          Permanently deletes your account and personal data. Shows and songs
+          you added stay with your bands.
+        </p>
+        {deleteError && (
+          <p className="text-sm text-red-400 mb-3">{deleteError}</p>
+        )}
+        <button
+          type="button"
+          onClick={() => setDeleting(true)}
+          className="text-sm text-red-400 hover:text-red-300"
+        >
+          Delete account
+        </button>
+      </div>
+
+      <ConfirmDialog
+        open={deleting}
+        title="Delete your account?"
+        message="This permanently deletes your account and personal data. This can't be undone."
+        confirmLabel="Delete account"
+        tone="danger"
+        busy={deleteBusy}
+        onConfirm={deleteAccount}
+        onCancel={() => setDeleting(false)}
+      />
     </div>
   );
 }
