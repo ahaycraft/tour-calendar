@@ -1,5 +1,6 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import type { Session } from "next-auth";
@@ -22,6 +23,11 @@ const {
   signIn,
   signOut
 } = NextAuth({
+  // Vercel is supposed to be auto-detected as a trusted host, but that
+  // detection isn't reliable in this Edge middleware — without this,
+  // unauthenticated requests get redirected to a hardcoded
+  // `http://localhost:3000/login` instead of this deployment's real host.
+  trustHost: true,
   // Band-only app: keep people signed in for a year (default is 30 days).
   session: { strategy: "jwt", maxAge: 60 * 60 * 24 * 365 },
   pages: {
@@ -88,7 +94,31 @@ const {
       // properly checked, same as always) ever gets sent.
       if (request.method === "OPTIONS") return true;
       if (cookieSession) return true;
-      return hasValidMobileToken(request.headers.get("authorization"));
+      if (await hasValidMobileToken(request.headers.get("authorization"))) {
+        return true;
+      }
+
+      // next-auth's own redirect-when-unauthorized builds the sign-in URL
+      // from `request.nextUrl`, but Next.js 16's Proxy runs on the Node.js
+      // runtime, and behind Vercel's front door that reports this
+      // function's own internal address (localhost:3000) rather than the
+      // real public host — bouncing signed-out visitors off-site to a
+      // dead end. Build the redirect ourselves from the forwarded headers,
+      // which carry the actual host, and return it directly: `authorized`
+      // may return a Response instead of a boolean and next-auth will use
+      // it as-is instead of building its own.
+      const host =
+        request.headers.get("x-forwarded-host") ?? request.headers.get("host");
+      const proto = request.headers.get("x-forwarded-proto") ?? "https";
+      const signInUrl = new URL("/login", `${proto}://${host}`);
+      // Relative, not absolute — the login page only follows `callbackUrl`
+      // back when it starts with "/" (its guard against open redirects),
+      // otherwise it falls back to /calendar and drops the deep link.
+      signInUrl.searchParams.set(
+        "callbackUrl",
+        `${request.nextUrl.pathname}${request.nextUrl.search}`
+      );
+      return NextResponse.redirect(signInUrl);
     }
   }
 });
