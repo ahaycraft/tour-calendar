@@ -2,11 +2,11 @@
 // repo's existing brand mark (public/icon-512.png, icon-maskable-512.png),
 // instead of leaving Expo's default template logo in place. Not meant to be
 // run again on a schedule — re-run only if the source brand mark changes.
-const sharp = require("sharp");
-const path = require("path");
+import sharp from "sharp";
+import path from "node:path";
 
-const SRC = __dirname + "/../public";
-const OUT = path.resolve(__dirname, "../../woodshedd_mobile/assets");
+const SRC = path.join(import.meta.dirname, "../public");
+const OUT = path.resolve(import.meta.dirname, "../../woodshedd_mobile/assets");
 
 const BG = [16, 13, 11]; // sampled from icon-512.png's corner
 const FG = [250, 248, 244]; // sampled from the mark itself
