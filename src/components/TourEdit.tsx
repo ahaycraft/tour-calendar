@@ -7,6 +7,7 @@ import { ChevronLeft } from "lucide-react";
 import TourBlockForm, {
   type TourBlockValues
 } from "@/components/TourBlockForm";
+import ApplySetlistToTour from "@/components/ApplySetlistToTour";
 import {
   eventBasePath,
   eventListLabel,
@@ -40,6 +41,12 @@ export default async function TourEdit({ tourGroupId, expected }: Props) {
   if (!canManageEvents(session!, first.bandId, first.createdById)) {
     redirect(eventBasePath(first.type));
   }
+
+  const setlistTemplates = await prisma.setlist.findMany({
+    where: { bandId: first.bandId },
+    orderBy: { name: "asc" },
+    select: { id: true, name: true }
+  });
 
   const blockNoun = BLOCK_NOUN[first.type];
   const last = events[events.length - 1];
@@ -79,6 +86,13 @@ export default async function TourEdit({ tourGroupId, expected }: Props) {
       <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-6">
         <TourBlockForm initial={initial} />
       </div>
+
+      <ApplySetlistToTour
+        tourGroupId={tourGroupId}
+        dayCount={events.length}
+        templates={setlistTemplates}
+        noun={blockNoun}
+      />
     </div>
   );
 }

@@ -31,6 +31,9 @@ export async function GET(
         release: { select: { id: true, title: true } },
         availability: {
           include: { user: { select: { id: true, name: true } } }
+        },
+        setlist: {
+          include: { songs: { orderBy: { position: "asc" } } }
         }
       }
     });

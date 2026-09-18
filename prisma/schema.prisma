@@ -92,6 +92,7 @@ model Band {
   songs       Song[]
   releases    Release[]
   instruments Instrument[]
+  setlists    Setlist[]
 }
 
 model BandInvite {
@@ -200,6 +201,10 @@ model Show {
   release   Release? @relation(fields: [releaseId], references: [id], onDelete: SetNull)
   releaseId String?
 
+  // The show's own copy of a setlist, if one's been applied. See
+  // ShowSetlist's own comment for why this is a copy, not a live reference.
+  setlist ShowSetlist?
+
   @@index([bandId, date])
   @@index([releaseId])
   @@index([tourGroupId])
@@ -220,6 +225,64 @@ enum ShowStatus {
 enum HotelResponsibility {
   PROMOTER
   BAND
+}
+
+// A band's reusable named setlist template (e.g. "Full Set", "Acoustic
+// Set"). Applying one to a show copies its songs into that show's own
+// ShowSetlist — see that model's comment for why it's a copy rather than a
+// live reference.
+model Setlist {
+  id        String   @id @default(cuid())
+  bandId    String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  band  Band          @relation(fields: [bandId], references: [id], onDelete: Cascade)
+  songs SetlistSong[]
+
+  @@index([bandId])
+}
+
+model SetlistSong {
+  id        String @id @default(cuid())
+  setlistId String
+  title     String
+  position  Int
+
+  setlist Setlist @relation(fields: [setlistId], references: [id], onDelete: Cascade)
+
+  @@index([setlistId])
+}
+
+// A show's own setlist — created by copying a Setlist template's songs at
+// the moment it's applied (POST /api/shows/[id]/setlist), then edited
+// independently from then on. This is deliberately a copy, not a live
+// reference to the template: pulling a hard song for vocal rest on one
+// night shouldn't change the template or any other show that used it.
+// sourceSetlistName is just a display label ("From: Full Set") — not a
+// foreign key, so renaming or deleting the template later never affects a
+// show that already copied it.
+model ShowSetlist {
+  id                String   @id @default(cuid())
+  showId            String   @unique
+  sourceSetlistName String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  show  Show              @relation(fields: [showId], references: [id], onDelete: Cascade)
+  songs ShowSetlistSong[]
+}
+
+model ShowSetlistSong {
+  id            String @id @default(cuid())
+  showSetlistId String
+  title         String
+  position      Int
+
+  showSetlist ShowSetlist @relation(fields: [showSetlistId], references: [id], onDelete: Cascade)
+
+  @@index([showSetlistId])
 }
 
 model ShowAvailability {
