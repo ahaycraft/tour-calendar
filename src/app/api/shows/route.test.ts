@@ -165,6 +165,25 @@ describe("POST /api/shows — create + notify", () => {
     });
   });
 
+  it("stores the venue contact name/email when given, null otherwise", async () => {
+    await call({
+      title: "The Roxy",
+      date: "2026-06-15",
+      venueContactName: "Jane Smith",
+      venueContactEmail: "jane@venue.com"
+    });
+    expect(createMock.mock.calls[0][0].data).toMatchObject({
+      venueContactName: "Jane Smith",
+      venueContactEmail: "jane@venue.com"
+    });
+
+    await call({ title: "The Roxy", date: "2026-06-15" });
+    expect(createMock.mock.calls[1][0].data).toMatchObject({
+      venueContactName: null,
+      venueContactEmail: null
+    });
+  });
+
   it("500s if the create throws, without surfacing internals", async () => {
     createMock.mockRejectedValue(new Error("db down"));
     const res = await call({ title: "x", date: "2026-06-15" });

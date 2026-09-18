@@ -50,6 +50,8 @@ export interface EventFormValues {
   venueAddress: string;
   venueLat: number | null;
   venueLng: number | null;
+  venueContactName: string;
+  venueContactEmail: string;
   /** Release this session is tracking for; "" when none. Recordings only. */
   releaseId: string;
 }
@@ -131,6 +133,8 @@ export default function EventForm({
       venueAddress: venueMeta.address || null,
       venueLat: venueMeta.lat,
       venueLng: venueMeta.lng,
+      venueContactName: isShow ? data.venueContactName || null : null,
+      venueContactEmail: isShow ? data.venueContactEmail || null : null,
       releaseId: isRecording ? releaseId || null : null
     };
 
@@ -386,6 +390,34 @@ export default function EventForm({
             className={inputClass}
             placeholder="500"
           />
+        </div>
+      )}
+
+      {isShow && (
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-sm font-medium text-zinc-300 mb-1">
+              Promoter/Venue Contact
+            </label>
+            <input
+              name="venueContactName"
+              defaultValue={event?.venueContactName}
+              className={inputClass}
+              placeholder="Jane Smith"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-zinc-300 mb-1">
+              Contact Email
+            </label>
+            <input
+              name="venueContactEmail"
+              type="email"
+              defaultValue={event?.venueContactEmail}
+              className={inputClass}
+              placeholder="jane@venue.com"
+            />
+          </div>
         </div>
       )}
 

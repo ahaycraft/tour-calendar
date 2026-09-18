@@ -79,6 +79,8 @@ export async function POST(request: NextRequest) {
         venueAddress,
         venueLat,
         venueLng,
+        venueContactName,
+        venueContactEmail,
         releaseId
       } = body;
 
@@ -143,6 +145,8 @@ export async function POST(request: NextRequest) {
           venueAddress: venueAddress || null,
           venueLat: typeof venueLat === "number" ? venueLat : null,
           venueLng: typeof venueLng === "number" ? venueLng : null,
+          venueContactName: venueContactName || null,
+          venueContactEmail: venueContactEmail || null,
           createdById: session.user.id
         },
         include: {

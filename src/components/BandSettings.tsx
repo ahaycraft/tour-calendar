@@ -41,6 +41,7 @@ const fieldClass =
 export default function BandSettings({
   bandId,
   bandName,
+  bandRider,
   myRole,
   myUserId,
   members,
@@ -48,6 +49,7 @@ export default function BandSettings({
 }: {
   bandId: string;
   bandName: string;
+  bandRider: string | null;
   myRole: Role;
   myUserId: string;
   members: Member[];
@@ -62,6 +64,10 @@ export default function BandSettings({
   const [name, setName] = useState(bandName);
   const [editingName, setEditingName] = useState(false);
   const [busy, setBusy] = useState(false);
+
+  const [rider, setRider] = useState(bandRider ?? "");
+  const [editingRider, setEditingRider] = useState(false);
+  const [riderBusy, setRiderBusy] = useState(false);
 
   const me = members.find((m) => m.userId === myUserId);
   const bandPhones = Array.from(
@@ -163,6 +169,31 @@ export default function BandSettings({
   function cancelEditName() {
     setName(bandName);
     setEditingName(false);
+    setError("");
+  }
+
+  async function saveRider(e: React.FormEvent) {
+    e.preventDefault();
+    if (rider === (bandRider ?? "")) return;
+    setRiderBusy(true);
+    setError("");
+    const res = await fetch(`/api/bands/${bandId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ rider })
+    });
+    setRiderBusy(false);
+    if (!res.ok) {
+      setError((await res.json().catch(() => ({}))).error || "Couldn't save rider");
+      return;
+    }
+    setEditingRider(false);
+    router.refresh();
+  }
+
+  function cancelEditRider() {
+    setRider(bandRider ?? "");
+    setEditingRider(false);
     setError("");
   }
 
@@ -276,6 +307,71 @@ export default function BandSettings({
           )
         ) : (
           <p className="text-sm text-zinc-300">{bandName}</p>
+        )}
+      </div>
+
+      {/* Rider */}
+      <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-6 mb-6">
+        <h2 className="font-semibold text-zinc-100 mb-1">Rider</h2>
+        <p className="text-xs text-zinc-500 mb-3">
+          Hospitality/tech requirements sent to a show&apos;s venue contact.
+          One rider for the whole band — it doesn&apos;t vary per show.
+        </p>
+        {canManage ? (
+          editingRider ? (
+            <form onSubmit={saveRider} className="space-y-2">
+              <textarea
+                autoFocus
+                rows={8}
+                value={rider}
+                onChange={(e) => setRider(e.target.value)}
+                className={`${fieldClass} w-full resize-y`}
+                placeholder="Backline, hospitality, stage plot, etc."
+              />
+              <div className="flex gap-2">
+                <button
+                  type="submit"
+                  disabled={riderBusy || rider === (bandRider ?? "")}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-500 disabled:opacity-50 transition-colors"
+                >
+                  {riderBusy ? (
+                    <Loader2 size={15} className="animate-spin" />
+                  ) : (
+                    "Save"
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={cancelEditRider}
+                  className="px-4 py-2 bg-zinc-800 text-zinc-300 rounded-lg text-sm font-medium hover:bg-zinc-700 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          ) : (
+            <div className="flex items-start justify-between gap-3">
+              <p className="text-sm text-zinc-200 whitespace-pre-wrap">
+                {bandRider || (
+                  <span className="text-zinc-500">No rider set yet.</span>
+                )}
+              </p>
+              <button
+                type="button"
+                onClick={() => setEditingRider(true)}
+                className="inline-flex items-center gap-1.5 text-sm text-blue-400 hover:text-blue-300 shrink-0"
+              >
+                <Pencil size={14} />
+                Edit
+              </button>
+            </div>
+          )
+        ) : (
+          <p className="text-sm text-zinc-300 whitespace-pre-wrap">
+            {bandRider || (
+              <span className="text-zinc-500">No rider set yet.</span>
+            )}
+          </p>
         )}
       </div>
 
