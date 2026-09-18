@@ -35,7 +35,8 @@ import {
   Pencil,
   Disc3,
   Mail,
-  MessageCircle
+  MessageCircle,
+  Bed
 } from "lucide-react";
 
 interface Props {
@@ -121,6 +122,19 @@ export default async function EventDetail({ id, expected }: Props) {
           `${show.band.name} — Rider for ${show.title}`
         )}&body=${encodeURIComponent(show.band.rider)}`
       : null;
+
+  const hasLodging = !!(
+    show.hotelResponsibility ||
+    show.hotelName ||
+    show.hotelNotes
+  );
+  const hotelDirectionsUrl = show.hotelName
+    ? `https://www.google.com/maps/search/?api=1&query=${
+        show.hotelLat != null && show.hotelLng != null
+          ? `${show.hotelLat},${show.hotelLng}`
+          : encodeURIComponent([show.hotelName, show.hotelAddress].filter(Boolean).join(" "))
+      }`
+    : null;
 
   const savedCoords =
     show.venueLat != null && show.venueLng != null
@@ -262,6 +276,43 @@ export default async function EventDetail({ id, expected }: Props) {
                   <span className="whitespace-pre-wrap text-zinc-400">
                     {show.notes}
                   </span>
+                </div>
+              )}
+
+              {hasLodging && (
+                <div className="flex items-start gap-2">
+                  <Bed size={15} className="text-zinc-500 shrink-0 mt-0.5" />
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span>{show.hotelName || "Lodging"}</span>
+                      {show.hotelResponsibility && (
+                        <span className="text-xs text-zinc-500">
+                          ·{" "}
+                          {show.hotelResponsibility === "PROMOTER"
+                            ? "promoter provides"
+                            : "band arranges"}
+                        </span>
+                      )}
+                    </div>
+                    {show.hotelAddress && (
+                      <div className="text-zinc-500">{show.hotelAddress}</div>
+                    )}
+                    {hotelDirectionsUrl && (
+                      <a
+                        href={hotelDirectionsUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-blue-400 hover:text-blue-300"
+                      >
+                        Get directions ↗
+                      </a>
+                    )}
+                    {show.hotelNotes && (
+                      <div className="text-zinc-400 whitespace-pre-wrap mt-1">
+                        {show.hotelNotes}
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </div>

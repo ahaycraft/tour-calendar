@@ -245,6 +245,52 @@ describe("PATCH /api/shows/[id] — venue contact", () => {
   });
 });
 
+describe("PATCH /api/shows/[id] — hotel lodging", () => {
+  it("updates the hotel fields", async () => {
+    existing();
+    await patch("show1", {
+      hotelResponsibility: "BAND",
+      hotelName: "Hotel X",
+      hotelAddress: "123 Main St",
+      hotelLat: 34.1,
+      hotelLng: -118.3,
+      hotelNotes: "Ask for late checkout"
+    });
+    expect(updateMock.mock.calls[0][0].data).toMatchObject({
+      hotelResponsibility: "BAND",
+      hotelName: "Hotel X",
+      hotelAddress: "123 Main St",
+      hotelLat: 34.1,
+      hotelLng: -118.3,
+      hotelNotes: "Ask for late checkout"
+    });
+  });
+
+  it("400s for an invalid hotel responsibility", async () => {
+    existing();
+    const res = await patch("show1", { hotelResponsibility: "VENUE" });
+    expect(res.status).toBe(400);
+    expect(updateMock).not.toHaveBeenCalled();
+  });
+
+  it("clears the hotel responsibility when set to null", async () => {
+    existing(makeShow({ hotelResponsibility: "PROMOTER" } as never));
+    await patch("show1", { hotelResponsibility: null });
+    expect(updateMock.mock.calls[0][0].data).toMatchObject({
+      hotelResponsibility: null
+    });
+  });
+
+  it("leaves the hotel fields untouched when omitted", async () => {
+    existing();
+    await patch("show1", { notes: "Load in through the alley" });
+    expect(updateMock.mock.calls[0][0].data).not.toHaveProperty("hotelName");
+    expect(updateMock.mock.calls[0][0].data).not.toHaveProperty(
+      "hotelResponsibility"
+    );
+  });
+});
+
 describe("DELETE /api/shows/[id]", () => {
   it("401 without a session", async () => {
     authMock.mockResolvedValue(null);
