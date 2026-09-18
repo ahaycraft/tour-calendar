@@ -19,6 +19,7 @@ import {
   ShieldCheck,
   User,
   UserCircle,
+  Plane,
   X
 } from "lucide-react";
 import { cn, pathMatches } from "@/lib/utils";
@@ -500,6 +501,14 @@ export default function Nav({
             >
               <User size={18} />
               My Account
+            </Link>
+            <Link
+              href="/travel"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-3 w-full px-3 py-3 rounded-lg text-sm font-medium text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors"
+            >
+              <Plane size={18} />
+              Travel & Rewards
             </Link>
             <div className="px-1">
               <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-zinc-500">

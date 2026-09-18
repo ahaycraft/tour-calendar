@@ -15,7 +15,8 @@ import {
   Moon,
   ShieldCheck,
   Sun,
-  User
+  User,
+  Plane
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import PushMenuItem from "./PushToggle";
@@ -196,6 +197,15 @@ export function ThemeMenu({
           >
             <User size={14} />
             My Account
+          </Link>
+          <Link
+            href="/travel"
+            role="menuitem"
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-800"
+          >
+            <Plane size={14} />
+            Travel & Rewards
           </Link>
           <div className="my-1 border-t border-zinc-800" />
           <div className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-zinc-600">
