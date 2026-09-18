@@ -40,11 +40,38 @@ model User {
   sessions         Session[]
   pushSubscriptions PushSubscription[]
   mobilePushTokens MobilePushToken[]
+  loyaltyAccounts  LoyaltyAccount[]
 }
 
 enum Role {
   ADMIN
   MEMBER
+}
+
+// A user's hotel/airline rewards program membership — lives on the user
+// (like phone), not the band, since it's personal and follows them across
+// bands. Visible to bandmates so whoever's booking travel can copy it; see
+// GET /api/bands/[id]/loyalty and the mobile app's Travel & Rewards screen.
+// `program` holds the display name directly (a name from the app's curated
+// hotel/airline list, or free text when the person picks "Other") — there's
+// no server-side logic keyed off it, so a plain string is enough.
+model LoyaltyAccount {
+  id           String      @id @default(cuid())
+  userId       String
+  type         LoyaltyType
+  program      String
+  memberNumber String
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+enum LoyaltyType {
+  HOTEL
+  AIRLINE
 }
 
 // A band or solo artist. Every show, song, and release belongs to exactly one.
