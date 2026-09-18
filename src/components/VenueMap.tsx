@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { MapPin, UtensilsCrossed, Fuel } from "lucide-react";
+import { MapPin, UtensilsCrossed, Fuel, Hotel } from "lucide-react";
 import type { Map as MapboxMap, Marker as MapboxMarker } from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
@@ -107,6 +107,15 @@ export default function VenueMap({
               >
                 <Fuel size={15} />
                 Gas nearby
+              </a>
+              <a
+                href={`https://www.google.com/maps/search/hotels/@${lat},${lng},15z`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-zinc-700 py-2.5 text-sm font-medium text-blue-400 transition-colors hover:bg-zinc-800 hover:text-blue-300"
+              >
+                <Hotel size={15} />
+                Hotels nearby
               </a>
             </div>
           </div>
