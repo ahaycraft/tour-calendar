@@ -11,6 +11,7 @@ import ShowAvailabilityControls from "@/components/ShowAvailabilityControls";
 import ShowStatusControls from "@/components/ShowStatusControls";
 import DeleteEventButton from "@/components/DeleteEventButton";
 import GuestList from "@/components/GuestList";
+import ShowSetlistCard from "@/components/ShowSetlistCard";
 import VenueMap from "@/components/VenueMap";
 import AddToCalendar from "@/components/AddToCalendar";
 import TextItineraryButton from "@/components/TextItineraryButton";
@@ -23,7 +24,7 @@ import {
   eventNoun,
   type EventTypeStr
 } from "@/lib/events";
-import { canManageEvents, isBandMember } from "@/lib/band";
+import { canAccessContent, canManageEvents, isBandMember } from "@/lib/band";
 import NeedsDetailsBadge, {
   needsDetails
 } from "@/components/NeedsDetailsBadge";
@@ -60,12 +61,21 @@ export default async function EventDetail({ id, expected }: Props) {
           user: { select: { id: true, name: true, phone: true } }
         },
         orderBy: { user: { name: "asc" } }
+      },
+      setlist: {
+        include: { songs: { orderBy: { position: "asc" } } }
       }
     }
   });
 
   if (!show || !isBandMember(session!, show.bandId)) notFound();
   if (show.type !== expected) redirect(eventHref(show.type, show.id));
+
+  const setlistTemplates = await prisma.setlist.findMany({
+    where: { bandId: show.bandId },
+    orderBy: { name: "asc" },
+    select: { id: true, name: true }
+  });
 
   const bandMembers = await prisma.bandMembership.findMany({
     where: { bandId: show.bandId },
@@ -465,6 +475,17 @@ export default async function EventDetail({ id, expected }: Props) {
           {/* Guest List */}
           <div className="p-6">
             <GuestList showId={show.id} guestList={show.guestList} />
+          </div>
+
+          {/* Setlist */}
+          <div className="p-6">
+            <ShowSetlistCard
+              showId={show.id}
+              initialSourceName={show.setlist?.sourceSetlistName ?? null}
+              initialSongs={show.setlist?.songs.map((s) => ({ id: s.id, title: s.title })) ?? []}
+              templates={setlistTemplates}
+              canEdit={canAccessContent(session!, show.bandId)}
+            />
           </div>
         </div>
 

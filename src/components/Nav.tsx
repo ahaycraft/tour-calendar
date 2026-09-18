@@ -20,6 +20,7 @@ import {
   User,
   UserCircle,
   Plane,
+  ListMusic,
   X
 } from "lucide-react";
 import { cn, pathMatches } from "@/lib/utils";
@@ -49,7 +50,8 @@ const PRIMARY_LINK = { href: "/calendar", label: "Calendar", icon: Calendar };
 
 const CONTENT_LINKS = [
   { href: "/songs", label: "Songs", icon: Music },
-  { href: "/releases", label: "Releases", icon: Disc3 }
+  { href: "/releases", label: "Releases", icon: Disc3 },
+  { href: "/setlists", label: "Setlists", icon: ListMusic }
 ];
 
 const SECONDARY_LINKS = [
