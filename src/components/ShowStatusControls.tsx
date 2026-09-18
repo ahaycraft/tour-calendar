@@ -24,11 +24,17 @@ export default function ShowStatusControls({
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [confirmingAnyway, setConfirmingAnyway] = useState(false);
+  // Confirmed collapses to a settled line (mirrors ShowAvailabilityControls'
+  // own answered/editing split) instead of always exposing Mark Pending/
+  // Cancel as standing buttons — changing a confirmed show takes a
+  // deliberate Edit tap first.
+  const [editingStatus, setEditingStatus] = useState(currentStatus !== "CONFIRMED");
 
   const Noun = noun[0].toUpperCase() + noun.slice(1);
   const everyoneAvailable = memberCount > 0 && availableCount >= memberCount;
 
   async function doUpdateStatus(status: string) {
+    setEditingStatus(status !== "CONFIRMED");
     setLoading(true);
     await fetch(`/api/shows/${showId}`, {
       method: "PATCH",
@@ -64,35 +70,48 @@ export default function ShowStatusControls({
           {availableCount} of {memberCount} available
         </p>
       </div>
-      <div className="flex gap-2 flex-wrap">
-        {currentStatus !== "CONFIRMED" && (
+      {!editingStatus ? (
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-medium tone-moss">✓ Confirmed</span>
           <button
-            onClick={() => onStatusClick("CONFIRMED")}
-            disabled={loading}
-            className="px-3 py-1.5 text-sm rounded-lg badge-moss hover:opacity-80 font-medium transition-opacity disabled:opacity-50"
+            type="button"
+            onClick={() => setEditingStatus(true)}
+            className="text-sm font-medium text-blue-400 hover:text-blue-300"
           >
-            Confirm {Noun}
+            Edit
           </button>
-        )}
-        {currentStatus !== "PENDING" && (
-          <button
-            onClick={() => onStatusClick("PENDING")}
-            disabled={loading}
-            className="px-3 py-1.5 text-sm rounded-lg badge-denim hover:opacity-80 font-medium transition-opacity disabled:opacity-50"
-          >
-            Mark Pending
-          </button>
-        )}
-        {currentStatus !== "CANCELLED" && (
-          <button
-            onClick={() => onStatusClick("CANCELLED")}
-            disabled={loading}
-            className="px-3 py-1.5 text-sm rounded-lg badge-brick hover:opacity-80 font-medium transition-opacity disabled:opacity-50"
-          >
-            Cancel {Noun}
-          </button>
-        )}
-      </div>
+        </div>
+      ) : (
+        <div className="flex gap-2 flex-wrap">
+          {currentStatus !== "CONFIRMED" && (
+            <button
+              onClick={() => onStatusClick("CONFIRMED")}
+              disabled={loading}
+              className="px-3 py-1.5 text-sm rounded-lg badge-moss hover:opacity-80 font-medium transition-opacity disabled:opacity-50"
+            >
+              Confirm {Noun}
+            </button>
+          )}
+          {currentStatus !== "PENDING" && (
+            <button
+              onClick={() => onStatusClick("PENDING")}
+              disabled={loading}
+              className="px-3 py-1.5 text-sm rounded-lg badge-denim hover:opacity-80 font-medium transition-opacity disabled:opacity-50"
+            >
+              Mark Pending
+            </button>
+          )}
+          {currentStatus !== "CANCELLED" && (
+            <button
+              onClick={() => onStatusClick("CANCELLED")}
+              disabled={loading}
+              className="px-3 py-1.5 text-sm rounded-lg badge-brick hover:opacity-80 font-medium transition-opacity disabled:opacity-50"
+            >
+              Cancel {Noun}
+            </button>
+          )}
+        </div>
+      )}
 
       <ConfirmDialog
         open={confirmingAnyway}
