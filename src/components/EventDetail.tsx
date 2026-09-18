@@ -34,6 +34,7 @@ import {
   FileText,
   Pencil,
   Disc3,
+  Mail,
   MessageCircle
 } from "lucide-react";
 
@@ -51,6 +52,7 @@ export default async function EventDetail({ id, expected }: Props) {
     include: {
       createdBy: { select: { id: true, name: true } },
       release: { select: { id: true, title: true } },
+      band: { select: { name: true, rider: true } },
       availability: {
         include: {
           user: { select: { id: true, name: true, phone: true } }
@@ -108,6 +110,17 @@ export default async function EventDetail({ id, expected }: Props) {
 
   const icsUrl = `/api/shows/${show.id}/event.ics`;
   const googleUrl = googleCalendarUrl(show, appUrl);
+
+  // mailto: rather than a server-sent email — see Band.rider's schema
+  // comment. Only offered once both a contact and a rider exist; there's no
+  // client-side step here to surface a "no rider yet" nudge the way the
+  // mobile app's button tap does.
+  const riderMailto =
+    show.venueContactEmail && show.band.rider
+      ? `mailto:${show.venueContactEmail}?subject=${encodeURIComponent(
+          `${show.band.name} — Rider for ${show.title}`
+        )}&body=${encodeURIComponent(show.band.rider)}`
+      : null;
 
   const savedCoords =
     show.venueLat != null && show.venueLng != null
@@ -173,6 +186,16 @@ export default async function EventDetail({ id, expected }: Props) {
                   message={itineraryMessage}
                 />
                 <AddToCalendar googleUrl={googleUrl} icsUrl={icsUrl} />
+                {riderMailto && (
+                  <a
+                    href={riderMailto}
+                    aria-label="Email rider to promoter"
+                    className="inline-flex h-9 w-9 items-center justify-center gap-1.5 rounded-full border border-zinc-700 text-sm font-medium text-zinc-300 transition-colors hover:bg-zinc-800 hover:text-zinc-100 sm:h-auto sm:w-auto sm:rounded-lg sm:px-3 sm:py-1.5"
+                  >
+                    <Mail size={14} />
+                    <span className="hidden sm:inline">Email rider</span>
+                  </a>
+                )}
                 {isAdminOrCreator && (
                   <Link
                     href={`${eventHref(show.type, show.id)}/edit`}
