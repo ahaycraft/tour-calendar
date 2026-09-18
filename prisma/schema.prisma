@@ -167,6 +167,13 @@ model Show {
   hotelLat            Float?
   hotelLng            Float?
   hotelNotes          String?
+  // Free text ("Jane Smith\nJohn Doe"), appended to rather than replaced —
+  // any band member can add names via POST /api/shows/[id]/guests, which
+  // does an atomic SQL append so two people adding guests around the same
+  // time can't clobber each other's addition the way a plain PATCH would.
+  // Deliberately left out of the general PATCH /api/shows/[id] fields for
+  // that reason.
+  guestList String? @db.Text
   status       ShowStatus @default(PENDING)
   createdById  String
   createdAt    DateTime   @default(now())
