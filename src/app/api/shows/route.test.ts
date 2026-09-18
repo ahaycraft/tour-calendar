@@ -184,6 +184,47 @@ describe("POST /api/shows — create + notify", () => {
     });
   });
 
+  it("stores hotel lodging fields when given, null otherwise", async () => {
+    await call({
+      title: "The Roxy",
+      date: "2026-06-15",
+      hotelResponsibility: "PROMOTER",
+      hotelName: "Hotel X",
+      hotelAddress: "123 Main St",
+      hotelLat: 34.1,
+      hotelLng: -118.3,
+      hotelNotes: "Ask for late checkout"
+    });
+    expect(createMock.mock.calls[0][0].data).toMatchObject({
+      hotelResponsibility: "PROMOTER",
+      hotelName: "Hotel X",
+      hotelAddress: "123 Main St",
+      hotelLat: 34.1,
+      hotelLng: -118.3,
+      hotelNotes: "Ask for late checkout"
+    });
+
+    await call({ title: "The Roxy", date: "2026-06-15" });
+    expect(createMock.mock.calls[1][0].data).toMatchObject({
+      hotelResponsibility: null,
+      hotelName: null,
+      hotelAddress: null,
+      hotelLat: null,
+      hotelLng: null,
+      hotelNotes: null
+    });
+  });
+
+  it("400s for an invalid hotel responsibility", async () => {
+    const res = await call({
+      title: "x",
+      date: "2026-06-15",
+      hotelResponsibility: "VENUE"
+    });
+    expect(res.status).toBe(400);
+    expect(createMock).not.toHaveBeenCalled();
+  });
+
   it("500s if the create throws, without surfacing internals", async () => {
     createMock.mockRejectedValue(new Error("db down"));
     const res = await call({ title: "x", date: "2026-06-15" });

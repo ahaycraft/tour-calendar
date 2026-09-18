@@ -101,12 +101,30 @@ export async function PATCH(
         venueLng,
         venueContactName,
         venueContactEmail,
+        hotelResponsibility,
+        hotelName,
+        hotelAddress,
+        hotelLat,
+        hotelLng,
+        hotelNotes,
         releaseId
       } = body;
 
       if (type !== undefined && !isEventType(type)) {
         return NextResponse.json(
           { error: "Invalid event type" },
+          { status: 400 }
+        );
+      }
+
+      if (
+        hotelResponsibility !== undefined &&
+        hotelResponsibility !== null &&
+        hotelResponsibility !== "PROMOTER" &&
+        hotelResponsibility !== "BAND"
+      ) {
+        return NextResponse.json(
+          { error: "Invalid hotel responsibility" },
           { status: 400 }
         );
       }
@@ -190,7 +208,21 @@ export async function PATCH(
             }),
             ...(venueContactEmail !== undefined && {
               venueContactEmail: venueContactEmail || null
-            })
+            }),
+            ...(hotelResponsibility !== undefined && {
+              hotelResponsibility: hotelResponsibility || null
+            }),
+            ...(hotelName !== undefined && { hotelName: hotelName || null }),
+            ...(hotelAddress !== undefined && {
+              hotelAddress: hotelAddress || null
+            }),
+            ...(hotelLat !== undefined && {
+              hotelLat: typeof hotelLat === "number" ? hotelLat : null
+            }),
+            ...(hotelLng !== undefined && {
+              hotelLng: typeof hotelLng === "number" ? hotelLng : null
+            }),
+            ...(hotelNotes !== undefined && { hotelNotes: hotelNotes || null })
           },
           include: {
             createdBy: { select: { id: true, name: true } },

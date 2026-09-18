@@ -156,6 +156,17 @@ model Show {
   // Who to send the band's rider to for this show, if anyone.
   venueContactName  String?
   venueContactEmail String?
+  // Lodging for this show. Free-text hotelNotes (confirmation #, "ask for
+  // late checkout", etc.) alongside the searched/geocoded hotel, same
+  // split as the show's own venue fields above. Null responsibility means
+  // it hasn't been decided/entered yet — distinct from BAND, which means
+  // it's been decided the band is on the hook for it.
+  hotelResponsibility HotelResponsibility?
+  hotelName           String?
+  hotelAddress        String?
+  hotelLat            Float?
+  hotelLng            Float?
+  hotelNotes          String?
   status       ShowStatus @default(PENDING)
   createdById  String
   createdAt    DateTime   @default(now())
@@ -197,6 +208,11 @@ enum ShowStatus {
   PENDING
   CONFIRMED
   CANCELLED
+}
+
+enum HotelResponsibility {
+  PROMOTER
+  BAND
 }
 
 model ShowAvailability {

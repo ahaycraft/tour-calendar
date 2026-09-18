@@ -81,8 +81,26 @@ export async function POST(request: NextRequest) {
         venueLng,
         venueContactName,
         venueContactEmail,
+        hotelResponsibility,
+        hotelName,
+        hotelAddress,
+        hotelLat,
+        hotelLng,
+        hotelNotes,
         releaseId
       } = body;
+
+      if (
+        hotelResponsibility !== undefined &&
+        hotelResponsibility !== null &&
+        hotelResponsibility !== "PROMOTER" &&
+        hotelResponsibility !== "BAND"
+      ) {
+        return NextResponse.json(
+          { error: "Invalid hotel responsibility" },
+          { status: 400 }
+        );
+      }
 
       // Venue and city are optional so skeleton events (e.g. a bulk-created tour
       // run) can be saved before the routing is booked.
@@ -147,6 +165,12 @@ export async function POST(request: NextRequest) {
           venueLng: typeof venueLng === "number" ? venueLng : null,
           venueContactName: venueContactName || null,
           venueContactEmail: venueContactEmail || null,
+          hotelResponsibility: hotelResponsibility || null,
+          hotelName: hotelName || null,
+          hotelAddress: hotelAddress || null,
+          hotelLat: typeof hotelLat === "number" ? hotelLat : null,
+          hotelLng: typeof hotelLng === "number" ? hotelLng : null,
+          hotelNotes: hotelNotes || null,
           createdById: session.user.id
         },
         include: {

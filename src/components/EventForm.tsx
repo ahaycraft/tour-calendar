@@ -52,6 +52,12 @@ export interface EventFormValues {
   venueLng: number | null;
   venueContactName: string;
   venueContactEmail: string;
+  hotelResponsibility: "PROMOTER" | "BAND" | "";
+  hotelName: string;
+  hotelAddress: string;
+  hotelLat: number | null;
+  hotelLng: number | null;
+  hotelNotes: string;
   /** Release this session is tracking for; "" when none. Recordings only. */
   releaseId: string;
 }
@@ -94,11 +100,30 @@ export default function EventForm({
         }
       : emptyMeta
   );
+  const [hotelResponsibility, setHotelResponsibility] = useState(
+    event?.hotelResponsibility ?? ""
+  );
+  const [hotelName, setHotelName] = useState(event?.hotelName ?? "");
+  const [hotelMeta, setHotelMeta] = useState(
+    event
+      ? { address: event.hotelAddress, lat: event.hotelLat, lng: event.hotelLng }
+      : emptyMeta
+  );
 
   const isRecording = eventType === "RECORDING";
   const isShow = eventType === "SHOW";
   const isPractice = eventType === "PRACTICE";
   const dateChanged = isEdit && date !== event.date;
+
+  function handleHotelChange(text: string) {
+    setHotelName(text);
+    setHotelMeta(emptyMeta);
+  }
+
+  function handleHotelSelect(v: VenueResult) {
+    setHotelName(v.name);
+    setHotelMeta({ address: v.address, lat: v.lat, lng: v.lng });
+  }
 
   function handleVenueSelect(v: VenueResult) {
     setVenue(v.name);
@@ -135,6 +160,12 @@ export default function EventForm({
       venueLng: venueMeta.lng,
       venueContactName: isShow ? data.venueContactName || null : null,
       venueContactEmail: isShow ? data.venueContactEmail || null : null,
+      hotelResponsibility: isShow ? hotelResponsibility || null : null,
+      hotelName: isShow ? hotelName || null : null,
+      hotelAddress: isShow ? hotelMeta.address || null : null,
+      hotelLat: isShow ? hotelMeta.lat : null,
+      hotelLng: isShow ? hotelMeta.lng : null,
+      hotelNotes: isShow ? data.hotelNotes || null : null,
       releaseId: isRecording ? releaseId || null : null
     };
 
@@ -418,6 +449,56 @@ export default function EventForm({
               placeholder="jane@venue.com"
             />
           </div>
+        </div>
+      )}
+
+      {isShow && (
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-zinc-300">
+            Lodging
+          </label>
+          <div className="flex gap-1 p-1 bg-zinc-800/60 rounded-lg">
+            {(
+              [
+                { value: "", label: "Not set" },
+                { value: "PROMOTER", label: "Promoter provides" },
+                { value: "BAND", label: "Band arranges" }
+              ] as const
+            ).map(({ value, label }) => (
+              <button
+                key={value || "unset"}
+                type="button"
+                onClick={() => setHotelResponsibility(value)}
+                className={`flex-1 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                  hotelResponsibility === value
+                    ? "bg-zinc-700 text-zinc-50"
+                    : "text-zinc-400 hover:text-zinc-200"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          <VenueSearch
+            value={hotelName}
+            onValueChange={handleHotelChange}
+            onSelect={handleHotelSelect}
+            inputClassName={inputClass}
+            name="hotelName"
+            placeholder="Search hotels…"
+          />
+          {hotelMeta.address && (
+            <p className="text-xs text-zinc-600">📍 {hotelMeta.address}</p>
+          )}
+
+          <textarea
+            name="hotelNotes"
+            rows={2}
+            defaultValue={event?.hotelNotes}
+            className={`${inputClass} resize-none`}
+            placeholder="Confirmation #, check-in notes, etc."
+          />
         </div>
       )}
 
