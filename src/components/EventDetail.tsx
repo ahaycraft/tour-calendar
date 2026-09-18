@@ -10,6 +10,7 @@ import EventTimeline from "@/components/EventTimeline";
 import ShowAvailabilityControls from "@/components/ShowAvailabilityControls";
 import ShowStatusControls from "@/components/ShowStatusControls";
 import DeleteEventButton from "@/components/DeleteEventButton";
+import GuestList from "@/components/GuestList";
 import VenueMap from "@/components/VenueMap";
 import AddToCalendar from "@/components/AddToCalendar";
 import TextItineraryButton from "@/components/TextItineraryButton";
@@ -116,11 +117,14 @@ export default async function EventDetail({ id, expected }: Props) {
   // comment. Only offered once both a contact and a rider exist; there's no
   // client-side step here to surface a "no rider yet" nudge the way the
   // mobile app's button tap does.
+  const riderBody = show.guestList
+    ? `${show.band.rider}\n\nGuest List:\n${show.guestList}`
+    : show.band.rider;
   const riderMailto =
     show.venueContactEmail && show.band.rider
       ? `mailto:${show.venueContactEmail}?subject=${encodeURIComponent(
           `${show.band.name} — Rider for ${show.title}`
-        )}&body=${encodeURIComponent(show.band.rider)}`
+        )}&body=${encodeURIComponent(riderBody ?? "")}`
       : null;
 
   const hasLodging = !!(
@@ -456,6 +460,11 @@ export default async function EventDetail({ id, expected }: Props) {
                 )}
               </div>
             )}
+          </div>
+
+          {/* Guest List */}
+          <div className="p-6">
+            <GuestList showId={show.id} guestList={show.guestList} />
           </div>
         </div>
 
