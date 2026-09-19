@@ -40,6 +40,7 @@ model User {
   sessions         Session[]
   pushSubscriptions PushSubscription[]
   mobilePushTokens MobilePushToken[]
+  liveActivityTokens LiveActivityToken[]
   loyaltyAccounts  LoyaltyAccount[]
 }
 
@@ -373,6 +374,23 @@ model MobilePushToken {
   token     String         @unique
   platform  MobilePlatform
   createdAt DateTime       @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// A device's ActivityKit push-to-start token (expo-widgets'
+// addPushToStartTokenListener) — lets the daily "today's show" job in
+// src/lib/apns.ts start the mobile app's Lock Screen Live Activity remotely,
+// without the app having ever been opened that day. iOS-only; unlike
+// MobilePushToken this goes straight to Apple's APNs, not through Expo's
+// push relay, since that doesn't support Live Activity push types.
+model LiveActivityToken {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  createdAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
