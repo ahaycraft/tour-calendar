@@ -130,25 +130,33 @@ const {
  * immediately, with no stale JWT copy to refresh. Shared by the cookie
  * session above and the Bearer-token (mobile) path below, so neither can
  * drift out of sync with the other.
+ *
+ * This runs on every authenticated request (~40 API routes each call
+ * `auth()`), so it's a single query via the `bandMemberships` relation
+ * rather than two separate round trips — halves the DB load this adds per
+ * request without giving up the immediacy above.
  */
 async function buildSessionUser(userId: string, role: string) {
-  const [user, memberships] = await Promise.all([
-    prisma.user.findUnique({
-      where: { id: userId },
-      select: { name: true, email: true }
-    }),
-    prisma.bandMembership.findMany({
-      where: { userId },
-      include: { band: { select: { id: true, name: true, slug: true } } },
-      orderBy: { createdAt: "asc" }
-    })
-  ]);
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      name: true,
+      email: true,
+      bandMemberships: {
+        orderBy: { createdAt: "asc" },
+        select: {
+          role: true,
+          band: { select: { id: true, name: true, slug: true } }
+        }
+      }
+    }
+  });
   return {
     id: userId,
     role,
     name: user?.name ?? "",
     email: user?.email ?? "",
-    bands: memberships.map((m) => ({
+    bands: (user?.bandMemberships ?? []).map((m) => ({
       id: m.band.id,
       name: m.band.name,
       slug: m.band.slug,
